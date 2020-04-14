@@ -17,7 +17,10 @@ Simulator::Simulator(const string &simulationDirectory) {
     int travelNum = 1;
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         const string path = p.path().string();
-        travelList.emplace_back(path,"Travel" + std::to_string(travelNum));
+        Ship* ship = FileHandler::createShipFromFile(path+"/shipPlan.txt");
+        if(ship != nullptr) {
+            travelList.emplace_back(path, "Travel" + std::to_string(travelNum), ship);
+        }
         travelNum++;
     }
     this->rootPath = simulationDirectory;

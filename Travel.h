@@ -19,7 +19,7 @@ class Travel{
     string travelName;
 public:
 
-    Travel(const string& travelPath, const string& travelName);
+    Travel(const string& travelPath, const string& travelName, Ship* ship);
 
     Ship* getShip(){return this->ship;}
     string getTravelName() const ;

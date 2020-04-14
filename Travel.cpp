@@ -12,14 +12,10 @@ using std::__cxx11::to_string;
 using std::stringstream;
 using std::ofstream;
 
-Travel::Travel(const string &travelPath, const string& travelName) {
+Travel::Travel(const string &travelPath, const string& travelName, Ship* ship) {
     this->travelPath = travelPath;
     this->travelName = travelName;
-    this->ship = FileHandler::createShipFromFile(travelPath + "/shipPlan.txt");
-    if (!this->ship) {
-        cout << "Error: there was no shipPlan in file\n";
-        return;
-    }
+    this->ship = ship;
     this->ship->setShipRoute(FileHandler::fileToRouteList(travelPath + "/route.txt"));
     for (const string &port : this->ship->getShipRoute()) {
         auto it = portCounter.find(port);
