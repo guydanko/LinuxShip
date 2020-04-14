@@ -5,7 +5,7 @@
 #include "SimulatorError.h"
 
 using std::ifstream;
-using std::cout;
+using std::cerr;
 using std::stringstream;
 using std::ofstream;
 
@@ -50,7 +50,7 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName) {
 
     /*could not open file*/
     if (!inFile) {
-        cout << "Could not open file\n";
+        cerr << "Could not open file\n";
         return containers;
     }
 
@@ -67,7 +67,7 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName) {
         }
 
         if (svec.size() != 3) {
-            cout << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
+            cerr << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
             continue;
         }
 
@@ -104,7 +104,7 @@ list<string> FileHandler::fileToRouteList(const string &fileName) {
 
     /*could not open file*/
     if (!inFile) {
-        cout << "Could not open file\n";
+        cerr << "Could not open file\n";
         return routes;
     }
 
@@ -121,7 +121,7 @@ list<string> FileHandler::fileToRouteList(const string &fileName) {
         }
 
         if (svec.size() != 1) {
-            cout << "Warning: file" << fileName << "line number: " << lineNum << " is not in valid format!\n";
+            cerr << "Warning: file" << fileName << "line number: " << lineNum << " is not in valid format!\n";
             continue;
         }
 
@@ -130,13 +130,13 @@ list<string> FileHandler::fileToRouteList(const string &fileName) {
         if (Container::isPortValid(port)) {
             strToUpper(port);
             if (routes.size() > 0 && routes.back().compare(port) == 0) {
-                cout << "Warning, file: " << fileName << "line number: " << lineNum
+                cerr << "Warning, file: " << fileName << "line number: " << lineNum
                      << " repeats the same twice in a row!\n";
             } else {
                 routes.push_back(port);
             }
         } else {
-            cout << "Warning, file: " << fileName << " line number: " << lineNum << " is not a legal port!\n";
+            cerr << "Warning, file: " << fileName << " line number: " << lineNum << " is not a legal port!\n";
         }
 
     }
@@ -151,7 +151,7 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
     ofstream outfile;
     outfile.open(fileName + "/" + travelName + "AllOperations.txt", std::ios::app);
     if (!outfile) {
-        cout << "Could not open file: " << fileName << "for writing\n";
+        cerr << "Could not open file: " << fileName << "for writing\n";
         return;
     }
 
@@ -175,7 +175,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName) {
     ifstream inFile(fileName);
     /*could not open file*/
     if (!inFile) {
-        cout << "Could not open file\n";
+        std::cerr << "Could not open file\n";
         return nullptr;
     }
 
@@ -190,7 +190,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName) {
     while (getline(sline, token, ',')) {
         token = trim(token);
         if (!isNumber(token)) {
-            cout << "Error: details of ship must be numbers!\n";
+            cerr << "Error: details of ship must be numbers!\n";
             return nullptr;
         }
         svec.push_back(token);
@@ -210,7 +210,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName) {
             token = trim(token);
 
             if (!isNumber(token)) {
-                cout << "Warning, file:" << fileName << " line number:" << lineNum
+                cerr << "Warning, file:" << fileName << " line number:" << lineNum
                      << " details of ship must be positive numbers!\n";
                 break;
             }
@@ -218,20 +218,20 @@ Ship *FileHandler::createShipFromFile(const string &fileName) {
         }
 
         if (svec.size() != 3) {
-            cout << "Warning, file: " << fileName << " line number: " << lineNum << "is not in valid format!\n";
+            cerr << "Warning, file: " << fileName << " line number: " << lineNum << "is not in valid format!\n";
             continue;
         }
 
         int actualFloors = stoi(svec[0]), row = stoi(svec[1]), col = stoi(svec[2]);
 
         if (actualFloors >= ship->getShipMap().getHeight()) {
-            cout << "Warning, file: " << fileName << " actual floors in line: " << lineNum
+            cerr << "Warning, file: " << fileName << " actual floors in line: " << lineNum
                  << " is larger or equal to max height\n";
             continue;
         }
 
         if (row >= ship->getShipMap().getRows() || col >= ship->getShipMap().getCols()) {
-            cout << "Warning, file: " << fileName << " dimensions in line: " << lineNum
+            cerr << "Warning, file: " << fileName << " dimensions in line: " << lineNum
                  << " are larger than dimension of floor\n";
             continue;
         }
@@ -249,7 +249,7 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
     ofstream outFile;
     outFile.open(path + "/" + travelName + "AlgoErrors.txt", std::ios::app);
     if (!outFile) {
-        cout << "Could not write error file: " << path << "\n";
+        cerr << "Could not write error file: " << path << "\n";
         return;
     }
 

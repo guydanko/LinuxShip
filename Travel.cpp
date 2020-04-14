@@ -5,7 +5,7 @@
 #include <filesystem>
 
 namespace fs = std::filesystem;
-using std::cout;
+using std::cerr;
 using std::make_tuple;
 using std::ifstream;
 using std::__cxx11::to_string;
