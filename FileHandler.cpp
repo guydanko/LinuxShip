@@ -170,7 +170,7 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
 
 
     if (operations.size() > 0) {
-        outfile << "All operations in port: " << currentPort << " ,visit no:" << visitNumber << "\n";
+        outfile << "Operations in port: " << currentPort << " ,visit no:" << visitNumber << "\n";
         for (CargoOperation &op: operations) {
             outfile << op << "\n";
         }
@@ -283,7 +283,7 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
     }
 
     if (simErrors.size() > 0) {
-        outFile << "Errors in port: " << portName << " ,visit no: " << visitNumber << "\n";
+        outFile << "Simulation Errors in port: " << portName << " ,visit no: " << visitNumber << "\n";
         for (const SimulatorError &simError:simErrors) {
             outFile << simError << "\n";
         }
