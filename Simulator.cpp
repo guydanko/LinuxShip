@@ -47,8 +47,6 @@ Simulator::Simulator(const string &simulationDirectory) {
     }
     travelErrorsToFile("SimulatorFiles/Travel_File_Errors");
     this->rootPath = simulationDirectory;
-
-
 }
 
 void freeAllContainers(list<list<Container *>> &containerList) {

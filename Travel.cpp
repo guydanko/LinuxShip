@@ -140,7 +140,7 @@ void Travel::errorsToFile(const string &fileName) const {
     }
 
 
-    if (cargoFiles > this->originalRoute.size()) {
+    if (cargoFiles >= this->originalRoute.size()) {
         outfile << "Warning, too many cargo_data files in travel folder\n";
     }
     if(otherFiles > 2){
