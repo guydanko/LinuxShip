@@ -36,6 +36,10 @@ algorithm directories will hold a directory for every given travel run on that a
  Travel_File_Errors will consist of a file of general errors for specific travel:
 - <travelName>FileErrors - holds errors due to invalid files needed to create travels, missing file information or too many files errors.
 
+Run Examples:
+- run program with command ./ex1 "Travels-Example"
+for example of how program runs on two different travels
+
 Recommendation: Even though program should delete current "SimulatorFiles" directory if exists when running program again,
 it is better to delete the file manually when re-running program to get immediate results.
 
