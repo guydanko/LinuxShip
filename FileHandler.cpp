@@ -148,7 +148,7 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
     }
 
     if(routes.empty()){
-        outFile << "Could not create route from file: " << fileName << ", file is empty\n";
+        outFile << "Could not create route from file: " << fileName << ", file does not contain any legal ports\n";
     }
 
     inFile.close();
