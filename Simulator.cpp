@@ -87,6 +87,9 @@ void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, co
     freeAllContainers(allContainers);
 }
 
+void markEmprtFiles(){
+    for()
+}
 void Simulator::run() {
     const string directoryRoot = "SimulatorFiles";
     for (AbstractStowageAlgorithm *pAlgo: algoList) {
@@ -96,6 +99,7 @@ void Simulator::run() {
             runOneTravel(travel, pAlgo, fileName);
         }
     }
+    markEmptyFiles();
 }
 
 bool indexInLimit(Ship &ship, MapIndex index) {

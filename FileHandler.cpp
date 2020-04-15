@@ -156,7 +156,7 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
 void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName, const string &travelName,
                                    const string &currentPort, int visitNumber, const string &errorFileName) {
     ofstream outfile;
-    outfile.open(fileName + "/" + travelName + "AllOperations.txt", std::ios::app);
+    outfile.open(fileName + "/" + travelName + "AllOperations", std::ios::app);
     ofstream errorFile(errorFileName, std::ios::app);
     if (!outfile) {
         errorFile << "Could not open file: " << fileName << "for writing\n";
@@ -264,10 +264,10 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
                                    const string &portName, int visitNumber, bool noErrors,
                                    const string &errorFileName) {
     ofstream outFile;
-    outFile.open(path + "/" + travelName + "AlgoErrors.txt", std::ios::app);
+    outFile.open(path + "/" + travelName + "AlgoErrors", std::ios::app);
     ofstream errorFile(errorFileName, std::ios::app);
     if (!outFile) {
-        errorFile << "Could not write error file: " << path + "/" + travelName + "AlgoErrors.txt" << "\n";
+        errorFile << "Could not write error file: " << path + "/" + travelName + "AlgoErrors" << "\n";
         errorFile.close();
         return;
     }
