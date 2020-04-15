@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 using std::string;
 using std::map;
 
-void setUpDirectories(const string& directoryRoot){
+void setUpDirectories(const string &directoryRoot) {
     if (fs::exists(directoryRoot)) {
         fs::remove_all(directoryRoot);
     }
@@ -32,8 +32,10 @@ Simulator::Simulator(const string &simulationDirectory) {
     int travelNum = 1;
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         const string path = p.path().string();
-        Ship* ship = FileHandler::createShipFromFile(path+"/shipPlan.txt","SimulatorFiles/Travel_File_Errors/" +p.path().filename().string() +"FileErrors.txt" );
-        if(ship != nullptr) {
+        Ship *ship = FileHandler::createShipFromFile(path + "/shipPlan.txt", "SimulatorFiles/Travel_File_Errors/" +
+                                                                             p.path().filename().string() +
+                                                                             "FileErrors.txt");
+        if (ship != nullptr) {
             travelList.emplace_back(path, p.path().filename().string(), ship, "SimulatorFiles/Travel_File_Errors");
         }
         travelNum++;
@@ -51,7 +53,6 @@ void freeAllContainers(list<list<Container *>> &containerList) {
         }
     }
 }
-
 
 void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, const string &fileName) {
     list<SimulatorError> listError;

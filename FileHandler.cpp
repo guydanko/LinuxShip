@@ -52,6 +52,7 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName, const
     /*could not open file*/
     if (!inFile) {
         outFile << "Could not open file: " << fileName << "\n";
+        outFile.close();
         return containers;
     }
 
@@ -185,7 +186,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
     ofstream errorFile(errorFileName, std::ios::app);
     /*could not open file*/
     if (!inFile) {
-        errorFile << "Could not open file\n";
+        errorFile << "Could not create ship from file : " << fileName << "\n";
         errorFile.close();
         return nullptr;
     }
@@ -195,8 +196,8 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
     string token;
     int lineNum = 1;
 
-    while(getline(inFile,line)){
-        if(line[0] != '#'){
+    while (getline(inFile, line)) {
+        if (line[0] != '#') {
             break;
         }
     }
@@ -226,15 +227,13 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
             token = trim(token);
 
             if (!isNumber(token)) {
-                errorFile << "Warning, file:" << fileName << " line number:" << lineNum
-                          << " details of ship must be positive numbers!\n";
                 break;
             }
             svec.push_back(token);
         }
 
         if (svec.size() != 3) {
-            errorFile << "Warning, file: " << fileName << " line number: " << lineNum << "is not in valid format!\n";
+            errorFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
             continue;
         }
 
@@ -268,7 +267,7 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
     outFile.open(path + "/" + travelName + "AlgoErrors.txt", std::ios::app);
     ofstream errorFile(errorFileName, std::ios::app);
     if (!outFile) {
-        cerr << "Could not write error file: " << path << "\n";
+        cerr << "Could not write error file: " << path + "/" + travelName + "AlgoErrors.txt", std::ios::app << "\n";
         errorFile.close();
         return;
     }
@@ -286,5 +285,6 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
         }
     }
 
+    errorFile.close();
     outFile.close();
 }

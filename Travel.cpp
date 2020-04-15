@@ -26,7 +26,9 @@ Travel::Travel(const string &travelPath, const string &travelName, Ship *ship, c
             get<1>(it->second) = get<1>(it->second) + 1;
         }
     }
-    this->increaseVisits(this->ship->getShipRoute().front());
+    if (this->ship->getShipRoute().size() != 0) {
+        this->increaseVisits(this->ship->getShipRoute().front());
+    }
     this->originalRoute = this->getShip()->getShipRoute();
 }
 
@@ -93,8 +95,7 @@ void Travel::setToOriginalTravel() {
 
 void Travel::errorsToFile(const string &fileName) const {
     ofstream outfile;
-    string path = fileName + "/" + this->getTravelName() + "FileErrors.txt";
-    outfile.open(fileName + "/" + this->getTravelName() + "FileErrors.txt");
+    outfile.open(fileName + "/" + this->getTravelName() + "FileErrors.txt", std::ios::app);
     if (!outfile) {
         return;
     }
