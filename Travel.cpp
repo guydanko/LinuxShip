@@ -12,11 +12,12 @@ using std::__cxx11::to_string;
 using std::stringstream;
 using std::ofstream;
 
-Travel::Travel(const string &travelPath, const string& travelName, Ship* ship, const string& errorFilePath) {
+Travel::Travel(const string &travelPath, const string &travelName, Ship *ship, const string &errorFilePath) {
     this->travelPath = travelPath;
     this->travelName = travelName;
     this->ship = ship;
-    this->ship->setShipRoute(FileHandler::fileToRouteList(travelPath + "/route.txt",errorFilePath + "/" + travelName + "FileErrors.txt"));
+    this->ship->setShipRoute(FileHandler::fileToRouteList(travelPath + "/route.txt",
+                                                          errorFilePath + "/" + travelName + "FileErrors.txt"));
     for (const string &port : this->ship->getShipRoute()) {
         auto it = portCounter.find(port);
         if (it == portCounter.end()) {
@@ -56,7 +57,7 @@ void Travel::goToNextPort() {
     }
 }
 
-list<Container *> Travel::getContainerList(const string& errorFile) {
+list<Container *> Travel::getContainerList(const string &errorFile) {
     if (this->getShip()->getShipRoute().size() == 0) {
         return list<Container *>();
     }
@@ -72,7 +73,7 @@ list<Container *> Travel::getContainerList(const string& errorFile) {
     if (!does_file_exist(fileName)) {
         return list<Container *>();
     } else {
-        return FileHandler::fileToContainerList(fileName, errorFile + "/" + travelName+ "cargoDataErrors");
+        return FileHandler::fileToContainerList(fileName, errorFile + "/" + travelName + "cargoDataErrors");
     }
 }
 
@@ -117,7 +118,7 @@ void Travel::errorsToFile(const string &fileName) const {
             }
         } else {
             if (!does_file_exist(fileName)) {
-                outfile << "Warning, missing file: " << travelPath <<"/" << i->c_str() << "_" << visitNum
+                outfile << "Warning, missing file: " << travelPath << "/" << i->c_str() << "_" << visitNum
                         << ".cargo_data\n";
             }
         }
