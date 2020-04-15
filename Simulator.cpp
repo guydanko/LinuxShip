@@ -34,7 +34,7 @@ Simulator::Simulator(const string &simulationDirectory) {
         const string path = p.path().string();
         Ship* ship = FileHandler::createShipFromFile(path+"/shipPlan.txt","SimulatorFiles/Travel_File_Errors/Travel" + std::to_string(travelNum) +"FileErrors.txt" );
         if(ship != nullptr) {
-            travelList.emplace_back(path, "Travel" + std::to_string(travelNum), ship, "SimulatorFiles/Travel_File_Errors");
+            travelList.emplace_back(path, p.path().filename().string(), ship, "SimulatorFiles/Travel_File_Errors");
         }
         travelNum++;
     }
