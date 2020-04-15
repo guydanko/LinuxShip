@@ -180,6 +180,12 @@ void orderListLoadContainer(list<Container *> &containerListToLoad, list<string>
 void checkLoadOperation(Ship &ship, CargoOperation &cargoOp, list<Container *> &loadList,
                         map<string, CargoOperation *> &rememberToLoadAgainIdToIndex, const string &currentPort,
                         int &maxNumberPortLoaded, list<SimulatorError> &errorList) {
+    if (!cargoOp.getContainer()->isContainerLegal()) {
+        errorList.emplace_back("load container with illegal parameters", 0, cargoOp);
+        //although operation wants to load container with  illegal parameters, algo still gives an operation to this container
+        cargoOp.getContainer()->setIsContainerLoaded(1);
+        return;
+    }
     int numberOfIdInList = 0;
     Container *containerFromList = nullptr;
     indexAccessible(ship, cargoOp, errorList);
