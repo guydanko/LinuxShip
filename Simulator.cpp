@@ -26,9 +26,9 @@ void Simulator::travelErrorsToFile(const string &fileName) {
 
 Simulator::Simulator(const string &simulationDirectory) {
     setUpDirectories("SimulatorFiles");
-    this->algoList.push_back(new NaiveStowageAlgorithm());
-    this->algoList.push_back(new MoreNaiveAlgorithm());
-    this->algoList.push_back(new IncorrectAlgorithm());
+    this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, &calculator));
+    this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, &calculator));
+    this->algoList.push_back(new IncorrectAlgorithm(nullptr, &calculator));
     int travelNum = 1;
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         const string path = p.path().string();
@@ -40,6 +40,7 @@ Simulator::Simulator(const string &simulationDirectory) {
     }
     travelErrorsToFile("SimulatorFiles/Travel_File_Errors");
     this->rootPath = simulationDirectory;
+
 
 }
 

@@ -56,7 +56,7 @@ void IncorrectAlgorithm::moveTower(MapIndex index , const string& portName,list<
 
 
 list<Container*>* IncorrectAlgorithm::unloadContainerByPort(const string& portName, list<CargoOperation>& opList ){
-    list<Container*>* rememberToLoad= new list<Container*>();
+    list<Container*>* rememberToLoad= nullptr;
     for(int i = 0; i < this->ship->getShipMap().getRows(); i++ ){
         for(int j = 0; j < this->ship->getShipMap().getCols(); j++){
             for(int k = 0; k< this->ship->getShipMap().getHeight(); k++){
