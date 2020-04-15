@@ -129,16 +129,22 @@ void Travel::errorsToFile(const string &fileName) const {
     }
 
 
-    size_t fileAmount = 0;
+    size_t cargoFiles = 0;
+    size_t otherFiles = 0;
     for (auto &path: fs::directory_iterator(travelPath)) {
-        if(path.exists()) {
-            fileAmount++;
+        if(path.path().filename().extension().string().compare(".cargo_data") == 0) {
+            cargoFiles++;
+        } else{
+            otherFiles++;
         }
     }
 
 
-    if (fileAmount > this->originalRoute.size() + 1) {
-        outfile << "Warning, too many files in travel folder\n";
+    if (cargoFiles > this->originalRoute.size()) {
+        outfile << "Warning, too many cargo_data files in travel folder\n";
+    }
+    if(otherFiles > 2){
+        outfile << "Warning, too many regular files in travel folder\n";
     }
     outfile.close();
 
