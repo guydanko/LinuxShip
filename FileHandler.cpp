@@ -40,17 +40,18 @@ void strToUpper(string &str) {
     }
 }
 
-list<Container *> FileHandler::fileToContainerList(const string &fileName) {
+list<Container *> FileHandler::fileToContainerList(const string &fileName, const string &errorFile) {
     list<Container *> containers = {};
     ifstream inFile;
     inFile.open(fileName);
+    ofstream outFile(errorFile, std::ios::app);
     int lineNum = 0;
 
     vector<string> tokens;
 
     /*could not open file*/
     if (!inFile) {
-        cerr << "Could not open file\n";
+        outFile << "Could not open file: " << fileName << "\n";
         return containers;
     }
 
@@ -67,7 +68,7 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName) {
         }
 
         if (svec.size() != 3) {
-            cerr << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
+            outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
             continue;
         }
 
@@ -85,6 +86,7 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName) {
 
             cont = new Container(stoi(weight), destination, id);
         } else {
+            outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a valid container!\n";
             cont = new Container(0, "", id, false);
         }
         containers.push_back(cont);
@@ -92,19 +94,22 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName) {
     }
 
     inFile.close();
+    outFile.close();
     return containers;
 
 }
 
-list<string> FileHandler::fileToRouteList(const string &fileName) {
+list<string> FileHandler::fileToRouteList(const string &fileName, const string &errorFile) {
     list<string> routes = {};
     ifstream inFile;
     inFile.open(fileName);
+    ofstream outFile(errorFile, std::ios::app);
     int lineNum = 0;
 
     /*could not open file*/
     if (!inFile) {
-        cerr << "Could not open file\n";
+        outFile << "Could not open file: " << fileName << "\n";
+        outFile.close();
         return routes;
     }
 
@@ -121,7 +126,7 @@ list<string> FileHandler::fileToRouteList(const string &fileName) {
         }
 
         if (svec.size() != 1) {
-            cerr << "Warning: file" << fileName << "line number: " << lineNum << " is not in valid format!\n";
+            outFile << "Warning: file" << fileName << "line number: " << lineNum << " is not in valid format!\n";
             continue;
         }
 
@@ -130,28 +135,31 @@ list<string> FileHandler::fileToRouteList(const string &fileName) {
         if (Container::isPortValid(port)) {
             strToUpper(port);
             if (routes.size() > 0 && routes.back().compare(port) == 0) {
-                cerr << "Warning, file: " << fileName << "line number: " << lineNum
-                     << " repeats the same twice in a row!\n";
+                outFile << "Warning, file: " << fileName << "line number: " << lineNum
+                        << " repeats the same twice in a row!\n";
             } else {
                 routes.push_back(port);
             }
         } else {
-            cerr << "Warning, file: " << fileName << " line number: " << lineNum << " is not a legal port!\n";
+            outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a legal port!\n";
         }
 
     }
 
     inFile.close();
+    outFile.close();
     return routes;
 
 }
 
 void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName, const string &travelName,
-                                   const string &currentPort, int visitNumber) {
+                                   const string &currentPort, int visitNumber, const string &errorFileName) {
     ofstream outfile;
     outfile.open(fileName + "/" + travelName + "AllOperations.txt", std::ios::app);
+    ofstream errorFile(errorFileName, std::ios::app);
     if (!outfile) {
-        cerr << "Could not open file: " << fileName << "for writing\n";
+        errorFile << "Could not open file: " << fileName << "for writing\n";
+        errorFile.close();
         return;
     }
 
@@ -168,14 +176,17 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
 
 
     outfile.close();
+    errorFile.close();
 
 }
 
-Ship *FileHandler::createShipFromFile(const string &fileName) {
+Ship *FileHandler::createShipFromFile(const string &fileName, const string &errorFileName) {
     ifstream inFile(fileName);
+    ofstream errorFile(errorFileName, std::ios::app);
     /*could not open file*/
     if (!inFile) {
-        std::cerr << "Could not open file\n";
+        errorFile << "Could not open file\n";
+        errorFile.close();
         return nullptr;
     }
 
@@ -184,13 +195,18 @@ Ship *FileHandler::createShipFromFile(const string &fileName) {
     string token;
     int lineNum = 1;
 
-    getline(inFile, line);
+    while(getline(inFile,line)){
+        if(line[0] != '#'){
+            break;
+        }
+    }
     stringstream sline(line);
 
     while (getline(sline, token, ',')) {
         token = trim(token);
         if (!isNumber(token)) {
-            cerr << "Error: details of ship must be numbers!\n";
+            errorFile << "Error: details of ship must be numbers!\n";
+            errorFile.close();
             return nullptr;
         }
         svec.push_back(token);
@@ -210,29 +226,29 @@ Ship *FileHandler::createShipFromFile(const string &fileName) {
             token = trim(token);
 
             if (!isNumber(token)) {
-                cerr << "Warning, file:" << fileName << " line number:" << lineNum
-                     << " details of ship must be positive numbers!\n";
+                errorFile << "Warning, file:" << fileName << " line number:" << lineNum
+                          << " details of ship must be positive numbers!\n";
                 break;
             }
             svec.push_back(token);
         }
 
         if (svec.size() != 3) {
-            cerr << "Warning, file: " << fileName << " line number: " << lineNum << "is not in valid format!\n";
+            errorFile << "Warning, file: " << fileName << " line number: " << lineNum << "is not in valid format!\n";
             continue;
         }
 
         int actualFloors = stoi(svec[0]), row = stoi(svec[1]), col = stoi(svec[2]);
 
         if (actualFloors >= ship->getShipMap().getHeight()) {
-            cerr << "Warning, file: " << fileName << " actual floors in line: " << lineNum
-                 << " is larger or equal to max height\n";
+            errorFile << "Warning, file: " << fileName << " actual floors in line: " << lineNum
+                      << " is larger or equal to max height\n";
             continue;
         }
 
         if (row >= ship->getShipMap().getRows() || col >= ship->getShipMap().getCols()) {
-            cerr << "Warning, file: " << fileName << " dimensions in line: " << lineNum
-                 << " are larger than dimension of floor\n";
+            errorFile << "Warning, file: " << fileName << " dimensions in line: " << lineNum
+                      << " are larger than dimension of floor\n";
             continue;
         }
 
@@ -240,16 +256,20 @@ Ship *FileHandler::createShipFromFile(const string &fileName) {
     }
 
     inFile.close();
+    errorFile.close();
     return ship;
 }
 
 void
 FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const string &path, const string &travelName,
-                                   const string &portName, int visitNumber, bool noErrors) {
+                                   const string &portName, int visitNumber, bool noErrors,
+                                   const string &errorFileName) {
     ofstream outFile;
     outFile.open(path + "/" + travelName + "AlgoErrors.txt", std::ios::app);
+    ofstream errorFile(errorFileName, std::ios::app);
     if (!outFile) {
         cerr << "Could not write error file: " << path << "\n";
+        errorFile.close();
         return;
     }
 

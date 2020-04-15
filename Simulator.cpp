@@ -10,19 +10,35 @@ namespace fs = std::filesystem;
 using std::string;
 using std::map;
 
+void setUpDirectories(const string& directoryRoot){
+    if (fs::exists(directoryRoot)) {
+        fs::remove_all(directoryRoot);
+    }
+    fs::create_directory(directoryRoot);
+    fs::create_directory(directoryRoot + "/" + "Travel_File_Errors");
+}
+
+void Simulator::travelErrorsToFile(const string &fileName) {
+    for (const Travel &travel:this->travelList) {
+        travel.errorsToFile(fileName);
+    }
+}
+
 Simulator::Simulator(const string &simulationDirectory) {
+    setUpDirectories("SimulatorFiles");
     this->algoList.push_back(new NaiveStowageAlgorithm());
     this->algoList.push_back(new MoreNaiveAlgorithm());
     this->algoList.push_back(new IncorrectAlgorithm());
     int travelNum = 1;
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         const string path = p.path().string();
-        Ship* ship = FileHandler::createShipFromFile(path+"/shipPlan.txt");
+        Ship* ship = FileHandler::createShipFromFile(path+"/shipPlan.txt","SimulatorFiles/Travel_File_Errors/Travel" + std::to_string(travelNum) +"FileErrors.txt" );
         if(ship != nullptr) {
-            travelList.emplace_back(path, "Travel" + std::to_string(travelNum), ship);
+            travelList.emplace_back(path, "Travel" + std::to_string(travelNum), ship, "SimulatorFiles/Travel_File_Errors");
         }
         travelNum++;
     }
+    travelErrorsToFile("SimulatorFiles/Travel_File_Errors");
     this->rootPath = simulationDirectory;
 
 }
@@ -35,11 +51,6 @@ void freeAllContainers(list<list<Container *>> &containerList) {
     }
 }
 
-void Simulator::travelErrorsToFile(const string &fileName) {
-    for (const Travel &travel:this->travelList) {
-        travel.errorsToFile(fileName);
-    }
-}
 
 void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, const string &fileName) {
     list<SimulatorError> listError;
@@ -50,7 +61,7 @@ void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, co
     fs::create_directory(path);
     int errorAmount = 0;
     while (!travel.didTravelEnd()) {
-        list<Container *> loadList = travel.getContainerList();
+        list<Container *> loadList = travel.getContainerList(path);
         allContainers.push_back(loadList);
         list<CargoOperation> cargoOps = pAlgo->getInstructionsForCargo(loadList, travel.getShip()->getCurrentPort());
         FileHandler::operationsToFile(cargoOps, path, travel.getTravelName(), travel.getShip()->getCurrentPort(),
@@ -71,12 +82,6 @@ void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, co
 
 void Simulator::run() {
     const string directoryRoot = "SimulatorFiles";
-    if (fs::exists(directoryRoot)) {
-        fs::remove_all(directoryRoot);
-    }
-    fs::create_directory(directoryRoot);
-    fs::create_directory(directoryRoot + "/" + "Travel_File_Errors");
-    travelErrorsToFile(directoryRoot + "/" + "Travel_File_Errors");
     for (AbstractStowageAlgorithm *pAlgo: algoList) {
         string fileName = directoryRoot + "/" + pAlgo->getName();
         fs::create_directory(fileName);

@@ -19,12 +19,12 @@ class Travel{
     string travelName;
 public:
 
-    Travel(const string& travelPath, const string& travelName, Ship* ship);
+    Travel(const string& travelPath, const string& travelName, Ship* ship, const string& errorFilePath);
 
     Ship* getShip(){return this->ship;}
     string getTravelName() const ;
 
-    list<Container*> getContainerList();
+    list<Container*> getContainerList(const string& errorFile);
     void goToNextPort();
     void setToOriginalTravel();
     bool didTravelEnd(){ return this->getShip()->getShipRoute().size() == 0;};
