@@ -147,6 +147,10 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
 
     }
 
+    if(routes.empty()){
+        outFile << "Could not create route from file: " << fileName << ", file is empty\n";
+    }
+
     inFile.close();
     outFile.close();
     return routes;
