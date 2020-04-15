@@ -3,10 +3,7 @@
 #include "Simulator.h"
 #include "FileHandler.h"
 #include <map>
-#include <filesystem>
-#include <iostream>
 
-namespace fs = std::filesystem;
 using std::string;
 using std::map;
 
@@ -24,21 +21,29 @@ void Simulator::travelErrorsToFile(const string &fileName) {
     }
 }
 
+void Simulator::buildTravel(const fs::path &path) {
+    list<string> route = FileHandler::fileToRouteList(path.string() + "/route",
+                                                      "SimulatorFiles/Travel_File_Errors/" + path.filename().string() +
+                                                      "FileErrors");
+    if (!route.empty()) {
+        Ship *ship = FileHandler::createShipFromFile(path.string() + "/shipPlan",
+                                                     "SimulatorFiles/Travel_File_Errors/" +
+                                                     path.filename().string() +
+                                                     "FileErrors");
+        if (ship != nullptr) {
+            ship->setShipRoute(route);
+            travelList.emplace_back(path.string(), path.filename().string(), ship);
+        }
+    }
+}
+
 Simulator::Simulator(const string &simulationDirectory) {
     setUpDirectories("SimulatorFiles");
     this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, &calculator));
     this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, &calculator));
     this->algoList.push_back(new IncorrectAlgorithm(nullptr, &calculator));
-    int travelNum = 1;
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
-        const string path = p.path().string();
-        Ship *ship = FileHandler::createShipFromFile(path + "/shipPlan.txt", "SimulatorFiles/Travel_File_Errors/" +
-                                                                             p.path().filename().string() +
-                                                                             "FileErrors.txt");
-        if (ship != nullptr) {
-            travelList.emplace_back(path, p.path().filename().string(), ship, "SimulatorFiles/Travel_File_Errors");
-        }
-        travelNum++;
+        buildTravel(p);
     }
     travelErrorsToFile("SimulatorFiles/Travel_File_Errors");
     this->rootPath = simulationDirectory;

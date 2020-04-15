@@ -267,7 +267,7 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
     outFile.open(path + "/" + travelName + "AlgoErrors.txt", std::ios::app);
     ofstream errorFile(errorFileName, std::ios::app);
     if (!outFile) {
-        cerr << "Could not write error file: " << path + "/" + travelName + "AlgoErrors.txt", std::ios::app << "\n";
+        errorFile << "Could not write error file: " << path + "/" + travelName + "AlgoErrors.txt" << "\n";
         errorFile.close();
         return;
     }

@@ -12,12 +12,11 @@ using std::__cxx11::to_string;
 using std::stringstream;
 using std::ofstream;
 
-Travel::Travel(const string &travelPath, const string &travelName, Ship *ship, const string &errorFilePath) {
+Travel::Travel(const string &travelPath, const string &travelName, Ship *ship) {
     this->travelPath = travelPath;
     this->travelName = travelName;
     this->ship = ship;
-    this->ship->setShipRoute(FileHandler::fileToRouteList(travelPath + "/route.txt",
-                                                          errorFilePath + "/" + travelName + "FileErrors.txt"));
+
     for (const string &port : this->ship->getShipRoute()) {
         auto it = portCounter.find(port);
         if (it == portCounter.end()) {
@@ -26,7 +25,7 @@ Travel::Travel(const string &travelPath, const string &travelName, Ship *ship, c
             get<1>(it->second) = get<1>(it->second) + 1;
         }
     }
-    if (this->ship->getShipRoute().size() != 0) {
+    if (!this->ship->getShipRoute().empty()) {
         this->increaseVisits(this->ship->getShipRoute().front());
     }
     this->originalRoute = this->getShip()->getShipRoute();
@@ -60,7 +59,7 @@ void Travel::goToNextPort() {
 }
 
 list<Container *> Travel::getContainerList(const string &errorFile) {
-    if (this->getShip()->getShipRoute().size() == 0) {
+    if (this->ship->getShipRoute().empty()) {
         return list<Container *>();
     }
     if (this->getShip()->getShipRoute().size() == 1) {
@@ -90,12 +89,15 @@ void Travel::setToOriginalTravel() {
     for (auto &pair : this->portCounter) {
         get<0>(pair.second) = 0;
     }
-    this->increaseVisits(this->ship->getShipRoute().front());
+
+    if (!this->ship->getShipRoute().empty()) {
+        this->increaseVisits(this->ship->getShipRoute().front());
+    }
 }
 
 void Travel::errorsToFile(const string &fileName) const {
     ofstream outfile;
-    outfile.open(fileName + "/" + this->getTravelName() + "FileErrors.txt", std::ios::app);
+    outfile.open(fileName + "/" + this->getTravelName() + "FileErrors", std::ios::app);
     if (!outfile) {
         return;
     }

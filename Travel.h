@@ -20,7 +20,7 @@ class Travel {
     string travelName;
 public:
 
-    Travel(const string &travelPath, const string &travelName, Ship *ship, const string &errorFilePath);
+    Travel(const string &travelPath, const string &travelName, Ship *ship);
 
     Ship *getShip() { return this->ship; }
 
@@ -32,7 +32,7 @@ public:
 
     void setToOriginalTravel();
 
-    bool didTravelEnd() { return this->getShip()->getShipRoute().size() == 0; };
+    bool didTravelEnd() { return this->ship->getShipRoute().empty();};
 
     int getCurrentVisitNumber() { return get<0>(this->portCounter.find(this->getShip()->getCurrentPort())->second); }
 
