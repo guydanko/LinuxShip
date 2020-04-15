@@ -131,7 +131,9 @@ void Travel::errorsToFile(const string &fileName) const {
 
     size_t fileAmount = 0;
     for (auto &path: fs::directory_iterator(travelPath)) {
-        fileAmount++;
+        if(path.exists()) {
+            fileAmount++;
+        }
     }
 
 

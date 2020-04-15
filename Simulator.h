@@ -21,6 +21,8 @@ class Simulator{
     string rootPath;
     void travelErrorsToFile(const string &fileName);
     void buildTravel(const fs::path& path);
+    void deleteEmptyFiles();
+
 public:
     Simulator(const string& simulationDirectory);
     list<Travel>& getTravels(){ return this->travelList;};
