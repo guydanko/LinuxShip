@@ -115,15 +115,10 @@ void IncorrectAlgorithm::loadOneContainer(Container* cont, list<CargoOperation>&
 }
 
 void IncorrectAlgorithm::loadNewContainers(list<Container*>& containerListToLoad, list<CargoOperation>& opList, const string& currentPort){
-    for(Container* cont : containerListToLoad){
-        if(cont->getPortIndex() >= 0 && cont->getDestination()!= currentPort){
+    for(Container* cont : containerListToLoad ){
+        //unnecessary if - only for use currentPort
+        if(currentPort.length()>0){
             loadOneContainer(cont,opList);
-        }
-        else{
-            // destination not in route
-           if(cont->getDestination() == currentPort){
-               opList.emplace_back(Operation::REJECT, cont,MapIndex());
-            }
         }
     }
 }

@@ -77,6 +77,7 @@ void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, co
     fs::create_directory(path);
     int errorAmount = 0;
     while (!travel.didTravelEnd()) {
+        checkShip.getShipRoute().pop_front();
         list<Container *> loadList = travel.getContainerList(path);
         allContainers.push_back(loadList);
         list<CargoOperation> cargoOps = pAlgo->getInstructionsForCargo(loadList, travel.getShip()->getCurrentPort());
@@ -87,7 +88,6 @@ void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, co
         FileHandler::simulatorErrorsToFile(listError, path, travel.getTravelName(),
                                            travel.getShip()->getCurrentPort(), travel.getCurrentVisitNumber());
         travel.goToNextPort();
-        checkShip.getShipRoute().pop_front();
     }
     list<SimulatorError> listErrorEnd;
     checkIfShipEmpty(checkShip,listErrorEnd);
@@ -167,7 +167,7 @@ void checkIfAllUnloaded(Ship &ship, const string &port, list<SimulatorError> &er
                     if (ship.getShipMap().getShipMapContainer()[i][j][k]->getDestination() == port) {
                         errorList.emplace_back("Container on the ship with id- " +
                                                ship.getShipMap().getShipMapContainer()[i][j][k]->getId() +
-                                               " has current destination (" + port + ") but unloaded", SimErrorType ::GENERAL_PORT);
+                                               " has current destination -" + port + "- but container still on the ship when ship left the port", SimErrorType ::GENERAL_PORT);
                         return;
                     }
                 }
@@ -178,10 +178,6 @@ void checkIfAllUnloaded(Ship &ship, const string &port, list<SimulatorError> &er
 
 bool compByPortDest(const Container *cont1, const Container *cont2) {
     return cont1->getPortIndex() < cont2->getPortIndex();
-}
-
-bool operationOrder(const SimulatorError &error1, const SimulatorError &error2) {
-    return error1.getCargoOp().getPlaceInList() < error2.getCargoOp().getPlaceInList();
 }
 
 void orderListLoadContainer(list<Container *> &containerListToLoad, list<string> &route) {

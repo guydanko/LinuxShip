@@ -2,7 +2,7 @@
 //
 // this algorithm forget container on the port
 // load container while id is already taken
-// load container with destination not on route
+// load container with destination which is not in route
 // don't check balance with calculator
 // load in arbitrary order on port destination
 //
