@@ -282,11 +282,13 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
         return;
     }
 
-    if (simErrors.size() > 0) {
+
+    if (!simErrors.empty() && simErrors.front().getErrorType() != SimErrorType::TRAVEL_END) {
         outFile << "Simulation Errors in port: " << portName << " ,visit no: " << visitNumber << "\n";
-        for (const SimulatorError &simError:simErrors) {
-            outFile << simError << "\n";
-        }
+    }
+
+    for (const SimulatorError &simError:simErrors) {
+        outFile << simError << "\n";
     }
 
     errorFile.close();

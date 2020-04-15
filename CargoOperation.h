@@ -1,3 +1,4 @@
+/*Data structure that represents a crane operation*/
 #include <iostream>
 #include "Container.h"
 #include "MapIndex.h"

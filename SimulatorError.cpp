@@ -1,7 +1,7 @@
 #include "SimulatorError.h"
 
 ostream& operator<<(ostream& os, const SimulatorError& simulatorError) {
-    if(simulatorError.generalError == SimErrorType::GENERAL_PORT){
+    if(simulatorError.generalError != SimErrorType::OPERATION_PORT){
         os << "Simulator Error: " << simulatorError.getErrorMessage();
         return os;
     }

@@ -1,4 +1,4 @@
-
+/*working algorithm for stowage operations*/
 #include "AbstractStowageAlgorithm.h"
 #include "WeightBalanceCalculator.h"
 

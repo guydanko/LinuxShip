@@ -1,4 +1,4 @@
-
+/*data structure to hold 3 index of ship location*/
 #include "ShipMap.h"
 #ifndef SHIPGIT_MAPINDEX_H
 #define SHIPGIT_MAPINDEX_H

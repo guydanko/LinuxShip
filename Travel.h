@@ -1,3 +1,4 @@
+/*Data structure to control flow of a specific travel of a ship via ports*/
 #ifndef SHIPGIT_TRAVEL_H
 #define SHIPGIT_TRAVEL_H
 

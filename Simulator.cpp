@@ -1,4 +1,3 @@
-
 #include "IncorrectAlgorithm.h"
 #include "Simulator.h"
 #include "FileHandler.h"
@@ -61,7 +60,7 @@ void checkIfShipEmpty(Ship& ship, list<SimulatorError>& errorList){
         for (int j = 0; j < ship.getShipMap().getRows(); j++) {
             for (int k = 0; k < ship.getShipMap().getCols(); k++) {
                 if (ship.getShipMap().getShipMapContainer()[i][j][k]!= nullptr && ship.getShipMap().getShipMapContainer()[i][j][k] != ship.getShipMap().getImaginary() ){
-                        errorList.emplace_back("Container with id- " +ship.getShipMap().getShipMapContainer()[i][j][k]->getId() +" is still on the ship at the end of the travel", SimErrorType::GENERAL_PORT);
+                        errorList.emplace_back("Container with id- " +ship.getShipMap().getShipMapContainer()[i][j][k]->getId() +" is still on the ship at the end of the travel", SimErrorType::TRAVEL_END);
                         return;
                 }
             }

@@ -1,4 +1,4 @@
-
+/*algorithm instance that is correct without using MOVE operations*/
 #include "NaiveStowageAlgorithm.h"
 
 #ifndef SHIPGIT_MORENAIVEALGORITHM_H

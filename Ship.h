@@ -1,7 +1,8 @@
-
+/*Data structure that represents a ship object (plan + route)*/
 #include <string>
 #include "ShipMap.h"
-using  std::string ;
+
+using std::string;
 using std::list;
 
 #ifndef SHIPGIT_SHIP_H
@@ -14,13 +15,19 @@ class Ship {
 
 public:
 
-    Ship(int height, int rows, int cols) :shipMap(height, rows, cols) {}
-    ShipMap& getShipMap(){ return this->shipMap;}
-    list<string>& getShipRoute(){return this->shipRoute;}
-    void setShipRoute(list<string> routes){ this->shipRoute =routes;};
-    const string& getCurrentPort()const{ return this->shipRoute.front();};
+    Ship(int height, int rows, int cols) : shipMap(height, rows, cols) {}
+
+    ShipMap &getShipMap() { return this->shipMap; }
+
+    list<string> &getShipRoute() { return this->shipRoute; }
+
+    void setShipRoute(list<string> routes) { this->shipRoute = routes; };
+
+    const string &getCurrentPort() const { return this->shipRoute.front(); };
+
     void sailToNextPort();
-    ~Ship(){};
+
+    ~Ship() {};
 
 
 };

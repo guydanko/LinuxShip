@@ -1,4 +1,3 @@
-
 #include "ShipMap.h"
 
 

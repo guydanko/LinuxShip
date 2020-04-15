@@ -1,3 +1,4 @@
+/*Simulator class to run a simulation of cartesian loop of algorithms and travels*/
 #include "NaiveStowageAlgorithm.h"
 #include "MoreNaiveAlgorithm.h"
 #include "AbstractStowageAlgorithm.h"
@@ -7,7 +8,6 @@
 #include <iostream>
 
 namespace fs = std::filesystem;
-
 
 #ifndef SHIPGIT_SIMULATOR_H
 #define SHIPGIT_SIMULATOR_H
