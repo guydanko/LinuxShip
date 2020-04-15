@@ -2,7 +2,7 @@
 #include "IncorrectAlgorithm.h"
 #include <map>
 
-void IncorrectAlgorithm::tryToMove(int i,MapIndex index ,list<Container*>* rememberLoadAgain, list<CargoOperation>& opList){
+void IncorrectAlgorithm::tryToMove(int i,MapIndex index , list<CargoOperation>& opList){
     MapIndex moveIndex = MapIndex::isPlaceToMove(MapIndex(i,index.getRow(),index.getCol()),this->ship->getShipMap());
     //can move on the ship
     if(moveIndex.validIndex()){
@@ -23,7 +23,6 @@ void IncorrectAlgorithm::tryToMove(int i,MapIndex index ,list<Container*>* remem
         if(this->calculator->tryOperation()==BalanceStatus::APPROVED){
             this->ship->getShipMap().getContainerIDOnShip().erase(this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()]->getId());
             opList.push_back(op);
-            rememberLoadAgain->push_back(this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()]);
             this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] = nullptr;
         }
         else{
@@ -31,7 +30,7 @@ void IncorrectAlgorithm::tryToMove(int i,MapIndex index ,list<Container*>* remem
         }
     }
 }
-void IncorrectAlgorithm::moveTower(MapIndex index , const string& portName,list<Container*>* rememberLoadAgain, list<CargoOperation>& opList){
+void IncorrectAlgorithm::moveTower(MapIndex index , const string& portName, list<CargoOperation>& opList){
 
     for (int i = this->ship->getShipMap().getHeight()-1; i >= index.getHeight(); i--) {
         if(this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr){
@@ -48,7 +47,7 @@ void IncorrectAlgorithm::moveTower(MapIndex index , const string& portName,list<
                 }
             }
             else{
-                tryToMove(i,index,rememberLoadAgain,opList);
+                tryToMove(i,index,opList);
             }
         }
     }
@@ -56,18 +55,17 @@ void IncorrectAlgorithm::moveTower(MapIndex index , const string& portName,list<
 
 
 list<Container*>* IncorrectAlgorithm::unloadContainerByPort(const string& portName, list<CargoOperation>& opList ){
-    list<Container*>* rememberToLoad= nullptr;
     for(int i = 0; i < this->ship->getShipMap().getRows(); i++ ){
         for(int j = 0; j < this->ship->getShipMap().getCols(); j++){
             for(int k = 0; k< this->ship->getShipMap().getHeight(); k++){
                 if(this->ship->getShipMap().getShipMapContainer()[k][i][j] != nullptr)
                     if(this->ship->getShipMap().getShipMapContainer()[k][i][j]->getDestination().compare(portName) == 0){
-                        moveTower(MapIndex(k,i,j),portName,rememberToLoad,opList);
+                        moveTower(MapIndex(k,i,j),portName,opList);
                     }
             }
         }
     }
-    return rememberToLoad;
+    return nullptr;
 }
 void IncorrectAlgorithm::loadAgain(list<Container*>* rememberLoadAgain, list<CargoOperation>& opList ){
     if(rememberLoadAgain == nullptr){
@@ -131,9 +129,7 @@ void IncorrectAlgorithm::loadNewContainers(list<Container*>& containerListToLoad
 }
 list<CargoOperation> IncorrectAlgorithm::getInstructionsForCargo(list<Container*> containerListToLoadInThisPort, const string& portName) {
     list<CargoOperation> opList;
-    list<Container*>* rememberLoadAgain =nullptr;
     this->unloadContainerByPort(portName, opList);
-    this->loadAgain(rememberLoadAgain, opList);
     this->loadNewContainers(containerListToLoadInThisPort,opList, portName);
     return opList;
 

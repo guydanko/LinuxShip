@@ -21,7 +21,7 @@ class Simulator{
     string rootPath;
     void travelErrorsToFile(const string &fileName);
     void buildTravel(const fs::path& path);
-    void deleteEmptyFiles();
+    static void deleteEmptyFiles();
 
 public:
     Simulator(const string& simulationDirectory);

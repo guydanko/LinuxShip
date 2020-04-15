@@ -24,10 +24,10 @@ public:
     void loadAgain(list<Container*>* rememberLoadAgain, list<CargoOperation>& opList ) override;
     void loadNewContainers(list<Container*>& containerListToLoad, list<CargoOperation>& opList, const string& currentPort) override;
     list<Container*>* unloadContainerByPort(const string& portName, list<CargoOperation>& opList ) override;
-    virtual void moveTower(MapIndex index , const string& portName,list<Container*>* rememberLoadAgain, list<CargoOperation>& opList);
+    virtual void moveTower(MapIndex index , const string& portName, list<CargoOperation>& opList);
     void loadOneContainer(Container* cont, list<CargoOperation>& opList);
     string getName() const override { return "Incorrect algorithm";}
-    void tryToMove(int i,MapIndex index,list<Container*>* rememberLoadAgain, list<CargoOperation>& opList);
+    void tryToMove(int i,MapIndex index, list<CargoOperation>& opList);
 
 };
 #endif //SHIPGIT_UNCORRECTALGORITHM_H
