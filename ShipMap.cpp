@@ -20,7 +20,7 @@ ShipMap::ShipMap(const ShipMap &from) : height(from.getHeight()), rows(from.getR
 }
 
 ShipMap &ShipMap::operator=(const ShipMap &other) {
-    if(this != &other) {
+    if (this != &other) {
         imaginaryContainer = new Container();
         shipMapContainer.resize(height);
         for (int i = 0; i < height; i++) {
@@ -32,8 +32,7 @@ ShipMap &ShipMap::operator=(const ShipMap &other) {
                         if (other.shipMapContainer[i][j][k] == other.getImaginary()) {
                             shipMapContainer[i][j][k] = imaginaryContainer;
                         }
-                    }
-                    else {
+                    } else {
                         shipMapContainer[i][j][k] = nullptr;
                     }
                 }

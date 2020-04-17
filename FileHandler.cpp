@@ -200,6 +200,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
     string token;
     int lineNum = 1;
 
+
     while (getline(inFile, line)) {
         if (line[0] != '#') {
             break;
@@ -219,6 +220,8 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
 
     int height = stoi(svec[0]), rows = stoi(svec[1]), cols = stoi(svec[2]);
     Ship *ship = new Ship(height, rows, cols);
+
+    vector<vector<int>> indexVector(rows, vector<int>(cols, 0));
 
     while (getline(inFile, line)) {
         lineNum++;
@@ -241,7 +244,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
             continue;
         }
 
-        int actualFloors = stoi(svec[0]), row = stoi(svec[1]), col = stoi(svec[2]);
+        int actualFloors = stoi(svec[2]), row = stoi(svec[0]), col = stoi(svec[1]);
 
         if (actualFloors >= ship->getShipMap().getHeight()) {
             errorFile << "Warning, file: " << fileName << " actual floors in line: " << lineNum
@@ -255,7 +258,13 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
             continue;
         }
 
-        ship->getShipMap().initShipMapContainer(ship->getShipMap().getHeight() - actualFloors, row, col);
+        if (indexVector[row][col] != 0) {
+            errorFile << "Warning, file: " << fileName << " line: " << lineNum
+                      << " used indexes that were already assigned\n";
+        } else {
+            indexVector[row][col] = 1;
+            ship->getShipMap().initShipMapContainer(ship->getShipMap().getHeight() - actualFloors, row, col);
+        }
     }
 
     inFile.close();
