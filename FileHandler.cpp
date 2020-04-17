@@ -48,7 +48,6 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName, const
     int lineNum = 0;
 
     vector<string> tokens;
-
     /*could not open file*/
     if (!inFile) {
         outFile << "Could not open file: " << fileName << "\n";
@@ -73,18 +72,12 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName, const
             continue;
         }
 
-        string id, weight, destination;
-
-        id = svec[0];
-        weight = svec[1];
-        destination = svec[2];
-
+        string id = svec[0], weight = svec[1], destination = svec[2];
         Container *cont;
 
         if (isNumber(weight) && Container::isLegalParamContainer(stoi(weight), destination, id)) {
             strToUpper(destination);
             strToUpper(id);
-
             cont = new Container(stoi(weight), destination, id);
         } else {
             outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a valid container!\n";
@@ -132,7 +125,6 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
         }
 
         string port = svec[0];
-
         if (Container::isPortValid(port)) {
             strToUpper(port);
             if (routes.size() > 0 && routes.back().compare(port) == 0) {
@@ -146,7 +138,6 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
         }
 
     }
-
     if (routes.empty()) {
         outFile << "Could not create route from file: " << fileName << ", file does not contain any legal ports\n";
     }
@@ -168,7 +159,6 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
         return;
     }
 
-
     if (operations.size() > 0) {
         outfile << "Operations in port: " << currentPort << " ,visit no:" << visitNumber << "\n";
         for (CargoOperation &op: operations) {
@@ -178,11 +168,8 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
     } else {
         outfile << "No operations performed in port: " << currentPort << " ,visit no:" << visitNumber << "\n";
     }
-
-
     outfile.close();
     errorFile.close();
-
 }
 
 Ship *FileHandler::createShipFromFile(const string &fileName, const string &errorFileName) {
@@ -195,11 +182,9 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
         return nullptr;
     }
 
-    string line;
+    string line,token;
     vector<string> svec;
-    string token;
     int lineNum = 1;
-
 
     while (getline(inFile, line)) {
         if (line[0] != '#') {
@@ -207,7 +192,6 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
         }
     }
     stringstream sline(line);
-
     while (getline(sline, token, ',')) {
         token = trim(token);
         if (!isNumber(token)) {
@@ -220,7 +204,6 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
 
     int height = stoi(svec[0]), rows = stoi(svec[1]), cols = stoi(svec[2]);
     Ship *ship = new Ship(height, rows, cols);
-
     vector<vector<int>> indexVector(rows, vector<int>(cols, 0));
 
     while (getline(inFile, line)) {
@@ -232,7 +215,6 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
 
         while (getline(sline, token, ',')) {
             token = trim(token);
-
             if (!isNumber(token)) {
                 break;
             }
@@ -243,21 +225,17 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
             errorFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
             continue;
         }
-
         int actualFloors = stoi(svec[2]), row = stoi(svec[0]), col = stoi(svec[1]);
-
         if (actualFloors >= ship->getShipMap().getHeight()) {
             errorFile << "Warning, file: " << fileName << " actual floors in line: " << lineNum
                       << " is larger or equal to max height\n";
             continue;
         }
-
         if (row >= ship->getShipMap().getRows() || col >= ship->getShipMap().getCols()) {
             errorFile << "Warning, file: " << fileName << " dimensions in line: " << lineNum
                       << " are larger than dimension of floor\n";
             continue;
         }
-
         if (indexVector[row][col] != 0) {
             errorFile << "Warning, file: " << fileName << " line: " << lineNum
                       << " used indexes that were already assigned\n";
@@ -266,7 +244,6 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
             ship->getShipMap().initShipMapContainer(ship->getShipMap().getHeight() - actualFloors, row, col);
         }
     }
-
     inFile.close();
     errorFile.close();
     return ship;
@@ -284,13 +261,12 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
         errorFile.close();
         return;
     }
-
     if (noErrors) {
         outFile << "No Errors, Algorithm is correct!" << "\n";
         outFile.close();
+        errorFile.close();
         return;
     }
-
 
     if (!simErrors.empty() && simErrors.front().getErrorType() != SimErrorType::TRAVEL_END) {
         outFile << "Simulation Errors in port: " << portName << " ,visit no: " << visitNumber << "\n";
