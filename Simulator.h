@@ -29,7 +29,7 @@ public:
     ~Simulator();
     void run();
     void runOneTravel(Travel& travel, AbstractStowageAlgorithm *algo, const string& fileName);
-    list<SimulatorError> checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList, const string &currentPort);
+    list<SimulatorError> checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads);
 
 };
 #endif //SHIPGIT_SIMULATOR_H

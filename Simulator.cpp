@@ -55,13 +55,20 @@ void freeAllContainers(list<list<Container *>> &containerList) {
         }
     }
 }
-void checkIfShipEmpty(Ship& ship, list<SimulatorError>& errorList){
+void checkIfShipEmpty(Ship& ship, list<SimulatorError>& errorList,int numberLoads,int numberUnloads){
+    if(numberLoads>numberUnloads){
+        errorList.emplace_back("algorithm gives "+ std::to_string(numberLoads) + " load operation, but gives only "+ std::to_string(numberUnloads)+ " unload operation- ship not empty", SimErrorType::TRAVEL_END);
+    }
+    else{
+        if(numberLoads<numberUnloads){
+            errorList.emplace_back("algorithm gives "+ std::to_string(numberUnloads) + " unload operation, but gives only"+ std::to_string(numberLoads)+ " load operation", SimErrorType::TRAVEL_END);
+        }
+    }
     for (int i = 0; i < ship.getShipMap().getHeight(); i++) {
         for (int j = 0; j < ship.getShipMap().getRows(); j++) {
             for (int k = 0; k < ship.getShipMap().getCols(); k++) {
                 if (ship.getShipMap().getShipMapContainer()[i][j][k]!= nullptr && ship.getShipMap().getShipMapContainer()[i][j][k] != ship.getShipMap().getImaginary() ){
                         errorList.emplace_back("Container with id- " +ship.getShipMap().getShipMapContainer()[i][j][k]->getId() +" is still on the ship at the end of the travel", SimErrorType::TRAVEL_END);
-                        return;
                 }
             }
         }
@@ -76,6 +83,7 @@ void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, co
     string path = fileName + "/" + travel.getTravelName();
     fs::create_directory(path);
     int errorAmount = 0;
+    int numberLoads=0, numberUnloads=0;
     while (!travel.didTravelEnd()) {
         checkShip.getShipRoute().pop_front();
         list<Container *> loadList = travel.getContainerList(path);
@@ -83,14 +91,14 @@ void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, co
         list<CargoOperation> cargoOps = pAlgo->getInstructionsForCargo(loadList, travel.getShip()->getCurrentPort());
         FileHandler::operationsToFile(cargoOps, path, travel.getTravelName(), travel.getShip()->getCurrentPort(),
                                       travel.getCurrentVisitNumber());
-        listError = checkAlgoCorrect(checkShip, cargoOps, loadList, travel.getShip()->getCurrentPort());
+        listError = checkAlgoCorrect(checkShip, cargoOps, loadList, travel.getShip()->getCurrentPort(), numberLoads, numberUnloads);
         errorAmount += listError.size();
         FileHandler::simulatorErrorsToFile(listError, path, travel.getTravelName(),
                                            travel.getShip()->getCurrentPort(), travel.getCurrentVisitNumber());
         travel.goToNextPort();
     }
     list<SimulatorError> listErrorEnd;
-    checkIfShipEmpty(checkShip,listErrorEnd);
+    checkIfShipEmpty(checkShip,listErrorEnd,numberLoads, numberUnloads );
     FileHandler::simulatorErrorsToFile(listErrorEnd, path, travel.getTravelName());
     travel.setToOriginalTravel();
     if (errorAmount == 0) {
@@ -403,8 +411,7 @@ void checkAllContainersRejectedOrLoaded(list<Container *> &loadList, list<Simula
 }
 
 list<SimulatorError>
-Simulator::checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList,
-                            const string &currentPort) {
+Simulator::checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList,const string &currentPort, int& numberLoads, int& numberUnloads) {
     list<SimulatorError> errorList;
     map<string, CargoOperation *> rememberToLoadAgainIdToIndex;
     int number = 1;
@@ -421,10 +428,12 @@ Simulator::checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list
         } else {
             switch (op) {
                 case Operation::LOAD:
+                    numberLoads++;
                     checkLoadOperation(ship, cargoOp, loadList, rememberToLoadAgainIdToIndex, currentPort,
                                        maxNumberPortLoaded, errorList);
                     break;
                 case Operation::UNLOAD:
+                    numberUnloads++;
                     checkUnloadOperation(ship, cargoOp, currentPort, rememberToLoadAgainIdToIndex, errorList);
                     break;
                 case Operation::MOVE:
