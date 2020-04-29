@@ -1,4 +1,4 @@
-#include "IncorrectAlgorithm.h"
+#include "AbstractAlgorithm.h"
 #include "Simulator.h"
 #include "FileHandler.h"
 #include <map>
@@ -38,9 +38,9 @@ void Simulator::buildTravel(const fs::path &path) {
 
 Simulator::Simulator(const string &simulationDirectory) {
     setUpDirectories("SimulatorFiles");
-    this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, &calculator));
-    this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, &calculator));
-    this->algoList.push_back(new IncorrectAlgorithm(nullptr, &calculator));
+    this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
+    this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
+    this->algoList.push_back(new IncorrectAlgorithm(nullptr, calculator));
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         buildTravel(p);
     }
@@ -55,7 +55,7 @@ void freeAllContainers(list<list<Container *>> &containerList) {
         }
     }
 }
-void checkIfShipEmpty(Ship& ship, list<SimulatorError>& errorList,int numberLoads,int numberUnloads){
+void checkIfShipEmpty(Ship* ship, list<SimulatorError>& errorList,int numberLoads,int numberUnloads){
     if(numberLoads>numberUnloads){
         errorList.emplace_back("algorithm gives "+ std::to_string(numberLoads) + " load operation, but gives only "+ std::to_string(numberUnloads)+ " unload operation- ship not empty", SimErrorType::TRAVEL_END);
     }
@@ -64,41 +64,42 @@ void checkIfShipEmpty(Ship& ship, list<SimulatorError>& errorList,int numberLoad
             errorList.emplace_back("algorithm gives "+ std::to_string(numberUnloads) + " unload operation, but gives only"+ std::to_string(numberLoads)+ " load operation", SimErrorType::TRAVEL_END);
         }
     }
-    for (int i = 0; i < ship.getShipMap().getHeight(); i++) {
-        for (int j = 0; j < ship.getShipMap().getRows(); j++) {
-            for (int k = 0; k < ship.getShipMap().getCols(); k++) {
-                if (ship.getShipMap().getShipMapContainer()[i][j][k]!= nullptr && ship.getShipMap().getShipMapContainer()[i][j][k] != ship.getShipMap().getImaginary() ){
-                        errorList.emplace_back("Container with id- " +ship.getShipMap().getShipMapContainer()[i][j][k]->getId() +" is still on the ship at the end of the travel", SimErrorType::TRAVEL_END);
+    for (int i = 0; i < ship->getShipMap().getHeight(); i++) {
+        for (int j = 0; j < ship->getShipMap().getRows(); j++) {
+            for (int k = 0; k < ship->getShipMap().getCols(); k++) {
+                if (ship->getShipMap().getShipMapContainer()[i][j][k]!= nullptr && ship->getShipMap().getShipMapContainer()[i][j][k] != ship->getShipMap().getImaginary() ){
+                        errorList.emplace_back("Container with id- " +ship->getShipMap().getShipMapContainer()[i][j][k]->getId() +" is still on the ship at the end of the travel", SimErrorType::TRAVEL_END);
                 }
             }
         }
     }
 }
 
-void Simulator::runOneTravel(Travel &travel, AbstractStowageAlgorithm *pAlgo, const string &fileName) {
+void Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &fileName) {
     list<SimulatorError> listError;
     list<list<Container *>> allContainers;
-    pAlgo->setShip(travel.getShip());
-    Ship checkShip(*travel.getShip());
+    pAlgo->readShipPlan(travel.getTravelPath()+"/shipPlan");
+    pAlgo->setWeightBalanceCalculator(calculator);
+    pAlgo->readShipRoute(travel.getTravelPath()+"/route");
     string path = fileName + "/" + travel.getTravelName();
     fs::create_directory(path);
     int errorAmount = 0;
     int numberLoads=0, numberUnloads=0;
     while (!travel.didTravelEnd()) {
-        checkShip.getShipRoute().pop_front();
         list<Container *> loadList = travel.getContainerList(path);
         allContainers.push_back(loadList);
-        list<CargoOperation> cargoOps = pAlgo->getInstructionsForCargo(loadList, travel.getShip()->getCurrentPort());
-        FileHandler::operationsToFile(cargoOps, path, travel.getTravelName(), travel.getShip()->getCurrentPort(),
-                                      travel.getCurrentVisitNumber());
-        listError = checkAlgoCorrect(checkShip, cargoOps, loadList, travel.getShip()->getCurrentPort(), numberLoads, numberUnloads);
+        //path to read container list and write cargo op
+        //pAlgo->getInstructionsForCargo();
+        //read cargo op file and make list
+        list<CargoOperation> cargoOps;
+        listError = checkAlgoCorrect(travel.getShip(), cargoOps, loadList, travel.getShip()->getCurrentPort(), numberLoads, numberUnloads);
         errorAmount += listError.size();
         FileHandler::simulatorErrorsToFile(listError, path, travel.getTravelName(),
                                            travel.getShip()->getCurrentPort(), travel.getCurrentVisitNumber());
         travel.goToNextPort();
     }
     list<SimulatorError> listErrorEnd;
-    checkIfShipEmpty(checkShip,listErrorEnd,numberLoads, numberUnloads );
+    checkIfShipEmpty(travel.getShip(),listErrorEnd,numberLoads, numberUnloads );
     FileHandler::simulatorErrorsToFile(listErrorEnd, path, travel.getTravelName());
     travel.setToOriginalTravel();
     if (errorAmount == 0) {
@@ -118,8 +119,10 @@ void Simulator::deleteEmptyFiles(){
 
 void Simulator::run() {
     const string directoryRoot = "SimulatorFiles";
-    for (AbstractStowageAlgorithm *pAlgo: algoList) {
-        string fileName = directoryRoot + "/" + pAlgo->getName();
+    int algoNum=1;
+    for (AbstractAlgorithm *pAlgo: algoList) {
+        string fileName = directoryRoot + "/" + std::to_string(algoNum);
+        algoNum++;
         fs::create_directory(fileName);
         for (Travel &travel: travelList) {
             runOneTravel(travel, pAlgo, fileName);
@@ -128,26 +131,26 @@ void Simulator::run() {
     deleteEmptyFiles();
 }
 
-bool indexInLimit(Ship &ship, MapIndex index) {
-    if (index.getHeight() < 0 || index.getHeight() >= ship.getShipMap().getHeight()) {
+bool indexInLimit(Ship *ship, MapIndex index) {
+    if (index.getHeight() < 0 || index.getHeight() >= ship->getShipMap().getHeight()) {
         return false;
     }
-    if (index.getRow() < 0 || index.getRow() >= ship.getShipMap().getRows()) {
+    if (index.getRow() < 0 || index.getRow() >= ship->getShipMap().getRows()) {
         return false;
     }
-    return !(index.getCol() < 0 || index.getCol() >= ship.getShipMap().getCols());
+    return !(index.getCol() < 0 || index.getCol() >= ship->getShipMap().getCols());
 }
 
-bool containerAbove(Ship &ship, MapIndex index) {
-    for (int i = ship.getShipMap().getHeight() - 1; i > index.getHeight(); i--) {
-        if (ship.getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr) {
+bool containerAbove(Ship *ship, MapIndex index) {
+    for (int i = ship->getShipMap().getHeight() - 1; i > index.getHeight(); i--) {
+        if (ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr) {
             return true;
         }
     }
     return false;
 }
 
-void indexAccessible(Ship &ship, CargoOperation &cargoOp, list<SimulatorError> &errorList) {
+void indexAccessible(Ship *ship, CargoOperation &cargoOp, list<SimulatorError> &errorList) {
     if (!indexInLimit(ship, cargoOp.getIndex())) {
         errorList.emplace_back("illegal index, exceeds ship plan limits- operation ignored", SimErrorType ::OPERATION_PORT, cargoOp);
         return;
@@ -158,23 +161,23 @@ void indexAccessible(Ship &ship, CargoOperation &cargoOp, list<SimulatorError> &
     }
 }
 
-bool solidGround(Ship &ship, MapIndex index) {
+bool solidGround(Ship *ship, MapIndex index) {
     if (index.getHeight() == 0) {
         return true;
     }
     int i = index.getHeight() - 1;
-    return ship.getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr;
+    return ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr;
 }
 
-void checkIfAllUnloaded(Ship &ship, const string &port, list<SimulatorError> &errorList) {
-    for (int i = 0; i < ship.getShipMap().getHeight(); i++) {
-        for (int j = 0; j < ship.getShipMap().getRows(); j++) {
-            for (int k = 0; k < ship.getShipMap().getCols(); k++) {
-                if (ship.getShipMap().getShipMapContainer()[i][j][k] != nullptr &&
-                    ship.getShipMap().getShipMapContainer()[i][j][k] != ship.getShipMap().getImaginary()) {
-                    if (ship.getShipMap().getShipMapContainer()[i][j][k]->getDestination() == port) {
+void checkIfAllUnloaded(Ship *ship, const string &port, list<SimulatorError> &errorList) {
+    for (int i = 0; i < ship->getShipMap().getHeight(); i++) {
+        for (int j = 0; j < ship->getShipMap().getRows(); j++) {
+            for (int k = 0; k < ship->getShipMap().getCols(); k++) {
+                if (ship->getShipMap().getShipMapContainer()[i][j][k] != nullptr &&
+                    ship->getShipMap().getShipMapContainer()[i][j][k] != ship->getShipMap().getImaginary()) {
+                    if (ship->getShipMap().getShipMapContainer()[i][j][k]->getDestination() == port) {
                         errorList.emplace_back("Container on the ship with id- " +
-                                               ship.getShipMap().getShipMapContainer()[i][j][k]->getId() +
+                                               ship->getShipMap().getShipMapContainer()[i][j][k]->getId() +
                                                " has current destination -" + port + "- but container still on the ship when ship left the port", SimErrorType ::GENERAL_PORT);
                         return;
                     }
@@ -209,7 +212,7 @@ void orderListLoadContainer(list<Container *> &containerListToLoad, list<string>
     }
 }
 
-void checkLoadOperation(Ship &ship, CargoOperation &cargoOp, list<Container *> &loadList,
+void checkLoadOperation(Ship *ship, CargoOperation &cargoOp, list<Container *> &loadList,
                         map<string, CargoOperation *> &rememberToLoadAgainIdToIndex, const string &currentPort,
                         int &maxNumberPortLoaded, list<SimulatorError> &errorList) {
 
@@ -222,7 +225,7 @@ void checkLoadOperation(Ship &ship, CargoOperation &cargoOp, list<Container *> &
     int numberOfIdInList = 0;
     Container *containerFromList = nullptr;
     indexAccessible(ship, cargoOp, errorList);
-    if (ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] !=
+    if (ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] !=
         nullptr) {
         errorList.emplace_back("index is occupied by container or cannot be place due to ship plan- operation ignored", SimErrorType ::OPERATION_PORT, cargoOp);
         cargoOp.getContainer()->setIsContainerLoaded(1);
@@ -250,11 +253,11 @@ void checkLoadOperation(Ship &ship, CargoOperation &cargoOp, list<Container *> &
         return;;
     }
     //load succeed
-    ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = cargoOp.getContainer();
+    ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = cargoOp.getContainer();
     cargoOp.getContainer()->setIsContainerLoaded(1);
     //load from remember
     if (containerFromList == nullptr) {
-        ship.getShipMap().getContainerIDOnShip().insert(cargoOp.getContainer()->getId());
+        ship->getShipMap().getContainerIDOnShip().insert(cargoOp.getContainer()->getId());
         auto itrRemember = rememberToLoadAgainIdToIndex.find(cargoOp.getContainer()->getId());
         if (itrRemember != rememberToLoadAgainIdToIndex.cend()) {
             rememberToLoadAgainIdToIndex.erase(itrRemember);
@@ -262,12 +265,12 @@ void checkLoadOperation(Ship &ship, CargoOperation &cargoOp, list<Container *> &
     }
         //load from loadList
     else {
-        auto itr = ship.getShipMap().getContainerIDOnShip().find(cargoOp.getContainer()->getId());
-        if (itr != ship.getShipMap().getContainerIDOnShip().cend()) {
+        auto itr = ship->getShipMap().getContainerIDOnShip().find(cargoOp.getContainer()->getId());
+        if (itr != ship->getShipMap().getContainerIDOnShip().cend()) {
             errorList.emplace_back("should not load container because this id is already on the ship", SimErrorType ::OPERATION_PORT, cargoOp);
             return;
         }
-        ship.getShipMap().getContainerIDOnShip().insert(cargoOp.getContainer()->getId());
+        ship->getShipMap().getContainerIDOnShip().insert(cargoOp.getContainer()->getId());
         if (cargoOp.getContainer()->getDestination() == currentPort) {
             errorList.emplace_back("should not load container with current port destination", SimErrorType ::OPERATION_PORT, cargoOp);
             return;
@@ -283,12 +286,12 @@ void checkLoadOperation(Ship &ship, CargoOperation &cargoOp, list<Container *> &
     }
 }
 
-void checkUnloadOperation(Ship &ship, CargoOperation &cargoOp, const string &currentPort,
+void checkUnloadOperation(Ship *ship, CargoOperation &cargoOp, const string &currentPort,
                           map<string, CargoOperation *> &rememberToLoadAgainIdToIndex,
                           list<SimulatorError> &errorList) {
     indexAccessible(ship, cargoOp, errorList);
-    Container *containerOnTheShipInThisPlace = ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()];
-    if (containerOnTheShipInThisPlace == nullptr || containerOnTheShipInThisPlace == ship.getShipMap().getImaginary()) {
+    Container *containerOnTheShipInThisPlace = ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()];
+    if (containerOnTheShipInThisPlace == nullptr || containerOnTheShipInThisPlace == ship->getShipMap().getImaginary()) {
         errorList.emplace_back("no container in this index to unload or this index is not part of the ship plan- operation ignored", SimErrorType ::OPERATION_PORT,
                                cargoOp);
         return;
@@ -298,8 +301,8 @@ void checkUnloadOperation(Ship &ship, CargoOperation &cargoOp, const string &cur
         return;
     }
     //unload succeed
-    ship.getShipMap().getContainerIDOnShip().erase(ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()]->getId());
-    ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = nullptr;
+    ship->getShipMap().getContainerIDOnShip().erase(ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()]->getId());
+    ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = nullptr;
     //maybe future error
     if (cargoOp.getContainer()->getDestination().compare(currentPort) != 0) {
         cargoOp.getContainer()->setIsContainerLoaded(0);
@@ -307,10 +310,10 @@ void checkUnloadOperation(Ship &ship, CargoOperation &cargoOp, const string &cur
     }
 }
 
-void checkMoveOperation(Ship &ship, CargoOperation &cargoOp, list<SimulatorError> &errorList) {
+void checkMoveOperation(Ship *ship, CargoOperation &cargoOp, list<SimulatorError> &errorList) {
     indexAccessible(ship, cargoOp, errorList);
-    Container *containerOnTheShipInThisPlace = ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()];
-    if (containerOnTheShipInThisPlace == nullptr || containerOnTheShipInThisPlace == ship.getShipMap().getImaginary()) {
+    Container *containerOnTheShipInThisPlace = ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()];
+    if (containerOnTheShipInThisPlace == nullptr || containerOnTheShipInThisPlace == ship->getShipMap().getImaginary()) {
         errorList.emplace_back("no container in this index to unload or this index is not part of the ship plan- operation ignored", SimErrorType ::OPERATION_PORT,
                                cargoOp);
         return;
@@ -328,7 +331,7 @@ void checkMoveOperation(Ship &ship, CargoOperation &cargoOp, list<SimulatorError
         errorList.emplace_back("cannot reach move index, it is blocked by containers above it- operation ignored", SimErrorType ::OPERATION_PORT, cargoOp);
         return;
     }
-    containerOnTheShipInThisPlace = ship.getShipMap().getShipMapContainer()[cargoOp.getMoveIndex().getHeight()][cargoOp.getMoveIndex().getRow()][cargoOp.getMoveIndex().getCol()];
+    containerOnTheShipInThisPlace = ship->getShipMap().getShipMapContainer()[cargoOp.getMoveIndex().getHeight()][cargoOp.getMoveIndex().getRow()][cargoOp.getMoveIndex().getCol()];
     if (containerOnTheShipInThisPlace != nullptr) {
         errorList.emplace_back(
                 "cannot move container to index occupied by other container, or space is not valid to this ship plan- operation ignored",
@@ -339,14 +342,14 @@ void checkMoveOperation(Ship &ship, CargoOperation &cargoOp, list<SimulatorError
         errorList.emplace_back("cannot place container without underneath platform- operation ignored", SimErrorType ::OPERATION_PORT, cargoOp);
         return;
     }
-    containerOnTheShipInThisPlace = ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()];
+    containerOnTheShipInThisPlace = ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()];
     //move succeed
-    ship.getShipMap().getShipMapContainer()[cargoOp.getMoveIndex().getHeight()][cargoOp.getMoveIndex().getRow()][cargoOp.getMoveIndex().getCol()] = containerOnTheShipInThisPlace;
-    ship.getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = nullptr;
+    ship->getShipMap().getShipMapContainer()[cargoOp.getMoveIndex().getHeight()][cargoOp.getMoveIndex().getRow()][cargoOp.getMoveIndex().getCol()] = containerOnTheShipInThisPlace;
+    ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = nullptr;
 
 }
 
-void checkRejectOperation(Ship &ship, CargoOperation &cargoOp, list<Container *> &loadList, int maxNumberPortLoaded,
+void checkRejectOperation(Ship *ship, CargoOperation &cargoOp, list<Container *> &loadList, int maxNumberPortLoaded,
                           list<SimulatorError> &errorList, const string &currentPort) {
     cargoOp.getContainer()->setIsContainerReject(1);
     //container destination is here no reason to load
@@ -369,11 +372,11 @@ void checkRejectOperation(Ship &ship, CargoOperation &cargoOp, list<Container *>
         return;
     }
     //check container Id on ship
-    auto itr = ship.getShipMap().getContainerIDOnShip().find(cargoOp.getContainer()->getId());
-    if (itr == ship.getShipMap().getContainerIDOnShip().cend()) {
+    auto itr = ship->getShipMap().getContainerIDOnShip().find(cargoOp.getContainer()->getId());
+    if (itr == ship->getShipMap().getContainerIDOnShip().cend()) {
         //destination in route
         if (cargoOp.getContainer()->getPortIndex() > 0) {
-            MapIndex index = MapIndex::firstLegalIndexPlace(ship.getShipMap());
+            MapIndex index = MapIndex::firstLegalIndexPlace(ship->getShipMap());
             if (index.validIndex()) {
                 errorList.emplace_back(
                         "rejected container with valid destination while there is still place on the ship", SimErrorType ::OPERATION_PORT, cargoOp);
@@ -411,35 +414,35 @@ void checkAllContainersRejectedOrLoaded(list<Container *> &loadList, list<Simula
 }
 
 list<SimulatorError>
-Simulator::checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList,const string &currentPort, int& numberLoads, int& numberUnloads) {
+Simulator::checkAlgoCorrect(Ship* ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList,const string &currentPort, int& numberLoads, int& numberUnloads) {
     list<SimulatorError> errorList;
     map<string, CargoOperation *> rememberToLoadAgainIdToIndex;
     int number = 1;
     int maxNumberPortLoaded = 0;
-    orderListLoadContainer(loadList, ship.getShipRoute());
+    orderListLoadContainer(loadList, ship->getShipRoute());
     loadList.sort(compByPortDest);
     for (CargoOperation &cargoOp: cargoOpsList) {
         cargoOp.setPlaceInList(number);
         number++;
-        Operation op = cargoOp.getOp();
+        AbstractAlgorithm::Action op = cargoOp.getOp();
         if (this->calculator.tryOperation() != BalanceStatus::APPROVED) {
             //TODO: calculator denied operation
             errorList.emplace_back("weight calculator does not approve this operation- operation ignored", SimErrorType ::OPERATION_PORT, cargoOp);
         } else {
             switch (op) {
-                case Operation::LOAD:
+                case AbstractAlgorithm::Action::LOAD:
                     numberLoads++;
                     checkLoadOperation(ship, cargoOp, loadList, rememberToLoadAgainIdToIndex, currentPort,
                                        maxNumberPortLoaded, errorList);
                     break;
-                case Operation::UNLOAD:
+                case AbstractAlgorithm::Action::UNLOAD:
                     numberUnloads++;
                     checkUnloadOperation(ship, cargoOp, currentPort, rememberToLoadAgainIdToIndex, errorList);
                     break;
-                case Operation::MOVE:
+                case AbstractAlgorithm::Action::MOVE:
                     checkMoveOperation(ship, cargoOp, errorList);
                     break;
-                case Operation::REJECT:
+                case AbstractAlgorithm::Action::REJECT:
                     break;
                 default:
                     //TODO: deal with operation which not CargoOperation - maybe in targil 2
@@ -448,7 +451,7 @@ Simulator::checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list
         }
     }
     for (CargoOperation &cargoOp: cargoOpsList) {
-        if (cargoOp.getOp() == Operation::REJECT) {
+        if (cargoOp.getOp() == AbstractAlgorithm::Action::REJECT) {
             checkRejectOperation(ship, cargoOp, loadList, maxNumberPortLoaded, errorList, currentPort);
         }
     }
@@ -461,7 +464,7 @@ Simulator::checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list
 }
 
 Simulator::~Simulator() {
-    for (AbstractStowageAlgorithm *algo : algoList) {
+    for (AbstractAlgorithm *algo : algoList) {
         delete algo;
     }
 }

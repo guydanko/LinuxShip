@@ -39,6 +39,8 @@ public:
 
     void errorsToFile(const string &fileName) const;
 
+    const  string& getTravelPath(){ return  this->travelPath;}
+
     ~Travel() {
         delete this->ship;
     };

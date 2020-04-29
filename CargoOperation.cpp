@@ -3,21 +3,21 @@
 ostream& operator<<(ostream& os, const CargoOperation& cargoOperation){
     string type;
     switch (cargoOperation.operation){
-        case Operation::MOVE:
+        case AbstractAlgorithm::Action::MOVE:
             type = "M";
             break;
-        case Operation::LOAD:
+        case AbstractAlgorithm::Action::LOAD:
             type = "L";
             break;
-        case Operation::REJECT:
+        case AbstractAlgorithm::Action::REJECT:
             os << "R," << cargoOperation.container->getId();
             return os;
-        case Operation::UNLOAD:
+        case AbstractAlgorithm::Action::UNLOAD:
             type = "U";
             break;
     }
     os << type << "," << cargoOperation.container->getId() << "," << cargoOperation.index.getHeight() << "," << cargoOperation.index.getRow() << "," << cargoOperation.index.getCol();
-    if(cargoOperation.operation == Operation::MOVE){
+    if(cargoOperation.operation == AbstractAlgorithm::Action::MOVE){
         os << " [" << cargoOperation.moveIndex.getHeight() << "," << cargoOperation.moveIndex.getRow() << "," << cargoOperation.moveIndex.getCol() << "]";
     }
     return os;

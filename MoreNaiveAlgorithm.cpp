@@ -14,7 +14,7 @@ void MoreNaiveAlgorithm::moveTower(MapIndex index , const string& portName,list<
             }
             //discover container should be unload in this port
             this->ship->getShipMap().getContainerIDOnShip().erase(this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()]->getId());
-            opList.emplace_back(Operation ::UNLOAD,this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],MapIndex(i,index.getRow(),index.getCol()));
+            opList.emplace_back(AbstractAlgorithm::Action::UNLOAD,this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],MapIndex(i,index.getRow(),index.getCol()));
             this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] = nullptr;
         }
     }

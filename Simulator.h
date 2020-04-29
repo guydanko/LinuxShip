@@ -1,7 +1,7 @@
 /*Simulator class to run a simulation of cartesian loop of algorithms and travels*/
-#include "NaiveStowageAlgorithm.h"
-#include "MoreNaiveAlgorithm.h"
-#include "AbstractStowageAlgorithm.h"
+#include "AbstractAlgorithm.h"
+#include "MoreNaiveAlgorithm.h" //should erase
+#include "IncorrectAlgorithm.h" //should erase
 #include "SimulatorError.h"
 #include "Travel.h"
 #include <filesystem>
@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 
 class Simulator{
-    list<AbstractStowageAlgorithm*> algoList;
+    list<AbstractAlgorithm*> algoList;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
     string rootPath;
@@ -28,8 +28,8 @@ public:
     list<Travel>& getTravels(){ return this->travelList;};
     ~Simulator();
     void run();
-    void runOneTravel(Travel& travel, AbstractStowageAlgorithm *algo, const string& fileName);
-    list<SimulatorError> checkAlgoCorrect(Ship &ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads);
+    void runOneTravel(Travel& travel, AbstractAlgorithm *algo, const string& fileName);
+    list<SimulatorError> checkAlgoCorrect(Ship *ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads);
 
 };
 #endif //SHIPGIT_SIMULATOR_H

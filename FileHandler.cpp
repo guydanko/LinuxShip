@@ -148,28 +148,24 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
 
 }
 
-void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName, const string &travelName,
-                                   const string &currentPort, int visitNumber, const string &errorFileName) {
+void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName,
+                                   const string &currentPort) {
     ofstream outfile;
-    outfile.open(fileName + "/" + travelName + "AllOperations", std::ios::app);
-    ofstream errorFile(errorFileName, std::ios::app);
+    outfile.open(fileName , std::ios::app);
     if (!outfile) {
-        errorFile << "Could not open file: " << fileName << "for writing\n";
-        errorFile.close();
         return;
     }
 
     if (operations.size() > 0) {
-        outfile << "Operations in port: " << currentPort << " ,visit no:" << visitNumber << "\n";
+        outfile << "Operations in port: " << currentPort  << "\n";
         for (CargoOperation &op: operations) {
             outfile << op << "\n";
         }
 
     } else {
-        outfile << "No operations performed in port: " << currentPort << " ,visit no:" << visitNumber << "\n";
+        outfile << "No operations performed in port: " << currentPort << "\n";
     }
     outfile.close();
-    errorFile.close();
 }
 
 Ship *FileHandler::createShipFromFile(const string &fileName, const string &errorFileName) {

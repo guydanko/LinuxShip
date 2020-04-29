@@ -2,17 +2,16 @@
 #include <iostream>
 #include "Container.h"
 #include "MapIndex.h"
+#include "AbstractAlgorithm.h"
 
 using std::ostream ;
 #ifndef SHIPGIT_CARGOOPERATION_H
 #define SHIPGIT_CARGOOPERATION_H
 
 
-enum class Operation {
-    LOAD, UNLOAD, REJECT, MOVE
-};
+
 class CargoOperation {
-    Operation operation;
+    AbstractAlgorithm::Action operation;
     Container* container;
     MapIndex index;
     MapIndex moveIndex;
@@ -21,11 +20,11 @@ class CargoOperation {
 public:
     CargoOperation(){}
 
-    CargoOperation(Operation op, Container* container,MapIndex index, MapIndex moveIndex={-1,1,-1}): operation(op), container(container), index(index), moveIndex(moveIndex) {};
+    CargoOperation(AbstractAlgorithm::Action op, Container* container,MapIndex index, MapIndex moveIndex={-1,1,-1}): operation(op), container(container), index(index), moveIndex(moveIndex) {};
 
     friend ostream& operator<<(ostream& os, const CargoOperation& cargoOperation);
 
-    const Operation& getOp()const { return this->operation;}
+    const AbstractAlgorithm::Action& getOp()const { return this->operation;}
 
     MapIndex getIndex()const{ return this->index;}
 
