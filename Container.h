@@ -49,6 +49,7 @@ public:
     static bool isPortValid(const string &port);
 
     static bool isLegalId(const string &id);
+    int getWeight(){ return this->weight;}
 
 };
 

@@ -2,6 +2,7 @@
 #include "NaiveStowageAlgorithm.h"
 #include <map>
 #include "FileHandler.h"
+#include "WeightBalanceCalculator.h"
 
 using std::map;
 
@@ -15,8 +16,8 @@ void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<Container *> *
                                 MapIndex(i, index.getRow(), index.getCol()));
         CargoOperation opLoad(AbstractAlgorithm::Action::LOAD,
                               this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()], index);
-        if (this->calculator.tryOperation() == BalanceStatus::APPROVED &&
-            this->calculator.tryOperation() == BalanceStatus::APPROVED) {
+        if (this->calculator.tryOperation('L',opLoad.getContainer()->getWeight(),opLoad.getIndex().getCol(),opLoad.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED &&
+            this->calculator.tryOperation('U',opUnload.getContainer()->getWeight(),opUnload.getIndex().getCol(),opUnload.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
             opList.emplace_back(AbstractAlgorithm::Action::MOVE,
                                 this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],
                                 MapIndex(i, index.getRow(), index.getCol()), moveIndex);
@@ -31,7 +32,7 @@ void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<Container *> *
         CargoOperation op(AbstractAlgorithm::Action::UNLOAD,
                           this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],
                           MapIndex(i, index.getRow(), index.getCol()));
-        if (this->calculator.tryOperation() == BalanceStatus::APPROVED) {
+        if (this->calculator.tryOperation('U',op.getContainer()->getWeight(),op.getIndex().getCol(),op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
             this->ship->getShipMap().getContainerIDOnShip().erase(
                     this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()]->getId());
             opList.push_back(op);
@@ -55,7 +56,7 @@ void NaiveStowageAlgorithm::moveTower(MapIndex index, const string &portName, li
                 CargoOperation op(AbstractAlgorithm::Action::UNLOAD,
                                   this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],
                                   MapIndex(i, index.getRow(), index.getCol()));
-                if (this->calculator.tryOperation() == BalanceStatus::APPROVED) {
+                if (this->calculator.tryOperation('U',op.getContainer()->getWeight(),op.getIndex().getCol(),op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
                     this->ship->getShipMap().getContainerIDOnShip().erase(
                             this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()]->getId());
                     opList.push_back(op);
@@ -94,7 +95,7 @@ void NaiveStowageAlgorithm::loadAgain(list<Container *> *rememberLoadAgain, list
             MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->ship->getShipMap());
             if (loadIndex.validIndex()) {
                 CargoOperation cargoOp(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
-                if (this->calculator.tryOperation() == BalanceStatus::APPROVED) {
+                if (this->calculator.tryOperation('L',cargoOp.getContainer()->getWeight(),cargoOp.getIndex().getCol(),cargoOp.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
                     this->ship->getShipMap().getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
                     opList.push_back(cargoOp);
                 } else {
@@ -146,7 +147,7 @@ void NaiveStowageAlgorithm::loadOneContainer(Container *cont, list<CargoOperatio
         MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->ship->getShipMap());
         if (loadIndex.validIndex()) {
             CargoOperation op(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
-            if (this->calculator.tryOperation() == BalanceStatus::APPROVED) {
+            if (this->calculator.tryOperation('L',op.getContainer()->getWeight(),op.getIndex().getCol(),op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
                 opList.push_back(op);
                 this->ship->getShipMap().getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
                 this->ship->getShipMap().getContainerIDOnShip().insert(cont->getId());
@@ -188,11 +189,12 @@ void NaiveStowageAlgorithm::loadNewContainers(list<Container *> &containerListTo
 
 int NaiveStowageAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
     this->ship = FileHandler::createShipFromFile(full_path_and_file_name);
-    return 0;
+    return this->ship== nullptr;
 }
 
 int NaiveStowageAlgorithm::readShipRoute(const std::string &full_path_and_file_name) {
     this->ship->setShipRoute(FileHandler::fileToRouteList(full_path_and_file_name));
+    //always? what if cant open file?
     return 0;
 }
 
@@ -203,14 +205,18 @@ int NaiveStowageAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &c
 
 int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
                                                    const std::string &output_full_path_and_file_name) {
-    const string &portName = this->ship->getShipRoute().front();
-    this->ship->getShipRoute().pop_front();
-    list<Container *> containerListToLoadInThisPort = FileHandler::fileToContainerList(input_full_path_and_file_name);
-    list<CargoOperation> opList;
-    list<Container *> *rememberLoadAgain = this->unloadContainerByPort(portName, opList);
-    this->loadAgain(rememberLoadAgain, opList);
-    delete rememberLoadAgain;
-    this->loadNewContainers(containerListToLoadInThisPort, opList, portName);
-    FileHandler::operationsToFile(opList, output_full_path_and_file_name, portName);
-    return 0;
+    if(!this->ship->getShipRoute().empty()){
+        const string &portName = this->ship->getShipRoute().front();
+        this->ship->getShipRoute().pop_front();
+        list<Container *> containerListToLoadInThisPort = FileHandler::fileToContainerList(input_full_path_and_file_name); //always ok? what if cant open file?
+        list<CargoOperation> opList;
+        list<Container *> *rememberLoadAgain = this->unloadContainerByPort(portName, opList);
+        this->loadAgain(rememberLoadAgain, opList);
+        delete rememberLoadAgain;
+        this->loadNewContainers(containerListToLoadInThisPort, opList, portName);
+        //always ok? what if cant open file?
+        FileHandler::operationsToFile(opList, output_full_path_and_file_name, portName);
+        return 0;
+    }
+   return 1;
 }

@@ -413,8 +413,7 @@ void checkAllContainersRejectedOrLoaded(list<Container *> &loadList, list<Simula
     }
 }
 
-list<SimulatorError>
-Simulator::checkAlgoCorrect(Ship* ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList,const string &currentPort, int& numberLoads, int& numberUnloads) {
+list<SimulatorError>Simulator::checkAlgoCorrect(Ship* ship, list<CargoOperation> &cargoOpsList, list<Container *> &loadList,const string &currentPort, int& numberLoads, int& numberUnloads) {
     list<SimulatorError> errorList;
     map<string, CargoOperation *> rememberToLoadAgainIdToIndex;
     int number = 1;
@@ -425,7 +424,7 @@ Simulator::checkAlgoCorrect(Ship* ship, list<CargoOperation> &cargoOpsList, list
         cargoOp.setPlaceInList(number);
         number++;
         AbstractAlgorithm::Action op = cargoOp.getOp();
-        if (this->calculator.tryOperation() != BalanceStatus::APPROVED) {
+        if (this->calculator.tryOperation((char)op,cargoOp.getContainer()->getWeight(),cargoOp.getIndex().getCol(),cargoOp.getIndex().getRow()) != WeightBalanceCalculator::BalanceStatus::APPROVED) {
             //TODO: calculator denied operation
             errorList.emplace_back("weight calculator does not approve this operation- operation ignored", SimErrorType ::OPERATION_PORT, cargoOp);
         } else {
@@ -455,9 +454,7 @@ Simulator::checkAlgoCorrect(Ship* ship, list<CargoOperation> &cargoOpsList, list
             checkRejectOperation(ship, cargoOp, loadList, maxNumberPortLoaded, errorList, currentPort);
         }
     }
-    nothingLeftNoReason(rememberToLoadAgainIdToIndex, errorList,
-                        currentPort); //make sure nothing left on port with no reason
-   /* errorList.sort(operationOrder); //sort by operation order in list*/
+    nothingLeftNoReason(rememberToLoadAgainIdToIndex, errorList,currentPort); //make sure nothing left on port with no reason
     checkAllContainersRejectedOrLoaded(loadList, errorList);
     checkIfAllUnloaded(ship, currentPort, errorList);
     return errorList;
