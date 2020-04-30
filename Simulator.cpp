@@ -90,7 +90,8 @@ void Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const str
         list<Container *> loadList = travel.getContainerList(path);
         allContainers.push_back(loadList);
         //path to read container list and write cargo op
-        //pAlgo->getInstructionsForCargo();
+        const string writeTo = path + "/" + travel.getShip()->getCurrentPort() + "." + std::to_string(travel.getCurrentVisitNumber()) + "Operations";
+        pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(),writeTo);
         //read cargo op file and make list
         list<CargoOperation> cargoOps;
         listError = checkAlgoCorrect(travel.getShip(), cargoOps, loadList, travel.getShip()->getCurrentPort(), numberLoads, numberUnloads);

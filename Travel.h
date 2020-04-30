@@ -41,6 +41,8 @@ public:
 
     const  string& getTravelPath(){ return  this->travelPath;}
 
+    const string getNextCargoFilePath();
+
     ~Travel() {
         delete this->ship;
     };

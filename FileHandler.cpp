@@ -178,7 +178,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
         return nullptr;
     }
 
-    string line,token;
+    string line, token;
     vector<string> svec;
     int lineNum = 1;
 

@@ -151,3 +151,11 @@ void Travel::errorsToFile(const string &fileName) const {
 
 }
 
+const string Travel::getNextCargoFilePath(){
+    string currentPort = this->getShip()->getShipRoute().front();
+
+    tuple<int, int> visits = getVisits(currentPort);
+    int visitNum = get<0>(visits);
+
+    return travelPath + "/" + currentPort + "_" + to_string(visitNum) + ".cargo_data";
+}
