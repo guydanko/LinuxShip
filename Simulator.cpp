@@ -1,3 +1,4 @@
+#include "WeightBalanceCalculator.h"
 #include "AbstractAlgorithm.h"
 #include "Simulator.h"
 #include "FileHandler.h"

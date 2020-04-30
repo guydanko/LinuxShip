@@ -1,6 +1,7 @@
 /*working algorithm for stowage operations*/
-#include "AbstractAlgorithm.h"
+
 #include "WeightBalanceCalculator.h"
+#include "AbstractAlgorithm.h"
 #include "MapIndex.h"
 #include "CargoOperation.h"
 

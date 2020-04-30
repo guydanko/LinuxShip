@@ -6,7 +6,6 @@
 #define LINUXSHIP_ABSTRACTALGORITHM_H
 
 #include <string>
-#include "WeightBalanceCalculator.h" //make sure we can do this import
 
 using std::string;
 

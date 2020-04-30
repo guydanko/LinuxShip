@@ -7,8 +7,9 @@
 // load in arbitrary order on port destination
 //
 
-#include "AbstractAlgorithm.h"
+
 #include "WeightBalanceCalculator.h"
+#include "AbstractAlgorithm.h"
 #include "CargoOperation.h"
 
 #ifndef SHIPGIT_INCORRECTALGORITHM_H

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Container.h"
 #include "MapIndex.h"
+#include "WeightBalanceCalculator.h"
 #include "AbstractAlgorithm.h"
 
 using std::ostream ;
