@@ -3,11 +3,15 @@
 #include <iostream>
 #include <sstream>
 #include "SimulatorError.h"
+#include <unordered_set>
+#include <unordered_map>
 
 using std::ifstream;
 using std::cerr;
 using std::stringstream;
 using std::ofstream;
+using std::unordered_set;
+using std::unordered_map;
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 
@@ -40,8 +44,9 @@ void strToUpper(string &str) {
     }
 }
 
-list<Container *> FileHandler::fileToContainerList(const string &fileName, const string &errorFile) {
-    list<Container *> containers = {};
+list<shared_ptr<Container>> FileHandler::fileToContainerList(const string &fileName, const string &errorFile) {
+    list<shared_ptr<Container>>
+            containers = {};
     ifstream inFile;
     inFile.open(fileName);
     ofstream outFile(errorFile, std::ios::app);
@@ -56,6 +61,8 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName, const
     }
 
     string line;
+    unordered_set<string> id_map;
+
     while (getline(inFile, line)) {
         lineNum++;
         if (line[0] == '#') { continue; }
@@ -73,17 +80,23 @@ list<Container *> FileHandler::fileToContainerList(const string &fileName, const
         }
 
         string id = svec[0], weight = svec[1], destination = svec[2];
-        Container *cont;
 
         if (isNumber(weight) && Container::isLegalParamContainer(stoi(weight), destination, id)) {
             strToUpper(destination);
             strToUpper(id);
-            cont = new Container(stoi(weight), destination, id);
+            if (id_map.find(id) == id_map.end()) {
+                id_map.insert(id);
+                containers.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
+            } else {
+                outFile << "Warning, file: " << fileName << " line number: " << lineNum
+                        << " is a container with duplicate ID!\n";
+            }
+
         } else {
             outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a valid container!\n";
-            cont = new Container(0, "", id, false);
+            containers.emplace_back(std::make_shared<Container>(0, "", id, false));
         }
-        containers.push_back(cont);
+
 
     }
 
@@ -151,20 +164,15 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
 void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName,
                                    const string &currentPort) {
     ofstream outfile;
-    outfile.open(fileName , std::ios::app);
+    outfile.open(fileName, std::ios::app);
     if (!outfile) {
         return;
     }
 
-    if (operations.size() > 0) {
-        outfile << "Operations in port: " << currentPort  << "\n";
-        for (CargoOperation &op: operations) {
-            outfile << op << "\n";
-        }
-
-    } else {
-        outfile << "No operations performed in port: " << currentPort << "\n";
+    for (CargoOperation &op: operations) {
+        outfile << op << "\n";
     }
+
     outfile.close();
 }
 
@@ -274,4 +282,64 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
 
     errorFile.close();
     outFile.close();
+}
+
+list<shared_ptr<CargoOperation>>
+FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Container>> &containerList) {
+    list<shared_ptr<CargoOperation>> ops = {};
+    ifstream inFile(fileName);
+
+    /*could not open file*/
+    if (!inFile) {
+        return ops;
+    }
+
+    string line;
+    unordered_map<string, shared_ptr<Container>>
+            containerMap;
+    /*create map of id to container*/
+    for (auto cont: containerList) {
+        containerMap[cont->getId()] = cont;
+    }
+
+    while (getline(inFile, line)) {
+        if (line[0] == '#') { continue; }
+        stringstream sline(line);
+        vector<string> svec;
+        string token;
+
+        while (getline(sline, token, ',')) {
+            token = trim(token);
+            svec.push_back(token);
+        }
+
+        AbstractAlgorithm::Action action;
+        shared_ptr<Container> cont = containerMap[svec[1]];
+        std::cout << cont->getId() << '\n';
+
+        switch (svec[0].c_str()[0]) {
+            case 'L':
+                action = AbstractAlgorithm::Action::LOAD;
+                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]), stoi(svec[4]))));
+                break;
+            case 'M':
+                action = AbstractAlgorithm::Action::MOVE;
+                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]), int(svec[4].c_str()[0]) - 48),
+                                 MapIndex(stoi(svec[5]), stoi(svec[6]), int(svec[7].c_str()[0]) - 48)));
+                break;
+            case 'R':
+                action = AbstractAlgorithm::Action::REJECT;
+                ops.emplace_back(std::make_shared<CargoOperation>(action, cont));
+                break;
+            case 'U':
+                action = AbstractAlgorithm::Action::UNLOAD;
+                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]), stoi(svec[4]))));
+                break;
+        }
+
+
+    }
+
+    inFile.close();
+    return ops;
 }

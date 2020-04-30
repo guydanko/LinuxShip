@@ -27,7 +27,7 @@ public:
 
     string getTravelName() const;
 
-    list<Container *> getContainerList(const string &errorFile);
+    list<shared_ptr<Container>> getContainerList(const string &errorFile);
 
     void goToNextPort();
 

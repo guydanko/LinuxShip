@@ -23,25 +23,30 @@ protected:
     WeightBalanceCalculator calculator;
 public:
     IncorrectAlgorithm() : AbstractAlgorithm() {}
-    IncorrectAlgorithm(Ship* ship, WeightBalanceCalculator calculator): AbstractAlgorithm(){}
-        //new func
-    int readShipPlan(const std::string& full_path_and_file_name) override ;
-    int readShipRoute(const std::string& full_path_and_file_name) override;
-    int setWeightBalanceCalculator(WeightBalanceCalculator& calculator) override;
-    int getInstructionsForCargo(const std::string& input_full_path_and_file_name, const std::string& output_full_path_and_file_name) override;
+
+    IncorrectAlgorithm(Ship *ship, WeightBalanceCalculator calculator) : AbstractAlgorithm() {}
+
+    //new func
+    int readShipPlan(const std::string &full_path_and_file_name) override;
+
+    int readShipRoute(const std::string &full_path_and_file_name) override;
+
+    int setWeightBalanceCalculator(WeightBalanceCalculator &calculator) override;
+
+    int getInstructionsForCargo(const std::string &input_full_path_and_file_name,
+                                const std::string &output_full_path_and_file_name) override;
 
 
+    void loadNewContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList,
+                           const string &currentPort);
 
-    void loadNewContainers(list<Container *> &containerListToLoad, list<CargoOperation> &opList,
-                           const string &currentPort) ;
-
-    list<Container *> *unloadContainerByPort(const string &portName, list<CargoOperation> &opList) ;
+    void unloadContainerByPort(const string &portName, list<CargoOperation> &opList);
 
     virtual void moveTower(MapIndex index, const string &portName, list<CargoOperation> &opList);
 
-    void loadOneContainer(Container *cont, list<CargoOperation> &opList);
+    void loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList);
 
-    string getName() const  { return "Incorrect algorithm"; }
+    string getName() const { return "Incorrect algorithm"; }
 
     void tryToMove(int i, MapIndex index, list<CargoOperation> &opList);
 

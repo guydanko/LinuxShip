@@ -58,12 +58,12 @@ void Travel::goToNextPort() {
     }
 }
 
-list<Container *> Travel::getContainerList(const string &errorFile) {
+list<shared_ptr<Container>> Travel::getContainerList(const string &errorFile) {
     if (this->ship->getShipRoute().empty()) {
-        return list<Container *>();
+        return list<shared_ptr<Container>>();
     }
     if (this->getShip()->getShipRoute().size() == 1) {
-        return list<Container *>();
+        return list<shared_ptr<Container>>();
     }
     string currentPort = this->getShip()->getShipRoute().front();
 
@@ -72,7 +72,7 @@ list<Container *> Travel::getContainerList(const string &errorFile) {
 
     string fileName = travelPath + "/" + currentPort + "_" + to_string(visitNum) + ".cargo_data";
     if (!does_file_exist(fileName)) {
-        return list<Container *>();
+        return list<shared_ptr<Container>>();
     } else {
         return FileHandler::fileToContainerList(fileName, errorFile + "/" + travelName + "cargoDataErrors");
     }
@@ -132,9 +132,9 @@ void Travel::errorsToFile(const string &fileName) const {
     size_t cargoFiles = 0;
     size_t otherFiles = 0;
     for (auto &path: fs::directory_iterator(travelPath)) {
-        if(path.path().filename().extension().string().compare(".cargo_data") == 0) {
+        if (path.path().filename().extension().string().compare(".cargo_data") == 0) {
             cargoFiles++;
-        } else{
+        } else {
             otherFiles++;
         }
     }
@@ -143,7 +143,7 @@ void Travel::errorsToFile(const string &fileName) const {
     if (cargoFiles >= this->originalRoute.size()) {
         outfile << "Warning, too many cargo_data files in travel folder\n";
     }
-    if(otherFiles > 2){
+    if (otherFiles > 2) {
         outfile << "Warning, too many regular files in travel folder\n";
     }
     outfile.close();
@@ -151,7 +151,7 @@ void Travel::errorsToFile(const string &fileName) const {
 
 }
 
-const string Travel::getNextCargoFilePath(){
+const string Travel::getNextCargoFilePath() {
     string currentPort = this->getShip()->getShipRoute().front();
 
     tuple<int, int> visits = getVisits(currentPort);

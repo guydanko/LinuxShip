@@ -4,10 +4,13 @@
 #include "AbstractAlgorithm.h"
 #include "MapIndex.h"
 #include "CargoOperation.h"
+#include <memory>
+
 
 #ifndef SHIPGIT_NAIVESTOWAGEALGORITHM_H
 #define SHIPGIT_NAIVESTOWAGEALGORITHM_H
 
+using std::shared_ptr;
 using  std::string ;
 
 class NaiveStowageAlgorithm: public AbstractAlgorithm {
@@ -19,13 +22,13 @@ public:
     NaiveStowageAlgorithm(): AbstractAlgorithm() {}
     NaiveStowageAlgorithm(Ship* ship, WeightBalanceCalculator calculator): AbstractAlgorithm(){}
 
-    void loadAgain(list<Container*>* rememberLoadAgain, list<CargoOperation>& opList ) ;
-    void loadNewContainers(list<Container*>& containerListToLoad, list<CargoOperation>& opList, const string& currentPort) ;
-    list<Container*>* unloadContainerByPort(const string& portName, list<CargoOperation>& opList ) ;
-    virtual void moveTower(MapIndex index , const string& portName,list<Container*>* rememberLoadAgain, list<CargoOperation>& opList);
-    void loadOneContainer(Container* cont, list<CargoOperation>& opList);
+    void loadAgain(shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation>& opList ) ;
+    void loadNewContainers(list<shared_ptr<Container>>& containerListToLoad, list<CargoOperation>& opList, const string& currentPort) ;
+    shared_ptr<list<shared_ptr<Container>>> unloadContainerByPort(const string& portName, list<CargoOperation>& opList ) ;
+    virtual void moveTower(MapIndex index , const string& portName,shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation>& opList);
+    void loadOneContainer(shared_ptr<Container> cont, list<CargoOperation>& opList);
     virtual string getName()const  { return "Naive algorithm";}
-    void tryToMove(int i,MapIndex index ,list<Container*>* rememberLoadAgain, list<CargoOperation>& opList);
+    void tryToMove(int i,MapIndex index ,shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation>& opList);
 
     //new func
     int readShipPlan(const std::string& full_path_and_file_name) override ;

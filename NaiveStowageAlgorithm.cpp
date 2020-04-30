@@ -6,7 +6,7 @@
 
 using std::map;
 
-void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<Container *> *rememberLoadAgain,
+void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain,
                                       list<CargoOperation> &opList) {
     MapIndex moveIndex = MapIndex::isPlaceToMove(MapIndex(i, index.getRow(), index.getCol()), this->ship->getShipMap());
     //can move on the ship
@@ -16,8 +16,12 @@ void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<Container *> *
                                 MapIndex(i, index.getRow(), index.getCol()));
         CargoOperation opLoad(AbstractAlgorithm::Action::LOAD,
                               this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()], index);
-        if (this->calculator.tryOperation('L',opLoad.getContainer()->getWeight(),opLoad.getIndex().getCol(),opLoad.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED &&
-            this->calculator.tryOperation('U',opUnload.getContainer()->getWeight(),opUnload.getIndex().getCol(),opUnload.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
+        if (this->calculator.tryOperation('L', opLoad.getContainer()->getWeight(), opLoad.getIndex().getCol(),
+                                          opLoad.getIndex().getRow()) ==
+            WeightBalanceCalculator::BalanceStatus::APPROVED &&
+            this->calculator.tryOperation('U', opUnload.getContainer()->getWeight(), opUnload.getIndex().getCol(),
+                                          opUnload.getIndex().getRow()) ==
+            WeightBalanceCalculator::BalanceStatus::APPROVED) {
             opList.emplace_back(AbstractAlgorithm::Action::MOVE,
                                 this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],
                                 MapIndex(i, index.getRow(), index.getCol()), moveIndex);
@@ -32,7 +36,8 @@ void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<Container *> *
         CargoOperation op(AbstractAlgorithm::Action::UNLOAD,
                           this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],
                           MapIndex(i, index.getRow(), index.getCol()));
-        if (this->calculator.tryOperation('U',op.getContainer()->getWeight(),op.getIndex().getCol(),op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
+        if (this->calculator.tryOperation('U', op.getContainer()->getWeight(), op.getIndex().getCol(),
+                                          op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
             this->ship->getShipMap().getContainerIDOnShip().erase(
                     this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()]->getId());
             opList.push_back(op);
@@ -45,7 +50,8 @@ void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<Container *> *
     }
 }
 
-void NaiveStowageAlgorithm::moveTower(MapIndex index, const string &portName, list<Container *> *rememberLoadAgain,
+void NaiveStowageAlgorithm::moveTower(MapIndex index, const string &portName,
+                                      shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain,
                                       list<CargoOperation> &opList) {
 
     for (int i = this->ship->getShipMap().getHeight() - 1; i >= index.getHeight(); i--) {
@@ -56,7 +62,9 @@ void NaiveStowageAlgorithm::moveTower(MapIndex index, const string &portName, li
                 CargoOperation op(AbstractAlgorithm::Action::UNLOAD,
                                   this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()],
                                   MapIndex(i, index.getRow(), index.getCol()));
-                if (this->calculator.tryOperation('U',op.getContainer()->getWeight(),op.getIndex().getCol(),op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
+                if (this->calculator.tryOperation('U', op.getContainer()->getWeight(), op.getIndex().getCol(),
+                                                  op.getIndex().getRow()) ==
+                    WeightBalanceCalculator::BalanceStatus::APPROVED) {
                     this->ship->getShipMap().getContainerIDOnShip().erase(
                             this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()]->getId());
                     opList.push_back(op);
@@ -71,31 +79,39 @@ void NaiveStowageAlgorithm::moveTower(MapIndex index, const string &portName, li
     }
 }
 
-list<Container *> *NaiveStowageAlgorithm::unloadContainerByPort(const string &portName, list<CargoOperation> &opList) {
-    list<Container *> *rememberToLoad = new list<Container *>();
+shared_ptr<list<shared_ptr<Container>>>
+NaiveStowageAlgorithm::unloadContainerByPort(const string &portName, list<CargoOperation> &opList) {
+    shared_ptr<list<shared_ptr<Container>>> rememberToLoad = std::make_shared<list<shared_ptr<Container>>>();
     for (int i = 0; i < this->ship->getShipMap().getRows(); i++) {
         for (int j = 0; j < this->ship->getShipMap().getCols(); j++) {
             for (int k = 0; k < this->ship->getShipMap().getHeight(); k++) {
-                if (this->ship->getShipMap().getShipMapContainer()[k][i][j] != nullptr)
+                if (this->ship->getShipMap().getShipMapContainer()[k][i][j] != nullptr) {
+                    string name = this->ship->getShipMap().getShipMapContainer()[k][i][j]->getDestination();
                     if (this->ship->getShipMap().getShipMapContainer()[k][i][j]->getDestination().compare(portName) ==
                         0) {
                         moveTower(MapIndex(k, i, j), portName, rememberToLoad, opList);
                     }
+                }
             }
         }
+
     }
     return rememberToLoad;
 }
 
-void NaiveStowageAlgorithm::loadAgain(list<Container *> *rememberLoadAgain, list<CargoOperation> &opList) {
-    for (Container *cont: *rememberLoadAgain) {
+void NaiveStowageAlgorithm::loadAgain(shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain,
+                                      list<CargoOperation> &opList) {
+    for (auto cont: *rememberLoadAgain) {
         auto itr = this->ship->getShipMap().getContainerIDOnShip().find(cont->getId());
         //no id like this cont on the ship- legal cont
         if (itr == this->ship->getShipMap().getContainerIDOnShip().cend()) {
             MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->ship->getShipMap());
             if (loadIndex.validIndex()) {
                 CargoOperation cargoOp(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
-                if (this->calculator.tryOperation('L',cargoOp.getContainer()->getWeight(),cargoOp.getIndex().getCol(),cargoOp.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
+                if (this->calculator.tryOperation('L', cargoOp.getContainer()->getWeight(),
+                                                  cargoOp.getIndex().getCol(),
+                                                  cargoOp.getIndex().getRow()) ==
+                    WeightBalanceCalculator::BalanceStatus::APPROVED) {
                     this->ship->getShipMap().getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
                     opList.push_back(cargoOp);
                 } else {
@@ -111,7 +127,8 @@ void NaiveStowageAlgorithm::loadAgain(list<Container *> *rememberLoadAgain, list
     }
 }
 
-void orderLoadContainer(list<Container *> &containerListToLoad, list<string> &route, list<CargoOperation> &opList) {
+void orderLoadContainer(list<shared_ptr<Container>> &containerListToLoad, list<string> &route,
+                        list<CargoOperation> &opList) {
     map<string, int> portNumberMap;
     int number = 1;
     for (const string &port : route) {
@@ -121,7 +138,7 @@ void orderLoadContainer(list<Container *> &containerListToLoad, list<string> &ro
             number++;
         }
     }
-    for (Container *cont : containerListToLoad) {
+    for (auto cont : containerListToLoad) {
         if (cont->isContainerLegal()) {
             auto itr = portNumberMap.find(cont->getDestination());
             // container destination is not in route- REJECT
@@ -139,7 +156,7 @@ void orderLoadContainer(list<Container *> &containerListToLoad, list<string> &ro
 
 }
 
-void NaiveStowageAlgorithm::loadOneContainer(Container *cont, list<CargoOperation> &opList) {
+void NaiveStowageAlgorithm::loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) {
 
     auto itr = this->ship->getShipMap().getContainerIDOnShip().find(cont->getId());
     //no id like this cont on the ship- legal cont
@@ -147,7 +164,9 @@ void NaiveStowageAlgorithm::loadOneContainer(Container *cont, list<CargoOperatio
         MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->ship->getShipMap());
         if (loadIndex.validIndex()) {
             CargoOperation op(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
-            if (this->calculator.tryOperation('L',op.getContainer()->getWeight(),op.getIndex().getCol(),op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
+            if (this->calculator.tryOperation('L', op.getContainer()->getWeight(), op.getIndex().getCol(),
+                                              op.getIndex().getRow()) ==
+                WeightBalanceCalculator::BalanceStatus::APPROVED) {
                 opList.push_back(op);
                 this->ship->getShipMap().getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
                 this->ship->getShipMap().getContainerIDOnShip().insert(cont->getId());
@@ -167,15 +186,17 @@ void NaiveStowageAlgorithm::loadOneContainer(Container *cont, list<CargoOperatio
 
 }
 
-bool cmp(const Container *cont1, const Container *cont2) {
+bool cmp(const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) {
     return cont1->getPortIndex() < cont2->getPortIndex();
 }
 
-void NaiveStowageAlgorithm::loadNewContainers(list<Container *> &containerListToLoad, list<CargoOperation> &opList,
-                                              const string &currentPort) {
+void
+NaiveStowageAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad,
+                                         list<CargoOperation> &opList,
+                                         const string &currentPort) {
     orderLoadContainer(containerListToLoad, this->ship->getShipRoute(), opList);
     containerListToLoad.sort(cmp);
-    for (Container *cont : containerListToLoad) {
+    for (auto cont : containerListToLoad) {
         if (cont->getPortIndex() > 0 && cont->getDestination() != currentPort) {
             loadOneContainer(cont, opList);
         } else {
@@ -189,11 +210,12 @@ void NaiveStowageAlgorithm::loadNewContainers(list<Container *> &containerListTo
 
 int NaiveStowageAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
     this->ship = FileHandler::createShipFromFile(full_path_and_file_name);
-    return this->ship== nullptr;
+    return this->ship == nullptr;
 }
 
 int NaiveStowageAlgorithm::readShipRoute(const std::string &full_path_and_file_name) {
     this->ship->setShipRoute(FileHandler::fileToRouteList(full_path_and_file_name));
+    const string &portName = this->ship->getShipRoute().front();
     //always? what if cant open file?
     return 0;
 }
@@ -205,18 +227,18 @@ int NaiveStowageAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &c
 
 int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
                                                    const std::string &output_full_path_and_file_name) {
-    if(!this->ship->getShipRoute().empty()){
-        const string &portName = this->ship->getShipRoute().front();
+    if (!this->ship->getShipRoute().empty()) {
+        const string portName = this->ship->getShipRoute().front();
         this->ship->getShipRoute().pop_front();
-        list<Container *> containerListToLoadInThisPort = FileHandler::fileToContainerList(input_full_path_and_file_name); //always ok? what if cant open file?
+        list<shared_ptr<Container>> containerListToLoadInThisPort = FileHandler::fileToContainerList(
+                input_full_path_and_file_name); //always ok? what if cant open file?
         list<CargoOperation> opList;
-        list<Container *> *rememberLoadAgain = this->unloadContainerByPort(portName, opList);
+        shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain = this->unloadContainerByPort(portName, opList);
         this->loadAgain(rememberLoadAgain, opList);
-        delete rememberLoadAgain;
         this->loadNewContainers(containerListToLoadInThisPort, opList, portName);
         //always ok? what if cant open file?
         FileHandler::operationsToFile(opList, output_full_path_and_file_name, portName);
         return 0;
     }
-   return 1;
+    return 1;
 }

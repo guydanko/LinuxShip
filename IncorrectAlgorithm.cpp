@@ -52,7 +52,7 @@ void IncorrectAlgorithm::moveTower(MapIndex index, const string &portName, list<
 }
 
 
-list<Container *> *IncorrectAlgorithm::unloadContainerByPort(const string &portName, list<CargoOperation> &opList) {
+void IncorrectAlgorithm::unloadContainerByPort(const string &portName, list<CargoOperation> &opList) {
     for (int i = 0; i < this->ship->getShipMap().getRows(); i++) {
         for (int j = 0; j < this->ship->getShipMap().getCols(); j++) {
             for (int k = 0; k < this->ship->getShipMap().getHeight(); k++) {
@@ -64,10 +64,10 @@ list<Container *> *IncorrectAlgorithm::unloadContainerByPort(const string &portN
             }
         }
     }
-    return nullptr;
+
 }
 
-void IncorrectAlgorithm::loadOneContainer(Container *cont, list<CargoOperation> &opList) {
+void IncorrectAlgorithm::loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) {
     MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->ship->getShipMap());
     if (loadIndex.validIndex()) {
         CargoOperation op(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
@@ -75,15 +75,15 @@ void IncorrectAlgorithm::loadOneContainer(Container *cont, list<CargoOperation> 
         this->ship->getShipMap().getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
         this->ship->getShipMap().getContainerIDOnShip().insert(cont->getId());
     }
-    //no place on ship
+        //no place on ship
     else {
         opList.emplace_back(AbstractAlgorithm::Action::REJECT, cont, MapIndex());
     }
 }
 
-void IncorrectAlgorithm::loadNewContainers(list<Container *> &containerListToLoad, list<CargoOperation> &opList,
+void IncorrectAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList,
                                            const string &currentPort) {
-    for (Container *cont : containerListToLoad) {
+    for (auto cont : containerListToLoad) {
         //unnecessary if - only for use currentPort
         if (currentPort.length() > 0) {
             loadOneContainer(cont, opList);
@@ -110,7 +110,7 @@ int IncorrectAlgorithm::getInstructionsForCargo(const std::string &input_full_pa
                                                 const std::string &output_full_path_and_file_name) {
     const string &portName = this->ship->getShipRoute().front();
     this->ship->getShipRoute().pop_front();
-    list<Container *> containerListToLoadInThisPort = FileHandler::fileToContainerList(input_full_path_and_file_name);
+    list<shared_ptr<Container>> containerListToLoadInThisPort = FileHandler::fileToContainerList(input_full_path_and_file_name);
     list<CargoOperation> opList;
     this->unloadContainerByPort(portName, opList);
     this->loadNewContainers(containerListToLoadInThisPort, opList, portName);

@@ -5,7 +5,7 @@
 #include "MapIndex.h"
 #include "MoreNaiveAlgorithm.h"
 
-void MoreNaiveAlgorithm::moveTower(MapIndex index , const string& portName,list<Container*>* rememberLoadAgain, list<CargoOperation>& opList){
+void MoreNaiveAlgorithm::moveTower(MapIndex index , const string& portName,shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation>& opList){
     for (int i = this->ship->getShipMap().getHeight()-1; i >= index.getHeight(); i--) {
         if(this->ship->getShipMap().getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr){
             //discover container should be unload again later

@@ -4,41 +4,42 @@
 #include "MapIndex.h"
 #include "WeightBalanceCalculator.h"
 #include "AbstractAlgorithm.h"
+#include <memory>
 
-using std::ostream ;
+using std::ostream;
+using std::shared_ptr;
 #ifndef SHIPGIT_CARGOOPERATION_H
 #define SHIPGIT_CARGOOPERATION_H
 
 
-
 class CargoOperation {
     AbstractAlgorithm::Action operation;
-    Container* container;
+    shared_ptr<Container> container;
     MapIndex index;
     MapIndex moveIndex;
 
     int placeInList = 0;
 public:
-    CargoOperation(){}
+    CargoOperation() {}
 
-    CargoOperation(AbstractAlgorithm::Action op, Container* container,MapIndex index, MapIndex moveIndex={-1,1,-1}): operation(op), container(container), index(index), moveIndex(moveIndex) {};
+    CargoOperation(AbstractAlgorithm::Action op, shared_ptr<Container> container, MapIndex index = {-1, -1, -1},
+                   MapIndex moveIndex = {-1, 1, -1}) : operation(op), container(container), index(index),
+                                                       moveIndex(moveIndex) {};
 
-    friend ostream& operator<<(ostream& os, const CargoOperation& cargoOperation);
+    friend ostream &operator<<(ostream &os, const CargoOperation &cargoOperation);
 
-    const AbstractAlgorithm::Action& getOp()const { return this->operation;}
+    const AbstractAlgorithm::Action &getOp() const { return this->operation; }
 
-    MapIndex getIndex()const{ return this->index;}
+    MapIndex getIndex() const { return this->index; }
 
-    MapIndex getMoveIndex()const{ return this->moveIndex;}
+    MapIndex getMoveIndex() const { return this->moveIndex; }
 
-    Container* getContainer(){return this->container;}
+    shared_ptr<Container> getContainer() { return this->container; }
 
-    int getPlaceInList() const{ return this->placeInList;}
+    int getPlaceInList() const { return this->placeInList; }
 
-    void setPlaceInList(int i){this->placeInList=i;}
+    void setPlaceInList(int i) { this->placeInList = i; }
 
-    /*//prepare option to work with RejectReason
-    RejectReason getRejectReason(){ return this->reason;}*/
 };
 
 #endif //SHIPGIT_CARGOOPERATION_H

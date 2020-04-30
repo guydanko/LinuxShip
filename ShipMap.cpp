@@ -2,7 +2,7 @@
 
 
 ShipMap::ShipMap(int height, int rows, int cols) : height(height), rows(rows), cols(cols) {
-    imaginaryContainer = new Container();
+    imaginaryContainer = std::make_shared<Container>();
     shipMapContainer.resize(height);
     for (int i = 0; i < height; i++) {
         shipMapContainer[i].resize(rows);
@@ -21,7 +21,7 @@ ShipMap::ShipMap(const ShipMap &from) : height(from.getHeight()), rows(from.getR
 
 ShipMap &ShipMap::operator=(const ShipMap &other) {
     if (this != &other) {
-        imaginaryContainer = new Container();
+        imaginaryContainer = std::make_shared<Container>();
         shipMapContainer.resize(height);
         for (int i = 0; i < height; i++) {
             shipMapContainer[i].resize(rows);

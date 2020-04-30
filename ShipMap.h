@@ -3,9 +3,12 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <memory>
 
+using std::shared_ptr;
 using std::vector;
 using std::set;
+
 #ifndef SHIPGIT_SHIPMAP_H
 #define SHIPGIT_SHIPMAP_H
 
@@ -14,8 +17,8 @@ class ShipMap {
     const int height;
     const int rows;
     const int cols;
-    Container *imaginaryContainer = nullptr;
-    vector<vector<vector<Container *>>> shipMapContainer;
+    shared_ptr<Container> imaginaryContainer = nullptr;
+    vector<vector<vector<shared_ptr<Container>>>> shipMapContainer;
     set<string> containerIDOnShip = set<string>();
 
 public:
@@ -32,18 +35,15 @@ public:
 
     int getCols() const { return this->cols; }
 
-    vector<vector<vector<Container *>>> &getShipMapContainer() { return this->shipMapContainer; }
+    vector<vector<vector<shared_ptr<Container>>>> &getShipMapContainer() { return this->shipMapContainer; }
 
-    Container *getImaginary() const { return this->imaginaryContainer; }
+    shared_ptr<Container> getImaginary() const { return this->imaginaryContainer; }
 
     ShipMap &operator=(const ShipMap &other); // copy only the structure not the containers
     void clearContainers();
 
     set<string> &getContainerIDOnShip() { return containerIDOnShip; }
 
-    ~ShipMap() {
-        delete imaginaryContainer;
-    }
 };
 
 #endif //SHIPGIT_SHIPMAP_H
