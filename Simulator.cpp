@@ -7,6 +7,23 @@
 using std::string;
 using std::map;
 
+unordered_map<string, list<shared_ptr<Container>>> relavenatContainerMap(list<shared_ptr<Container>>& loadList, Ship* ship){
+    unordered_map<string, list<shared_ptr<Container>>> containerMap;
+    /*create map of id to container*/
+    for (auto cont: loadList) {
+        containerMap[cont->getId()].push_back( cont);
+    }
+    for (int i = 0; i < ship->getShipMap().getRows(); i++) {
+        for (int j = 0; j < ship->getShipMap().getCols(); j++) {
+            for (int k = 0; k < ship->getShipMap().getHeight(); k++) {
+                if (ship->getShipMap().getShipMapContainer()[k][i][j] != nullptr && ship->getShipMap().getShipMapContainer()[k][i][j]!= ship->getShipMap().getImaginary()) {
+                    containerMap[ship->getShipMap().getShipMapContainer()[k][i][j]->getId()].push_back( ship->getShipMap().getShipMapContainer()[k][i][j]);
+                }
+            }
+        }
+    }
+    return containerMap;
+};
 void setUpDirectories(const string &directoryRoot) {
     if (fs::exists(directoryRoot)) {
         fs::remove_all(directoryRoot);
@@ -40,7 +57,7 @@ void Simulator::buildTravel(const fs::path &path) {
 Simulator::Simulator(const string &simulationDirectory) {
     setUpDirectories("SimulatorFiles");
     this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
-    this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
+ //   this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
 //    this->algoList.push_back(new IncorrectAlgorithm(nullptr, calculator));
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         buildTravel(p);
@@ -49,13 +66,6 @@ Simulator::Simulator(const string &simulationDirectory) {
     this->rootPath = simulationDirectory;
 }
 
-//void freeAllContainers(list<list<Container *>> &containerList) {
-//    for (const auto &lst: containerList) {
-//        for (Container *container: lst) {
-//            delete container;
-//        }
-//    }
-//}
 
 void checkIfShipEmpty(Ship *ship, list<SimulatorError> &errorList, int numberLoads, int numberUnloads) {
     if (numberLoads > numberUnloads) {
@@ -94,13 +104,14 @@ void Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const str
     int numberLoads = 0, numberUnloads = 0;
     while (!travel.didTravelEnd()) {
         list<shared_ptr<Container>> loadList = travel.getContainerList(path);
+        unordered_map<string, list<shared_ptr<Container>>> containerMap = relavenatContainerMap(loadList,travel.getShip());
         //path to read container list and write cargo op
         const string writeTo =
                 path + "/" + travel.getShip()->getCurrentPort() + "." + std::to_string(travel.getCurrentVisitNumber()) +
                 "Operations";
         pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
         //read cargo op file and make list
-        list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList);
+        list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList, containerMap);
         listError = checkAlgoCorrect(travel.getShip(), cargoOps, loadList, travel.getShip()->getCurrentPort(),
                                      numberLoads, numberUnloads);
         errorAmount += listError.size();
@@ -446,7 +457,18 @@ void checkAllContainersRejectedOrLoaded(list<shared_ptr<Container>> &loadList, l
         }
     }
 }
-
+void rejectDoubleId(list<shared_ptr<Container>>& containerListToLoadInThisPort,Ship* ship){
+    for(auto itr=containerListToLoadInThisPort.begin();itr!= containerListToLoadInThisPort.cend();){
+        auto place = ship->getShipMap().getContainerIDOnShip().find((*itr)->getId());
+        if(place !=ship->getShipMap().getContainerIDOnShip().cend()){
+            (*itr)->setIsContainerReject(1);
+            itr=containerListToLoadInThisPort.erase(itr);
+        }
+        else{
+            itr++;
+        }
+    }
+}
 list<SimulatorError>
 Simulator::checkAlgoCorrect(Ship *ship, list<shared_ptr<CargoOperation>> &cargoOpsList,
                             list<shared_ptr<Container>> &loadList,
@@ -461,33 +483,39 @@ Simulator::checkAlgoCorrect(Ship *ship, list<shared_ptr<CargoOperation>> &cargoO
         cargoOp->setPlaceInList(number);
         number++;
         AbstractAlgorithm::Action op = cargoOp->getOp();
-        std::cout << "dsadas " << *cargoOp << '\n';
-        if (this->calculator.tryOperation((char) op, cargoOp->getContainer()->getWeight(), cargoOp->getIndex().getCol(),
-                                          cargoOp->getIndex().getRow()) !=
-            WeightBalanceCalculator::BalanceStatus::APPROVED) {
-            //TODO: calculator denied operation
-            errorList.emplace_back("weight calculator does not approve this operation- operation ignored",
-                                   SimErrorType::OPERATION_PORT, *cargoOp);
-        } else {
-            switch (op) {
-                case AbstractAlgorithm::Action::LOAD:
-                    numberLoads++;
-                    checkLoadOperation(ship, *cargoOp, loadList, rememberToLoadAgainIdToIndex, currentPort,
-                                       maxNumberPortLoaded, errorList);
-                    break;
-                case AbstractAlgorithm::Action::UNLOAD:
-                    numberUnloads++;
-                    checkUnloadOperation(ship, *cargoOp, currentPort, rememberToLoadAgainIdToIndex, errorList);
-                    break;
-                case AbstractAlgorithm::Action::MOVE:
-                    checkMoveOperation(ship, *cargoOp, errorList);
-                    break;
-                case AbstractAlgorithm::Action::REJECT:
-                    break;
-                default:
-                    //TODO: deal with operation which not CargoOperation - maybe in targil 2
-                    break;
+        if(cargoOp->getContainer()!=nullptr) {
+            if (this->calculator.tryOperation((char) op, cargoOp->getContainer()->getWeight(),
+                                              cargoOp->getIndex().getCol(),
+                                              cargoOp->getIndex().getRow()) !=
+                WeightBalanceCalculator::BalanceStatus::APPROVED) {
+                //TODO: calculator denied operation
+                errorList.emplace_back("weight calculator does not approve this operation- operation ignored",
+                                       SimErrorType::OPERATION_PORT, *cargoOp);
+            } else {
+                switch (op) {
+                    case AbstractAlgorithm::Action::LOAD:
+                        numberLoads++;
+                        checkLoadOperation(ship, *cargoOp, loadList, rememberToLoadAgainIdToIndex, currentPort,
+                                           maxNumberPortLoaded, errorList);
+                        break;
+                    case AbstractAlgorithm::Action::UNLOAD:
+                        numberUnloads++;
+                        checkUnloadOperation(ship, *cargoOp, currentPort, rememberToLoadAgainIdToIndex, errorList);
+                        break;
+                    case AbstractAlgorithm::Action::MOVE:
+                        checkMoveOperation(ship, *cargoOp, errorList);
+                        break;
+                    case AbstractAlgorithm::Action::REJECT:
+                        break;
+                    default:
+                        //TODO: deal with operation which not CargoOperation - maybe in targil 2
+                        break;
+                }
             }
+        }
+        else{
+            errorList.emplace_back("operation number"+ std::to_string(cargoOp->getPlaceInList()) + "use unknown container ID",
+                                   SimErrorType::GENERAL_PORT);
         }
     }
     for (auto cargoOp: cargoOpsList) {

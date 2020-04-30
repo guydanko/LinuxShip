@@ -29,6 +29,7 @@ public:
     void loadOneContainer(shared_ptr<Container> cont, list<CargoOperation>& opList);
     virtual string getName()const  { return "Naive algorithm";}
     void tryToMove(int i,MapIndex index ,shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation>& opList);
+    int rejectDoubleId(list<shared_ptr<Container>>& containerListToLoadInThisPort, list<CargoOperation>& opList);
 
     //new func
     int readShipPlan(const std::string& full_path_and_file_name) override ;

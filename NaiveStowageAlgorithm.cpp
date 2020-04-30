@@ -197,17 +197,26 @@ NaiveStowageAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerL
     orderLoadContainer(containerListToLoad, this->ship->getShipRoute(), opList);
     containerListToLoad.sort(cmp);
     for (auto cont : containerListToLoad) {
+
         if (cont->getPortIndex() > 0 && cont->getDestination() != currentPort) {
             loadOneContainer(cont, opList);
-        } else {
-            // destination not in route
-            if (cont->getDestination() == currentPort) {
-                opList.emplace_back(AbstractAlgorithm::Action::REJECT, cont, MapIndex());
-            }
         }
+
     }
 }
-
+int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>>& containerListToLoadInThisPort,list<CargoOperation>& opList){
+    for(auto itr=containerListToLoadInThisPort.begin();itr!= containerListToLoadInThisPort.cend();){
+        auto place = this->ship->getShipMap().getContainerIDOnShip().find((*itr)->getId());
+        if(place !=this->ship->getShipMap().getContainerIDOnShip().cend()){
+            opList.emplace_front(AbstractAlgorithm::Action::REJECT, *itr, MapIndex());
+            itr=containerListToLoadInThisPort.erase(itr);
+        }
+        else{
+            itr++;
+        }
+    }
+    return 0;
+}
 int NaiveStowageAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
     this->ship = FileHandler::createShipFromFile(full_path_and_file_name);
     return this->ship == nullptr;
@@ -233,6 +242,7 @@ int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full
         list<shared_ptr<Container>> containerListToLoadInThisPort = FileHandler::fileToContainerList(
                 input_full_path_and_file_name); //always ok? what if cant open file?
         list<CargoOperation> opList;
+        rejectDoubleId(containerListToLoadInThisPort,opList);
         shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain = this->unloadContainerByPort(portName, opList);
         this->loadAgain(rememberLoadAgain, opList);
         this->loadNewContainers(containerListToLoadInThisPort, opList, portName);

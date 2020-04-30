@@ -6,10 +6,12 @@
 #include "Container.h"
 #include "SimulatorError.h"
 #include <memory>
+#include <unordered_map>
 
 using std::list;
 using std::string;
 using std::shared_ptr;
+using std::unordered_map;
 
 #ifndef SHIPGIT_FILEHANDLER_H
 #define SHIPGIT_FILEHANDLER_H
@@ -21,7 +23,7 @@ public:
     static list<shared_ptr<Container>> fileToContainerList(const string& fileName,const string& errorFile = "");
     /*returns null ptr if ship was not created*/
     static Ship* createShipFromFile(const string& fileName, const string& errorFile = "");
-    static list<shared_ptr<CargoOperation>> createCargoOpsFromFile(const string& fileName, list<shared_ptr<Container>>& containerList );
+    static list<shared_ptr<CargoOperation>> createCargoOpsFromFile(const string& fileName, list<shared_ptr<Container>>& containerList,unordered_map<string, list<shared_ptr<Container>>>& containerMap );
     static void operationsToFile(list<CargoOperation> operations, const string &fileName, const string& currentPort);
     /*returns empty list if invalid file or no legal containers*/
     static list<string> fileToRouteList(const string& fileName, const string& errorFile = "");

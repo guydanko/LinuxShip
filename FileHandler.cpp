@@ -285,7 +285,7 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
 }
 
 list<shared_ptr<CargoOperation>>
-FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Container>> &containerList) {
+FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Container>> &containerList,unordered_map<string, list<shared_ptr<Container>>>& containerMap) {
     list<shared_ptr<CargoOperation>> ops = {};
     ifstream inFile(fileName);
 
@@ -295,12 +295,6 @@ FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Cont
     }
 
     string line;
-    unordered_map<string, shared_ptr<Container>>
-            containerMap;
-    /*create map of id to container*/
-    for (auto cont: containerList) {
-        containerMap[cont->getId()] = cont;
-    }
 
     while (getline(inFile, line)) {
         if (line[0] == '#') { continue; }
@@ -314,8 +308,22 @@ FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Cont
         }
 
         AbstractAlgorithm::Action action;
-        shared_ptr<Container> cont = containerMap[svec[1]];
-        std::cout << cont->getId() << '\n';
+        shared_ptr<Container> cont= nullptr;
+        if(!containerMap[svec[1]].empty() ){
+            if(action==AbstractAlgorithm::Action::REJECT){
+                cont = containerMap[svec[1]].front();
+                containerMap[svec[1]].pop_front();
+            }
+            else{
+                std::cout<<"im here 2 "<<svec[1]<<std::endl;
+                cont = containerMap[svec[1]].front();
+            }
+        }
+        else{
+            std::cout<<"im here "<<svec[1]<<std::endl;
+        }
+
+
 
         switch (svec[0].c_str()[0]) {
             case 'L':
