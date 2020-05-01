@@ -61,7 +61,6 @@ list<shared_ptr<Container>> FileHandler::fileToContainerList(const string &fileN
     }
 
     string line;
-    unordered_set<string> id_map;
 
     while (getline(inFile, line)) {
         lineNum++;
@@ -84,14 +83,7 @@ list<shared_ptr<Container>> FileHandler::fileToContainerList(const string &fileN
         if (isNumber(weight) && Container::isLegalParamContainer(stoi(weight), destination, id)) {
             strToUpper(destination);
             strToUpper(id);
-            if (id_map.find(id) == id_map.end()) {
-                id_map.insert(id);
-                containers.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
-            } else {
-                outFile << "Warning, file: " << fileName << " line number: " << lineNum
-                        << " is a container with duplicate ID!\n";
-            }
-
+            containers.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
         } else {
             outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a valid container!\n";
             containers.emplace_back(std::make_shared<Container>(0, "", id, false));
@@ -308,17 +300,20 @@ FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Cont
         }
 
         AbstractAlgorithm::Action action;
-        shared_ptr<Container> cont= std::make_shared<Container>(0,"",svec[1]);
+        shared_ptr<Container> cont = std::make_shared<Container>(0, "", svec[1]);
 
         switch (svec[0].c_str()[0]) {
             case 'L':
                 action = AbstractAlgorithm::Action::LOAD;
-                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]), stoi(svec[4]))));
+                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
+                                                                                         stoi(svec[4]))));
                 break;
             case 'M':
                 action = AbstractAlgorithm::Action::MOVE;
-                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]), int(svec[4].c_str()[0]) - 48),
-                                 MapIndex(stoi(svec[5]), stoi(svec[6]), int(svec[7].c_str()[0]) - 48)));
+                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
+                                                                                         int(svec[4].c_str()[0]) - 48),
+                                                                  MapIndex(stoi(svec[5]), stoi(svec[6]),
+                                                                           int(svec[7].c_str()[0]) - 48)));
                 break;
             case 'R':
                 action = AbstractAlgorithm::Action::REJECT;
@@ -326,7 +321,8 @@ FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Cont
                 break;
             case 'U':
                 action = AbstractAlgorithm::Action::UNLOAD;
-                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]), stoi(svec[4]))));
+                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
+                                                                                         stoi(svec[4]))));
                 break;
         }
 
