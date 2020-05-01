@@ -7,23 +7,94 @@
 using std::string;
 using std::map;
 
-unordered_map<string, list<shared_ptr<Container>>> relavenatContainerMap(list<shared_ptr<Container>>& loadList, Ship* ship){
-    unordered_map<string, list<shared_ptr<Container>>> containerMap;
-    /*create map of id to container*/
-    for (auto cont: loadList) {
-        containerMap[cont->getId()].push_back( cont);
+void deleteRejectDoubleID(list<shared_ptr<CargoOperation>>& cargoOps, int countErase,list<SimulatorError>& listError,const string& id,bool onShip){
+    int countRemoveOp=cargoOps.size();
+    //already on ship remove all with this id
+    if(onShip){
+        cargoOps.remove_if([&id](shared_ptr<CargoOperation>& cargoOp){ return cargoOp->getOp()== AbstractAlgorithm::Action::REJECT && cargoOp->getContainer()->getId()==id; });
     }
-    for (int i = 0; i < ship->getShipMap().getRows(); i++) {
-        for (int j = 0; j < ship->getShipMap().getCols(); j++) {
-            for (int k = 0; k < ship->getShipMap().getHeight(); k++) {
-                if (ship->getShipMap().getShipMapContainer()[k][i][j] != nullptr && ship->getShipMap().getShipMapContainer()[k][i][j]!= ship->getShipMap().getImaginary()) {
-                    containerMap[ship->getShipMap().getShipMapContainer()[k][i][j]->getId()].push_back( ship->getShipMap().getShipMapContainer()[k][i][j]);
+        //not on ship remove all with this id except first
+    else{
+        auto startPlace= cargoOps.begin();
+        while (startPlace!= cargoOps.end() && (*startPlace)->getContainer()->getId()!=id){
+            startPlace++;
+        }
+        std::remove_if(startPlace, cargoOps.end(),[&id](shared_ptr<CargoOperation>& cargoOp){ return cargoOp->getOp()== AbstractAlgorithm::Action::REJECT && cargoOp->getContainer()->getId()==id; });
+    }
+
+    countRemoveOp= countRemoveOp - cargoOps.size();
+    if(countRemoveOp!= (countErase-1)){
+        countErase--;
+        listError.emplace_back("because: id- "+ id+ " rejected "+ std::to_string(countRemoveOp)+ " times but there are "+std::to_string(countErase )+" container with this id to reject by reason of double id",SimErrorType::GENERAL_PORT);
+    }
+}
+
+void deleteDoubleID(list<shared_ptr<Container>>& loadList,Ship* ship, const string& id,bool onShip){
+    //already on ship remove all with this id
+    if(onShip){
+        loadList.remove_if([&id](shared_ptr<Container>& cont){ return cont->getId() == id; });
+    }
+    //not on ship remove all with this id except first
+    else{
+        auto startPlace= loadList.begin();
+        while (startPlace!= loadList.end() && (*startPlace)->getId()!=id){
+            startPlace++;
+        }
+        std::remove_if(startPlace, loadList.end(),[&id](shared_ptr<Container>& cont){ return cont->getId() == id; });
+    }
+}
+void connectContainerFromShip(Ship* ship, list<shared_ptr<CargoOperation>>& cargoOps){
+    for( const auto& cargoOp: cargoOps){
+        auto inShip = ship->getShipMap().getContainerIDOnShip().find(cargoOp->getContainer()->getId());
+        if(inShip!=ship->getShipMap().getContainerIDOnShip().end()) {
+            for (int i = 0; i < ship->getShipMap().getHeight(); i++) {
+                for (int j = 0; j < ship->getShipMap().getRows(); j++) {
+                    for (int k = 0; k < ship->getShipMap().getCols(); k++) {
+                        if (ship->getShipMap().getShipMapContainer()[i][j][k] != nullptr) {
+                            if(ship->getShipMap().getShipMapContainer()[i][j][k]->getId() == cargoOp->getContainer()->getId()){
+                                cargoOp->setContainer(ship->getShipMap().getShipMapContainer()[i][j][k]);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-    return containerMap;
-};
+}
+void connectContainerToCargoOp(list<shared_ptr<Container>>& loadList, Ship* ship, list<shared_ptr<CargoOperation>>& cargoOps,list<SimulatorError>& listError){
+    map< string, int> containerMap;
+    /*create map of id to container in load list*/
+    for (const auto& cont: loadList) {
+        containerMap[cont->getId()]=containerMap[cont->getId()]+1;
+    }
+    std::cout<< containerMap["RTRJ0000093"]<<std::endl;
+    //get for every id the specific number of container with id- load list + ship
+    for(auto& pair : containerMap){
+        bool onShip=false;
+        auto inShip = ship->getShipMap().getContainerIDOnShip().find(pair.first);
+        if(inShip!=ship->getShipMap().getContainerIDOnShip().end()) {
+            pair.second++;
+            onShip=true;
+        }
+        int intOnShip=0;
+        if(onShip){
+            intOnShip=1;
+        }
+
+        if(pair.second +intOnShip >1){
+            deleteDoubleID(loadList,ship,pair.first, onShip);
+            deleteRejectDoubleID(cargoOps,pair.second+intOnShip,listError,pair.first,onShip);
+        }
+    }
+    for( const auto& cargoOp: cargoOps){
+       for(const auto& cont : loadList){
+           if(cargoOp->getContainer()->getId() == cont->getId()){
+               cargoOp->setContainer(cont);
+           }
+       }
+    }
+    connectContainerFromShip(ship,cargoOps);
+}
 void setUpDirectories(const string &directoryRoot) {
     if (fs::exists(directoryRoot)) {
         fs::remove_all(directoryRoot);
@@ -56,9 +127,9 @@ void Simulator::buildTravel(const fs::path &path) {
 
 Simulator::Simulator(const string &simulationDirectory) {
     setUpDirectories("SimulatorFiles");
-    this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
- //   this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
-//    this->algoList.push_back(new IncorrectAlgorithm(nullptr, calculator));
+  //  this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
+   // this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
+    this->algoList.push_back(new IncorrectAlgorithm(nullptr, calculator));
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         buildTravel(p);
     }
@@ -103,17 +174,18 @@ void Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const str
     int errorAmount = 0;
     int numberLoads = 0, numberUnloads = 0;
     while (!travel.didTravelEnd()) {
+        listError={};
         list<shared_ptr<Container>> loadList = travel.getContainerList(path);
-        unordered_map<string, list<shared_ptr<Container>>> containerMap = relavenatContainerMap(loadList,travel.getShip());
         //path to read container list and write cargo op
         const string writeTo =
                 path + "/" + travel.getShip()->getCurrentPort() + "." + std::to_string(travel.getCurrentVisitNumber()) +
                 "Operations";
         pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
         //read cargo op file and make list
-        list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList, containerMap);
-        listError = checkAlgoCorrect(travel.getShip(), cargoOps, loadList, travel.getShip()->getCurrentPort(),
-                                     numberLoads, numberUnloads);
+        list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList);
+        connectContainerToCargoOp(loadList,travel.getShip(),cargoOps, listError);
+        checkAlgoCorrect(travel.getShip(), cargoOps, loadList, travel.getShip()->getCurrentPort(),
+                                     numberLoads, numberUnloads, listError);
         errorAmount += listError.size();
         FileHandler::simulatorErrorsToFile(listError, path, travel.getTravelName(),
                                            travel.getShip()->getCurrentPort(), travel.getCurrentVisitNumber());
@@ -457,23 +529,11 @@ void checkAllContainersRejectedOrLoaded(list<shared_ptr<Container>> &loadList, l
         }
     }
 }
-void rejectDoubleId(list<shared_ptr<Container>>& containerListToLoadInThisPort,Ship* ship){
-    for(auto itr=containerListToLoadInThisPort.begin();itr!= containerListToLoadInThisPort.cend();){
-        auto place = ship->getShipMap().getContainerIDOnShip().find((*itr)->getId());
-        if(place !=ship->getShipMap().getContainerIDOnShip().cend()){
-            (*itr)->setIsContainerReject(1);
-            itr=containerListToLoadInThisPort.erase(itr);
-        }
-        else{
-            itr++;
-        }
-    }
-}
+
 list<SimulatorError>
 Simulator::checkAlgoCorrect(Ship *ship, list<shared_ptr<CargoOperation>> &cargoOpsList,
                             list<shared_ptr<Container>> &loadList,
-                            const string &currentPort, int &numberLoads, int &numberUnloads) {
-    list<SimulatorError> errorList;
+                            const string &currentPort, int &numberLoads, int &numberUnloads,list<SimulatorError>& errorList) {
     map<string, CargoOperation *> rememberToLoadAgainIdToIndex;
     int number = 1;
     int maxNumberPortLoaded = 0;

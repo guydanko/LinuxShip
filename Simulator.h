@@ -30,7 +30,7 @@ public:
     ~Simulator();
     void run();
     void runOneTravel(Travel& travel, AbstractAlgorithm *algo, const string& fileName);
-    list<SimulatorError> checkAlgoCorrect(Ship *ship, list<shared_ptr<CargoOperation>> &cargoOpsList, list<shared_ptr<Container>> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads);
+    list<SimulatorError> checkAlgoCorrect(Ship *ship, list<shared_ptr<CargoOperation>> &cargoOpsList, list<shared_ptr<Container>> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads,list<SimulatorError>& listError);
 
 };
 #endif //SHIPGIT_SIMULATOR_H

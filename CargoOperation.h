@@ -39,6 +39,7 @@ public:
     int getPlaceInList() const { return this->placeInList; }
 
     void setPlaceInList(int i) { this->placeInList = i; }
+    void setContainer(shared_ptr<Container> cont){ this->container=cont;}
 
 };
 
