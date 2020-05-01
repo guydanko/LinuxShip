@@ -19,9 +19,16 @@ void deleteRejectDoubleID(list<shared_ptr<CargoOperation>>& cargoOps, int countE
         while (startPlace!= cargoOps.end() && (*startPlace)->getContainer()->getId()!=id){
             startPlace++;
         }
-        std::remove_if(startPlace, cargoOps.end(),[&id](shared_ptr<CargoOperation>& cargoOp){ return cargoOp->getOp()== AbstractAlgorithm::Action::REJECT && cargoOp->getContainer()->getId()==id; });
+        startPlace++;
+        for(auto itr=startPlace; itr!=cargoOps.end();){
+            if((*itr)->getContainer()->getId()== id &&(*itr)->getOp()==AbstractAlgorithm::Action::REJECT ){
+                itr= cargoOps.erase(itr);
+            }
+            else{
+                itr++;
+            }
+        }
     }
-
     countRemoveOp= countRemoveOp - cargoOps.size();
     if(countRemoveOp!= (countErase-1)){
         countErase--;
@@ -40,7 +47,15 @@ void deleteDoubleID(list<shared_ptr<Container>>& loadList,Ship* ship, const stri
         while (startPlace!= loadList.end() && (*startPlace)->getId()!=id){
             startPlace++;
         }
-        std::remove_if(startPlace, loadList.end(),[&id](shared_ptr<Container>& cont){ return cont->getId() == id; });
+        startPlace++;
+        for(auto itr=startPlace; itr!=loadList.end();){
+            if((*itr)->getId()== id){
+                itr= loadList.erase(itr);
+            }
+            else{
+                itr++;
+            }
+        }
     }
 }
 void connectContainerFromShip(Ship* ship, list<shared_ptr<CargoOperation>>& cargoOps){
@@ -67,6 +82,7 @@ void connectContainerToCargoOp(list<shared_ptr<Container>>& loadList, Ship* ship
     for (const auto& cont: loadList) {
         containerMap[cont->getId()]=containerMap[cont->getId()]+1;
     }
+
     //get for every id the specific number of container with id- load list + ship
     for(auto& pair : containerMap){
         bool onShip=false;
@@ -75,16 +91,12 @@ void connectContainerToCargoOp(list<shared_ptr<Container>>& loadList, Ship* ship
             pair.second++;
             onShip=true;
         }
-        int intOnShip=0;
-        if(onShip){
-            intOnShip=1;
-        }
-
-        if(pair.second +intOnShip >1){
+        if(pair.second >1){
             deleteDoubleID(loadList,ship,pair.first, onShip);
-            deleteRejectDoubleID(cargoOps,pair.second+intOnShip,listError,pair.first,onShip);
+            deleteRejectDoubleID(cargoOps,pair.second,listError,pair.first,onShip);
         }
     }
+
     for( const auto& cargoOp: cargoOps){
        for(const auto& cont : loadList){
            if(cargoOp->getContainer()->getId() == cont->getId()){
@@ -126,8 +138,8 @@ void Simulator::buildTravel(const fs::path &path) {
 
 Simulator::Simulator(const string &simulationDirectory) {
     setUpDirectories("SimulatorFiles");
-   this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
-   this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
+    this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
+    this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
     this->algoList.push_back(new IncorrectAlgorithm(nullptr, calculator));
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         buildTravel(p);
