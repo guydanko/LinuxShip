@@ -271,7 +271,6 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
     for (const SimulatorError &simError:simErrors) {
         outFile << simError << "\n";
     }
-
     errorFile.close();
     outFile.close();
 }

@@ -204,12 +204,35 @@ NaiveStowageAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerL
 
     }
 }
-int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>>& containerListToLoadInThisPort,list<CargoOperation>& opList){
-    for(auto itr=containerListToLoadInThisPort.begin();itr!= containerListToLoadInThisPort.cend();){
+int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>>& loadList,list<CargoOperation>& opList){
+    map< string, int> containerMap;
+    map< string, bool> containerMapFirst;
+    /*create map of id to container in load list*/
+    for (const auto& cont: loadList) {
+        containerMap[cont->getId()]=containerMap[cont->getId()]+1;
+        containerMapFirst[cont->getId()]=true;
+    }
+
+    for(auto itr=loadList.begin();itr!= loadList.cend();){
+        if(containerMap[(*itr)->getId()]>1){
+           if(containerMapFirst[(*itr)->getId()]){
+               containerMapFirst[(*itr)->getId()]=false;
+               itr++;
+           }
+           else{
+               opList.emplace_front(AbstractAlgorithm::Action::REJECT, *itr, MapIndex());
+               itr=loadList.erase(itr);
+           }
+        }
+        else{
+            itr++;
+        }
+    }
+    for(auto itr=loadList.begin();itr!= loadList.cend();){
         auto place = this->ship->getShipMap().getContainerIDOnShip().find((*itr)->getId());
         if(place !=this->ship->getShipMap().getContainerIDOnShip().cend()){
             opList.emplace_front(AbstractAlgorithm::Action::REJECT, *itr, MapIndex());
-            itr=containerListToLoadInThisPort.erase(itr);
+            itr=loadList.erase(itr);
         }
         else{
             itr++;

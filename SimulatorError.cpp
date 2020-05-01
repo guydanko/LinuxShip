@@ -2,9 +2,9 @@
 
 ostream& operator<<(ostream& os, const SimulatorError& simulatorError) {
     if(simulatorError.generalError != SimErrorType::OPERATION_PORT){
-        os << "Simulator Error: " << simulatorError.getErrorMessage();
+        os <<  simulatorError.getErrorMessage();
         return os;
     }
-    os << "Simulator Error: " << simulatorError.getCargoOp() << " because: " << simulatorError.getErrorMessage();
+    os << simulatorError.getCargoOp() << " because: " << simulatorError.getErrorMessage();
     return os;
 }

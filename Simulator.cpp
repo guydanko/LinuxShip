@@ -9,30 +9,20 @@ using std::map;
 
 void deleteRejectDoubleID(list<shared_ptr<CargoOperation>>& cargoOps, int countErase,list<SimulatorError>& listError,const string& id,bool onShip){
     int countRemoveOp=cargoOps.size();
-    //already on ship remove all with this id
-    if(onShip){
-        cargoOps.remove_if([&id](shared_ptr<CargoOperation>& cargoOp){ return cargoOp->getOp()== AbstractAlgorithm::Action::REJECT && cargoOp->getContainer()->getId()==id; });
-    }
-        //not on ship remove all with this id except first
-    else{
-        auto startPlace= cargoOps.begin();
-        while (startPlace!= cargoOps.end() && (*startPlace)->getContainer()->getId()!=id){
-            startPlace++;
+    auto itr =cargoOps.begin();
+    int count=countErase;
+    while(countErase>0 && itr!= cargoOps.end()){
+        if((*itr)->getContainer()->getId()==id && (*itr)->getOp()==AbstractAlgorithm::Action::REJECT){
+            itr=cargoOps.erase(itr);
+            count--;
         }
-        startPlace++;
-        for(auto itr=startPlace; itr!=cargoOps.end();){
-            if((*itr)->getContainer()->getId()== id &&(*itr)->getOp()==AbstractAlgorithm::Action::REJECT ){
-                itr= cargoOps.erase(itr);
-            }
-            else{
-                itr++;
-            }
+        else{
+            itr++;
         }
     }
     countRemoveOp= countRemoveOp - cargoOps.size();
-    if(countRemoveOp!= (countErase-1)){
-        countErase--;
-        listError.emplace_back("because: id- "+ id+ " rejected "+ std::to_string(countRemoveOp)+ " times but there are "+std::to_string(countErase )+" container with this id to reject by reason of double id",SimErrorType::GENERAL_PORT);
+    if(count>0){
+        listError.emplace_back("id- "+ id+ " rejected "+ std::to_string(countRemoveOp)+ " times but there are "+std::to_string(countErase )+" container with this id to reject by reason of double id",SimErrorType::GENERAL_PORT);
     }
 }
 
@@ -47,7 +37,9 @@ void deleteDoubleID(list<shared_ptr<Container>>& loadList,Ship* ship, const stri
         while (startPlace!= loadList.end() && (*startPlace)->getId()!=id){
             startPlace++;
         }
-        startPlace++;
+        if((*startPlace)->getId()==id){
+            startPlace++;
+        }
         for(auto itr=startPlace; itr!=loadList.end();){
             if((*itr)->getId()== id){
                 itr= loadList.erase(itr);
@@ -93,7 +85,7 @@ void connectContainerToCargoOp(list<shared_ptr<Container>>& loadList, Ship* ship
         }
         if(pair.second >1){
             deleteDoubleID(loadList,ship,pair.first, onShip);
-            deleteRejectDoubleID(cargoOps,pair.second,listError,pair.first,onShip);
+            deleteRejectDoubleID(cargoOps,pair.second-1,listError,pair.first,onShip);
         }
     }
 
@@ -357,7 +349,7 @@ void checkLoadOperation(Ship *ship, CargoOperation &cargoOp, list<shared_ptr<Con
         }
     }
     if (numberOfIdInList <= 0) {
-        errorList.emplace_back("container with this id does not exist in port- operation ignored",
+        errorList.emplace_back("container with this id does not exist in port. It might have been loaded before- operation ignored",
                                SimErrorType::OPERATION_PORT, cargoOp);
         cargoOp.getContainer()->setIsContainerLoaded(1);
         return;;
