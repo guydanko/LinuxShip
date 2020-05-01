@@ -67,7 +67,6 @@ void connectContainerToCargoOp(list<shared_ptr<Container>>& loadList, Ship* ship
     for (const auto& cont: loadList) {
         containerMap[cont->getId()]=containerMap[cont->getId()]+1;
     }
-    std::cout<< containerMap["RTRJ0000093"]<<std::endl;
     //get for every id the specific number of container with id- load list + ship
     for(auto& pair : containerMap){
         bool onShip=false;
@@ -127,8 +126,8 @@ void Simulator::buildTravel(const fs::path &path) {
 
 Simulator::Simulator(const string &simulationDirectory) {
     setUpDirectories("SimulatorFiles");
-  //  this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
-   // this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
+   this->algoList.push_back(new NaiveStowageAlgorithm(nullptr, calculator));
+   this->algoList.push_back(new MoreNaiveAlgorithm(nullptr, calculator));
     this->algoList.push_back(new IncorrectAlgorithm(nullptr, calculator));
     for (auto &p: fs::directory_iterator(simulationDirectory)) {
         buildTravel(p);
