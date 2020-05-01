@@ -10,8 +10,6 @@ using std::ifstream;
 using std::cerr;
 using std::stringstream;
 using std::ofstream;
-using std::unordered_set;
-using std::unordered_map;
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 
@@ -168,7 +166,7 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
     outfile.close();
 }
 
-Ship *FileHandler::createShipFromFile(const string &fileName, const string &errorFileName) {
+shared_ptr<Ship> FileHandler::createShipFromFile(const string &fileName, const string &errorFileName) {
     ifstream inFile(fileName);
     ofstream errorFile(errorFileName, std::ios::app);
     /*could not open file*/
@@ -199,7 +197,7 @@ Ship *FileHandler::createShipFromFile(const string &fileName, const string &erro
     }
 
     int height = stoi(svec[0]), rows = stoi(svec[1]), cols = stoi(svec[2]);
-    Ship *ship = new Ship(height, rows, cols);
+    shared_ptr<Ship> ship = std::make_shared<Ship>(height, rows, cols);
     vector<vector<int>> indexVector(rows, vector<int>(cols, 0));
 
     while (getline(inFile, line)) {

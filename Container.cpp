@@ -44,13 +44,10 @@ bool Container::isLegalId(const string &id) {
 }
 
 bool Container::isPortValid(const string &port) {
-    if (port.length() != 6 || !isspace(port[2])) {
+    if (port.length() != 5) {
         return false;
     }
-    for (int i = 0; i < 6; i++) {
-        if (i == 2) {
-            continue;
-        }
+    for (int i = 0; i < 5; i++) {
         if (!isalpha(port[i])) {
             return false;
         }

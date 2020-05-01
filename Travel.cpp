@@ -12,7 +12,7 @@ using std::__cxx11::to_string;
 using std::stringstream;
 using std::ofstream;
 
-Travel::Travel(const string &travelPath, const string &travelName, Ship *ship) {
+Travel::Travel(const string &travelPath, const string &travelName, shared_ptr<Ship> ship) {
     this->travelPath = travelPath;
     this->travelName = travelName;
     this->ship = ship;

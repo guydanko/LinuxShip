@@ -19,12 +19,12 @@ using std::string;
 
 class IncorrectAlgorithm : public AbstractAlgorithm {
 protected:
-    Ship *ship = nullptr;
+    shared_ptr<Ship> ship = nullptr;
     WeightBalanceCalculator calculator;
 public:
     IncorrectAlgorithm() : AbstractAlgorithm() {}
 
-    IncorrectAlgorithm(Ship *ship, WeightBalanceCalculator calculator) : AbstractAlgorithm() {}
+    IncorrectAlgorithm(shared_ptr<Ship> ship, WeightBalanceCalculator calculator) : AbstractAlgorithm() {}
 
     //new func
     int readShipPlan(const std::string &full_path_and_file_name) override;

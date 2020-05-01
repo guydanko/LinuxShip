@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 
 
 class Simulator{
-    list<AbstractAlgorithm*> algoList;
+    list<shared_ptr<AbstractAlgorithm>> algoList;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
     string rootPath;
@@ -27,10 +27,9 @@ class Simulator{
 public:
     Simulator(const string& simulationDirectory);
     list<Travel>& getTravels(){ return this->travelList;};
-    ~Simulator();
     void run();
-    void runOneTravel(Travel& travel, AbstractAlgorithm *algo, const string& fileName);
-    list<SimulatorError> checkAlgoCorrect(Ship *ship, list<shared_ptr<CargoOperation>> &cargoOpsList, list<shared_ptr<Container>> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads,list<SimulatorError>& listError);
+    void runOneTravel(Travel& travel, shared_ptr<AbstractAlgorithm> algo, const string& fileName);
+    list<SimulatorError> checkAlgoCorrect(shared_ptr<Ship> ship, list<shared_ptr<CargoOperation>> &cargoOpsList, list<shared_ptr<Container>> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads,list<SimulatorError>& listError);
 
 };
 #endif //SHIPGIT_SIMULATOR_H

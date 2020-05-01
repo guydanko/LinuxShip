@@ -204,42 +204,41 @@ NaiveStowageAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerL
 
     }
 }
-int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>>& loadList,list<CargoOperation>& opList){
-    map< string, int> containerMap;
-    map< string, bool> containerMapFirst;
+
+int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+    map<string, int> containerMap;
+    map<string, bool> containerMapFirst;
     /*create map of id to container in load list*/
-    for (const auto& cont: loadList) {
-        containerMap[cont->getId()]=containerMap[cont->getId()]+1;
-        containerMapFirst[cont->getId()]=true;
+    for (const auto &cont: loadList) {
+        containerMap[cont->getId()] = containerMap[cont->getId()] + 1;
+        containerMapFirst[cont->getId()] = true;
     }
 
-    for(auto itr=loadList.begin();itr!= loadList.cend();){
-        if(containerMap[(*itr)->getId()]>1){
-           if(containerMapFirst[(*itr)->getId()]){
-               containerMapFirst[(*itr)->getId()]=false;
-               itr++;
-           }
-           else{
-               opList.emplace_front(AbstractAlgorithm::Action::REJECT, *itr, MapIndex());
-               itr=loadList.erase(itr);
-           }
-        }
-        else{
+    for (auto itr = loadList.begin(); itr != loadList.cend();) {
+        if (containerMap[(*itr)->getId()] > 1) {
+            if (containerMapFirst[(*itr)->getId()]) {
+                containerMapFirst[(*itr)->getId()] = false;
+                itr++;
+            } else {
+                opList.emplace_front(AbstractAlgorithm::Action::REJECT, *itr, MapIndex());
+                itr = loadList.erase(itr);
+            }
+        } else {
             itr++;
         }
     }
-    for(auto itr=loadList.begin();itr!= loadList.cend();){
+    for (auto itr = loadList.begin(); itr != loadList.cend();) {
         auto place = this->ship->getShipMap().getContainerIDOnShip().find((*itr)->getId());
-        if(place !=this->ship->getShipMap().getContainerIDOnShip().cend()){
+        if (place != this->ship->getShipMap().getContainerIDOnShip().cend()) {
             opList.emplace_front(AbstractAlgorithm::Action::REJECT, *itr, MapIndex());
-            itr=loadList.erase(itr);
-        }
-        else{
+            itr = loadList.erase(itr);
+        } else {
             itr++;
         }
     }
     return 0;
 }
+
 int NaiveStowageAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
     this->ship = FileHandler::createShipFromFile(full_path_and_file_name);
     return this->ship == nullptr;
@@ -265,7 +264,7 @@ int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full
         list<shared_ptr<Container>> containerListToLoadInThisPort = FileHandler::fileToContainerList(
                 input_full_path_and_file_name); //always ok? what if cant open file?
         list<CargoOperation> opList;
-        rejectDoubleId(containerListToLoadInThisPort,opList);
+        rejectDoubleId(containerListToLoadInThisPort, opList);
         shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain = this->unloadContainerByPort(portName, opList);
         this->loadAgain(rememberLoadAgain, opList);
         this->loadNewContainers(containerListToLoadInThisPort, opList, portName);

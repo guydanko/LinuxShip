@@ -22,7 +22,7 @@ public:
     /*returns empty list if invalid file or no legal containers*/
     static list<shared_ptr<Container>> fileToContainerList(const string& fileName,const string& errorFile = "");
     /*returns null ptr if ship was not created*/
-    static Ship* createShipFromFile(const string& fileName, const string& errorFile = "");
+    static shared_ptr<Ship> createShipFromFile(const string& fileName, const string& errorFile = "");
     static list<shared_ptr<CargoOperation>> createCargoOpsFromFile(const string& fileName, list<shared_ptr<Container>>& containerList );
     static void operationsToFile(list<CargoOperation> operations, const string &fileName, const string& currentPort);
     /*returns empty list if invalid file or no legal containers*/

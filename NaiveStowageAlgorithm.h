@@ -16,11 +16,11 @@ using  std::string ;
 class NaiveStowageAlgorithm: public AbstractAlgorithm {
 
 protected:
-    Ship *ship = nullptr;
+    shared_ptr<Ship> ship = nullptr;
     WeightBalanceCalculator calculator;
 public:
     NaiveStowageAlgorithm(): AbstractAlgorithm() {}
-    NaiveStowageAlgorithm(Ship* ship, WeightBalanceCalculator calculator): AbstractAlgorithm(){}
+    NaiveStowageAlgorithm(shared_ptr<Ship> ship, WeightBalanceCalculator calculator): AbstractAlgorithm(){}
 
     void loadAgain(shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation>& opList ) ;
     void loadNewContainers(list<shared_ptr<Container>>& containerListToLoad, list<CargoOperation>& opList, const string& currentPort) ;

@@ -15,15 +15,15 @@ using std::get;
 
 class Travel {
     unordered_map<string, tuple<int, int>> portCounter;
-    Ship *ship;
+    shared_ptr<Ship> ship;
     list<string> originalRoute;
     string travelPath;
     string travelName;
 public:
 
-    Travel(const string &travelPath, const string &travelName, Ship *ship);
+    Travel(const string &travelPath, const string &travelName,shared_ptr<Ship> ship);
 
-    Ship *getShip() { return this->ship; }
+    shared_ptr<Ship> getShip() { return this->ship; }
 
     string getTravelName() const;
 
@@ -42,10 +42,6 @@ public:
     const  string& getTravelPath(){ return  this->travelPath;}
 
     const string getNextCargoFilePath();
-
-    ~Travel() {
-        delete this->ship;
-    };
 
 private:
     void increaseVisits(const string &port);
