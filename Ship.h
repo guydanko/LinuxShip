@@ -15,9 +15,11 @@ class Ship {
 
 public:
 
-    Ship(int height, int rows, int cols) : shipMap(height, rows, cols) {}
+    Ship(int height = 0, int rows = 0, int cols = 0) : shipMap(height, rows, cols) {}
 
-    ShipMap &getShipMap() { return this->shipMap; }
+    ShipMap &getShipMap() { return this->shipMap; };
+
+    void resetShipMap(ShipMap& shipMap){this->shipMap = shipMap;};
 
     list<string> &getShipRoute() { return this->shipRoute; }
 

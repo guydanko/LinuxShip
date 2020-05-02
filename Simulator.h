@@ -9,27 +9,43 @@
 #include <iostream>
 
 namespace fs = std::filesystem;
+using std::pair;
 
 #ifndef SHIPGIT_SIMULATOR_H
 #define SHIPGIT_SIMULATOR_H
 
 
-
-class Simulator{
+class Simulator {
+    list<pair<shared_ptr<AbstractAlgorithm>, Travel>> algoXtravel;
     list<shared_ptr<AbstractAlgorithm>> algoList;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
-    string rootPath;
+    string outputPath = "SimulatorFiles", travelPath, algoPath;
+
     void travelErrorsToFile(const string &fileName);
-    void buildTravel(const fs::path& path);
-    static void deleteEmptyFiles();
+
+    void buildTravel(const fs::path &path);
+
+    void deleteEmptyFiles();
+
+    void createAlgoXTravel();
 
 public:
-    Simulator(const string& simulationDirectory);
-    list<Travel>& getTravels(){ return this->travelList;};
+    Simulator(const string &travelPath, const string &algoPath = "", const string &outputPath = "") : travelPath(
+            travelPath),
+                                                                                                      algoPath(
+                                                                                                              algoPath),
+                                                                                                      outputPath(
+                                                                                                              outputPath) {};
+
+    list<Travel> &getTravels() { return this->travelList; };
+
     void run();
-    void runOneTravel(Travel& travel, shared_ptr<AbstractAlgorithm> algo, const string& fileName);
-    list<SimulatorError> checkAlgoCorrect(shared_ptr<Ship> ship, list<shared_ptr<CargoOperation>> &cargoOpsList, list<shared_ptr<Container>> &loadList, const string &currentPort, int& numberLoads, int& numberUnloads,list<SimulatorError>& listError);
+
+    void runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> algo, const string &fileName,
+                      const string &errorFileName);
+
 
 };
+
 #endif //SHIPGIT_SIMULATOR_H

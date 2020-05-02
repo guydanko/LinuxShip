@@ -81,8 +81,9 @@ void IncorrectAlgorithm::loadOneContainer(shared_ptr<Container> cont, list<Cargo
     }
 }
 
-void IncorrectAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList,
-                                           const string &currentPort) {
+void
+IncorrectAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList,
+                                      const string &currentPort) {
     for (auto cont : containerListToLoad) {
         //unnecessary if - only for use currentPort
         if (currentPort.length() > 0) {
@@ -92,13 +93,15 @@ void IncorrectAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containe
 }
 
 int IncorrectAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
-    this->ship = FileHandler::createShipFromFile(full_path_and_file_name);
-    return 0;
+    auto shipPtr = std::make_shared<shared_ptr<Ship>>(std::make_shared<Ship>());
+    int result =  FileHandler::createShipFromFile(full_path_and_file_name, shipPtr);
+    this->ship = *shipPtr;
+    return result;
 }
 
 int IncorrectAlgorithm::readShipRoute(const std::string &full_path_and_file_name) {
-    this->ship->setShipRoute(FileHandler::fileToRouteList(full_path_and_file_name));
-    return 0;
+
+    return FileHandler::fileToRouteList(full_path_and_file_name, this->ship->getShipRoute());
 }
 
 int IncorrectAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &calculator) {
@@ -108,12 +111,14 @@ int IncorrectAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &calc
 
 int IncorrectAlgorithm::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
                                                 const std::string &output_full_path_and_file_name) {
+    int result = 0;
     const string &portName = this->ship->getShipRoute().front();
     this->ship->getShipRoute().pop_front();
-    list<shared_ptr<Container>> containerListToLoadInThisPort = FileHandler::fileToContainerList(input_full_path_and_file_name);
+    list<shared_ptr<Container>> containerListToLoadInThisPort = {};
+    result += FileHandler::fileToContainerList(input_full_path_and_file_name, containerListToLoadInThisPort);
     list<CargoOperation> opList;
     this->unloadContainerByPort(portName, opList);
     this->loadNewContainers(containerListToLoadInThisPort, opList, portName);
     FileHandler::operationsToFile(opList, output_full_path_and_file_name, portName);
-    return 0;
+    return result;
 }

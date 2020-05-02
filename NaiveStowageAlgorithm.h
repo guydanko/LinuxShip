@@ -16,7 +16,7 @@ using  std::string ;
 class NaiveStowageAlgorithm: public AbstractAlgorithm {
 
 protected:
-    shared_ptr<Ship> ship = nullptr;
+    shared_ptr<Ship> ship;
     WeightBalanceCalculator calculator;
 public:
     NaiveStowageAlgorithm(): AbstractAlgorithm() {}

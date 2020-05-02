@@ -14,9 +14,9 @@ using std::set;
 
 class ShipMap {
 
-    const int height;
-    const int rows;
-    const int cols;
+    int height;
+    int rows;
+    int cols;
     shared_ptr<Container> imaginaryContainer = nullptr;
     vector<vector<vector<shared_ptr<Container>>>> shipMapContainer;
     set<string> containerIDOnShip = set<string>();

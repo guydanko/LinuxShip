@@ -3,13 +3,14 @@
 #include <iostream>
 #include <sstream>
 #include "SimulatorError.h"
-#include <unordered_set>
 #include <unordered_map>
+
 
 using std::ifstream;
 using std::cerr;
 using std::stringstream;
 using std::ofstream;
+
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 
@@ -28,6 +29,9 @@ std::string trim(const std::string &s) {
 }
 
 bool isNumber(const string &s) {
+    if (s.empty()) {
+        return false;
+    }
     for (unsigned int i = 0; i < s.length(); i++) {
         if (!isdigit(s[i])) {
             return false;
@@ -42,22 +46,28 @@ void strToUpper(string &str) {
     }
 }
 
-list<shared_ptr<Container>> FileHandler::fileToContainerList(const string &fileName, const string &errorFile) {
-    list<shared_ptr<Container>>
-            containers = {};
-    ifstream inFile;
-    inFile.open(fileName);
-    ofstream outFile(errorFile, std::ios::app);
-    int lineNum = 0;
+bool needToWrite(const string &fileName) {
+    return !fileName.empty();
+}
 
-    vector<string> tokens;
+int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Container>> &containerList,
+                                     const string &errorFile) {
+    int result = 0;
+    ifstream inFile(fileName);
+    ofstream outFile(errorFile, std::ios::app);
+    bool toWrite = needToWrite(errorFile);
+
     /*could not open file*/
     if (!inFile) {
-        outFile << "Could not open file: " << fileName << "\n";
-        outFile.close();
-        return containers;
+        if (toWrite) {
+            outFile << "File: " << fileName << " does not exist\n";
+            outFile.close();
+        }
+        return (1 << 16);
     }
 
+    int lineNum = 0;
+    vector<string> tokens;
     string line;
 
     while (getline(inFile, line)) {
@@ -71,20 +81,50 @@ list<shared_ptr<Container>> FileHandler::fileToContainerList(const string &fileN
             svec.push_back(trim(token));
         }
 
-        if (svec.size() != 3) {
-            outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
+        if (svec.size() > 3) {
+            if (toWrite) {
+                outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
+            }
             continue;
+            //to fix later depending on what error this is
         }
 
-        string id = svec[0], weight = svec[1], destination = svec[2];
+        size_t vecSize = svec.size();
+        string id, weight, destination;
+        id = vecSize >= 1 ? svec[0] : "";
+        weight = vecSize >= 2 ? svec[1] : "";
+        destination = vecSize >= 3 ? svec[2] : "";
+        strToUpper(destination);
+        strToUpper(id);
+
+        string errorMessage = "";
+
+        if (weight.empty() || !isNumber(weight)) {
+            errorMessage += "invalid weight ";
+            result |= (1 << 12);
+        }
+        if (destination.empty() || !Container::isPortValid(destination)) {
+            errorMessage += "invalid destination ";
+            result |= (1 << 13);
+        }
+        if (id.empty()) {
+            errorMessage += "invalid id ";
+            return result |= (1 << 14);
+        } else {
+            if (!Container::isLegalId(id)) {
+                errorMessage += "invalid id ";
+                return result |= (1 << 15);
+            }
+        }
 
         if (isNumber(weight) && Container::isLegalParamContainer(stoi(weight), destination, id)) {
-            strToUpper(destination);
-            strToUpper(id);
-            containers.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
+            containerList.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
         } else {
-            outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a valid container!\n";
-            containers.emplace_back(std::make_shared<Container>(0, "", id, false));
+            if (toWrite) {
+                outFile << "Warning, file: " << fileName << " line number: " << lineNum
+                        << " is not a valid container! ( " << errorMessage << " )\n";
+            }
+            containerList.emplace_back(std::make_shared<Container>(0, "", id, false));
         }
 
 
@@ -92,24 +132,26 @@ list<shared_ptr<Container>> FileHandler::fileToContainerList(const string &fileN
 
     inFile.close();
     outFile.close();
-    return containers;
+    return result;
 
 }
 
-list<string> FileHandler::fileToRouteList(const string &fileName, const string &errorFile) {
-    list<string> routes = {};
-    ifstream inFile;
-    inFile.open(fileName);
+int FileHandler::fileToRouteList(const string &fileName, list<string> &route, const string &errorFile) {
+    int result = 0;
+    ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
-    int lineNum = 0;
+    bool toWrite = needToWrite(errorFile);
 
     /*could not open file*/
     if (!inFile) {
-        outFile << "Could not open file: " << fileName << "\n";
-        outFile.close();
-        return routes;
+        if (toWrite) {
+            outFile << "Could not open file: " << fileName << "\n";
+            outFile.close();
+        }
+        return (1 << 7);
     }
 
+    int lineNum = 0;
     string line;
     while (getline(inFile, line)) {
         lineNum++;
@@ -123,31 +165,51 @@ list<string> FileHandler::fileToRouteList(const string &fileName, const string &
         }
 
         if (svec.size() != 1) {
-            outFile << "Warning: file" << fileName << "line number: " << lineNum << " is not in valid format!\n";
+            if (toWrite) {
+                outFile << "Warning: file" << fileName << "line number: " << lineNum << " is not in valid format!\n";
+            }
+            //something with result?
             continue;
         }
 
         string port = svec[0];
         if (Container::isPortValid(port)) {
             strToUpper(port);
-            if (routes.size() > 0 && routes.back().compare(port) == 0) {
-                outFile << "Warning, file: " << fileName << "line number: " << lineNum
-                        << " repeats the same twice in a row!\n";
+            if (route.size() > 0 && route.back().compare(port) == 0) {
+                if (toWrite) {
+                    outFile << "Warning, file: " << fileName << "line number: " << lineNum
+                            << " repeats the same twice in a row!\n";
+                }
+                result |= (1 << 5);
             } else {
-                routes.push_back(port);
+                route.push_back(port);
             }
         } else {
-            outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a legal port!\n";
+            if (toWrite) {
+                outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not a legal port!\n";
+            }
+            result |= (1 << 6);
         }
 
     }
-    if (routes.empty()) {
-        outFile << "Could not create route from file: " << fileName << ", file does not contain any legal ports\n";
+    if (route.empty()) {
+        if (toWrite) {
+            outFile << "Could not create route from file: " << fileName << ", file does not contain any legal ports\n";
+        }
+        result |= (1 << 7);
+    }
+
+    if (route.size() == 1) {
+        if (toWrite) {
+            outFile << "Could not create route from file: " << fileName << ", contains only 1 legal port\n";
+        }
+        result |= (1 << 8);
     }
 
     inFile.close();
     outFile.close();
-    return routes;
+
+    return result;
 
 }
 
@@ -166,14 +228,20 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
     outfile.close();
 }
 
-shared_ptr<Ship> FileHandler::createShipFromFile(const string &fileName, const string &errorFileName) {
+int FileHandler::createShipFromFile(const string &fileName, shared_ptr<shared_ptr<Ship>> shipPtr,
+                                    const string &errorFile) {
+    int result = 0;
     ifstream inFile(fileName);
-    ofstream errorFile(errorFileName, std::ios::app);
+    ofstream outFile(errorFile, std::ios::app);
+    bool toWrite = needToWrite(errorFile);
+
     /*could not open file*/
     if (!inFile) {
-        errorFile << "Could not create ship from file : " << fileName << "\n";
-        errorFile.close();
-        return nullptr;
+        if (toWrite) {
+            outFile << "Could not create ship from file : " << fileName << "\n";
+            outFile.close();
+        }
+        return result | (1 << 3);
     }
 
     string line, token;
@@ -189,16 +257,19 @@ shared_ptr<Ship> FileHandler::createShipFromFile(const string &fileName, const s
     while (getline(sline, token, ',')) {
         token = trim(token);
         if (!isNumber(token)) {
-            errorFile << "Error: details of ship must be numbers!\n";
-            errorFile.close();
-            return nullptr;
+            if (toWrite) {
+                outFile << "Error: first line of shipPlan in file: " << fileName << "is not in legal format!\n";
+                outFile.close();
+            }
+            return result | (1 << 3);
         }
         svec.push_back(token);
     }
 
     int height = stoi(svec[0]), rows = stoi(svec[1]), cols = stoi(svec[2]);
-    shared_ptr<Ship> ship = std::make_shared<Ship>(height, rows, cols);
-    vector<vector<int>> indexVector(rows, vector<int>(cols, 0));
+    *shipPtr = std::make_shared<Ship>(height, rows, cols);
+    vector<vector<int>>
+            indexVector(rows, vector<int>(cols, 0));
 
     while (getline(inFile, line)) {
         lineNum++;
@@ -216,31 +287,45 @@ shared_ptr<Ship> FileHandler::createShipFromFile(const string &fileName, const s
         }
 
         if (svec.size() != 3) {
-            errorFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
+            if (toWrite) {
+                outFile << "Warning, file: " << fileName << " line number: " << lineNum
+                        << " is not in valid format!\n";
+            }
+            result |= (1 << 2);
             continue;
         }
         int actualFloors = stoi(svec[2]), row = stoi(svec[0]), col = stoi(svec[1]);
-        if (actualFloors >= ship->getShipMap().getHeight()) {
-            errorFile << "Warning, file: " << fileName << " actual floors in line: " << lineNum
-                      << " is larger or equal to max height\n";
+        if (actualFloors >= height) {
+            if (toWrite) {
+                outFile << "Warning, file: " << fileName << " actual floors in line: " << lineNum
+                        << " is larger or equal to max height\n";
+            }
+            result |= 1;
             continue;
         }
-        if (row >= ship->getShipMap().getRows() || col >= ship->getShipMap().getCols()) {
-            errorFile << "Warning, file: " << fileName << " dimensions in line: " << lineNum
-                      << " are larger than dimension of floor\n";
+        if (row >= rows ||
+            col >= cols) {
+            if (toWrite) {
+                outFile << "Warning, file: " << fileName << " dimensions in line: " << lineNum
+                        << " are larger than dimension of floor\n";
+            }
+            result |= (1 << 1);
             continue;
         }
         if (indexVector[row][col] != 0) {
-            errorFile << "Warning, file: " << fileName << " line: " << lineNum
-                      << " used indexes that were already assigned\n";
+            if (toWrite) {
+                outFile << "Warning, file: " << fileName << " line: " << lineNum
+                        << " used indexes that were already assigned\n";
+            }
+            //something with result error?
         } else {
             indexVector[row][col] = 1;
-            ship->getShipMap().initShipMapContainer(ship->getShipMap().getHeight() - actualFloors, row, col);
+            (*(*shipPtr)).getShipMap().initShipMapContainer(height - actualFloors, row, col);
         }
     }
     inFile.close();
-    errorFile.close();
-    return ship;
+    outFile.close();
+    return result;
 }
 
 void
@@ -248,7 +333,7 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
                                    const string &portName, int visitNumber, bool noErrors,
                                    const string &errorFileName) {
     ofstream outFile;
-    outFile.open(path + "/" + travelName + "AlgoErrors", std::ios::app);
+    outFile.open(path + ".errors", std::ios::app);
     ofstream errorFile(errorFileName, std::ios::app);
     if (!outFile) {
         errorFile << "Could not write error file: " << path + "/" + travelName + "AlgoErrors" << "\n";
@@ -296,8 +381,10 @@ FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Cont
             svec.push_back(token);
         }
 
+
         AbstractAlgorithm::Action action;
-        shared_ptr<Container> cont = std::make_shared<Container>(0, "", svec[1]);
+        shared_ptr<Container> cont =
+                svec.size() > 1 ? std::make_shared<Container>(0, "", svec[1]) : std::make_shared<Container>(0, "", "");
 
         switch (svec[0].c_str()[0]) {
             case 'L':

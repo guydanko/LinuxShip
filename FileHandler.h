@@ -19,15 +19,28 @@ using std::unordered_map;
 class FileHandler {
 
 public:
-    /*returns empty list if invalid file or no legal containers*/
-    static list<shared_ptr<Container>> fileToContainerList(const string& fileName,const string& errorFile = "");
+    /*appends containers to list*/
+    static int fileToContainerList(const string &fileName, list<shared_ptr<Container>> &containerList,
+                                   const string &errorFile = "");
+
+    static int fileToRouteList(const string &fileName, list<string> &route, const string &errorFile = "");
+
     /*returns null ptr if ship was not created*/
-    static shared_ptr<Ship> createShipFromFile(const string& fileName, const string& errorFile = "");
-    static list<shared_ptr<CargoOperation>> createCargoOpsFromFile(const string& fileName, list<shared_ptr<Container>>& containerList );
-    static void operationsToFile(list<CargoOperation> operations, const string &fileName, const string& currentPort);
+
+    static int
+    createShipFromFile(const string &fileName, shared_ptr<shared_ptr<Ship>> ship, const string &errorFile = "");
+
+    static list<shared_ptr<CargoOperation>>
+    createCargoOpsFromFile(const string &fileName, list<shared_ptr<Container>> &containerList);
+
+    static void operationsToFile(list<CargoOperation> operations, const string &fileName, const string &currentPort);
+
     /*returns empty list if invalid file or no legal containers*/
-    static list<string> fileToRouteList(const string& fileName, const string& errorFile = "");
-    static void simulatorErrorsToFile(const list<SimulatorError>& simErrors, const string& fileName, const string& travelName, const string & portName = "",int visitNumber=0, bool noErrors = false,const string& errorFile = "");
+
+    static void
+    simulatorErrorsToFile(const list<SimulatorError> &simErrors, const string &fileName, const string &travelName,
+                          const string &portName = "", int visitNumber = 0, bool noErrors = false,
+                          const string &errorFile = "");
 
 };
 

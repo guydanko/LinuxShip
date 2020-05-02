@@ -240,15 +240,14 @@ int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadList,
 }
 
 int NaiveStowageAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
-    this->ship = FileHandler::createShipFromFile(full_path_and_file_name);
-    return this->ship == nullptr;
+    auto shipPtr = std::make_shared<shared_ptr<Ship>>(std::make_shared<Ship>());
+    int result =  FileHandler::createShipFromFile(full_path_and_file_name, shipPtr);
+    this->ship = *shipPtr;
+    return result;
 }
 
 int NaiveStowageAlgorithm::readShipRoute(const std::string &full_path_and_file_name) {
-    this->ship->setShipRoute(FileHandler::fileToRouteList(full_path_and_file_name));
-    const string &portName = this->ship->getShipRoute().front();
-    //always? what if cant open file?
-    return 0;
+    return FileHandler::fileToRouteList(full_path_and_file_name, this->ship->getShipRoute());
 }
 
 int NaiveStowageAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &calculator) {
@@ -258,11 +257,13 @@ int NaiveStowageAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &c
 
 int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
                                                    const std::string &output_full_path_and_file_name) {
+    int result = 0;
     if (!this->ship->getShipRoute().empty()) {
         const string portName = this->ship->getShipRoute().front();
         this->ship->getShipRoute().pop_front();
-        list<shared_ptr<Container>> containerListToLoadInThisPort = FileHandler::fileToContainerList(
-                input_full_path_and_file_name); //always ok? what if cant open file?
+        list<shared_ptr<Container>> containerListToLoadInThisPort = {};
+        result += FileHandler::fileToContainerList(
+                input_full_path_and_file_name, containerListToLoadInThisPort); //always ok? what if cant open file?
         list<CargoOperation> opList;
         rejectDoubleId(containerListToLoadInThisPort, opList);
         shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain = this->unloadContainerByPort(portName, opList);

@@ -1,19 +1,18 @@
-//
-// Created by noada on 4/29/2020.
-//
+// AbstractAlgorithm.h
 
-#ifndef LINUXSHIP_ABSTRACTALGORITHM_H
-#define LINUXSHIP_ABSTRACTALGORITHM_H
+#pragma once
 
 #include <string>
 
-using std::string;
+// forward declaration
+class WeightBalanceCalculator;
 
-#pragma once
 class AbstractAlgorithm {
 public:
     virtual ~AbstractAlgorithm(){}
+
     enum class Action { LOAD = 'L', UNLOAD = 'U', MOVE = 'M', REJECT = 'R'};
+
 // methods below return int for returning 0 for success
 // and any other number as error code
     virtual int readShipPlan(const std::string& full_path_and_file_name) = 0;
@@ -23,4 +22,3 @@ public:
             const std::string& input_full_path_and_file_name,
             const std::string& output_full_path_and_file_name) = 0;
 };
-#endif //LINUXSHIP_ABSTRACTALGORITHM_H

@@ -19,7 +19,7 @@ using std::string;
 
 class IncorrectAlgorithm : public AbstractAlgorithm {
 protected:
-    shared_ptr<Ship> ship = nullptr;
+    shared_ptr<Ship> ship;
     WeightBalanceCalculator calculator;
 public:
     IncorrectAlgorithm() : AbstractAlgorithm() {}
