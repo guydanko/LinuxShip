@@ -127,8 +127,8 @@ void Simulator::createAlgoXTravel() {
     }
     travelErrorsToFile(this->outputPath + "/errors");
     this->algoList.push_back(std::make_shared<NaiveStowageAlgorithm>(nullptr, calculator));
-    this->algoList.push_back(std::make_shared<MoreNaiveAlgorithm>(nullptr, calculator));
-    this->algoList.push_back(std::make_shared<IncorrectAlgorithm>(nullptr, calculator));
+//    this->algoList.push_back(std::make_shared<MoreNaiveAlgorithm>(nullptr, calculator));
+//    this->algoList.push_back(std::make_shared<IncorrectAlgorithm>(nullptr, calculator));
     for (auto algo: algoList) {
         for (Travel travel:this->travelList) {
             this->algoXtravel.emplace_back(algo, travel);
@@ -224,6 +224,9 @@ void Simulator::deleteEmptyFiles() {
         if (!fs::is_directory(simFiles) && fs::file_size(simFiles) == 0) {
             fs::remove(simFiles);
         }
+    }
+    if(fs::is_empty(this->outputPath + "/errors")){
+        fs::remove_all(this->outputPath + "/errors");
     }
 }
 
