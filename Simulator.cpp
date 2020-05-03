@@ -10,7 +10,7 @@ using std::map;
 
 void deleteRejectDoubleID(list<shared_ptr<CargoOperation>> &cargoOps, int countErase, list<SimulatorError> &listError,
                           const string &id, bool onShip) {
-    int countRemoveOp = cargoOps.size();
+    size_t countRemoveOp = cargoOps.size();
     auto itr = cargoOps.begin();
     int count = countErase;
     while (countErase > 0 && itr != cargoOps.end()) {
@@ -21,7 +21,7 @@ void deleteRejectDoubleID(list<shared_ptr<CargoOperation>> &cargoOps, int countE
             itr++;
         }
     }
-    countRemoveOp = countRemoveOp - cargoOps.size();
+    countRemoveOp -= cargoOps.size();
     if (count > 0) {
         listError.emplace_back("id- " + id + " rejected " + std::to_string(countRemoveOp) + " times but there are " +
                                std::to_string(countErase) + " container with this id to reject by reason of double id",
@@ -29,7 +29,7 @@ void deleteRejectDoubleID(list<shared_ptr<CargoOperation>> &cargoOps, int countE
     }
 }
 
-void deleteDoubleID(list<shared_ptr<Container>> &loadList, const string &id, bool onShip) {
+void deleteDoubleID(list<shared_ptr<Container>> &loadList, const string &id, bool onShip, list<shared_ptr<Container>>& doubleIdList) {
     //already on ship remove all with this id
     if (onShip) {
         loadList.remove_if([&id](shared_ptr<Container> &cont) { return cont->getId() == id; });
@@ -45,6 +45,7 @@ void deleteDoubleID(list<shared_ptr<Container>> &loadList, const string &id, boo
         }
         for (auto itr = startPlace; itr != loadList.end();) {
             if ((*itr)->getId() == id) {
+                doubleIdList.push_back(*itr);
                 itr = loadList.erase(itr);
             } else {
                 itr++;
@@ -76,7 +77,7 @@ void connectContainerFromShip(shared_ptr<Ship> ship, list<shared_ptr<CargoOperat
 void
 connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, shared_ptr<Ship> ship,
                           list<shared_ptr<CargoOperation>> &cargoOps,
-                          list<SimulatorError> &listError) {
+                          list<SimulatorError> &listError, list<shared_ptr<Container>>& doubleIdList) {
     map<string, int> containerMap;
     /*create map of id to container in load list*/
     for (const auto &cont: loadList) {
@@ -92,7 +93,7 @@ connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, shared_ptr<Ship
             onShip = true;
         }
         if (pair.second > 1) {
-            deleteDoubleID(loadList, pair.first, onShip);
+            deleteDoubleID(loadList, pair.first, onShip, doubleIdList);
             deleteRejectDoubleID(cargoOps, pair.second - 1, listError, pair.first, onShip);
         }
     }
@@ -127,8 +128,8 @@ void Simulator::createAlgoXTravel() {
     }
     travelErrorsToFile(this->outputPath + "/errors");
     this->algoList.push_back(std::make_shared<NaiveStowageAlgorithm>(nullptr, calculator));
-//    this->algoList.push_back(std::make_shared<MoreNaiveAlgorithm>(nullptr, calculator));
-//    this->algoList.push_back(std::make_shared<IncorrectAlgorithm>(nullptr, calculator));
+    this->algoList.push_back(std::make_shared<MoreNaiveAlgorithm>(nullptr, calculator));
+    this->algoList.push_back(std::make_shared<IncorrectAlgorithm>(nullptr, calculator));
     for (auto algo: algoList) {
         for (Travel travel:this->travelList) {
             this->algoXtravel.emplace_back(algo, travel);
@@ -194,6 +195,7 @@ void Simulator::runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo
     while (!travel.didTravelEnd()) {
         listError = {};
         list<shared_ptr<Container>> loadList = {};
+        list<shared_ptr<Container>> doubleIdList ={};
         travelCargoErrors += travel.getContainerList(travelErrorPath, loadList);
         //path to read container list and write cargo op
         const string writeTo =
@@ -202,10 +204,10 @@ void Simulator::runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo
                 ".crane_instructions";
         pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
         list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList);
-        connectContainerToCargoOp(loadList, travel.getShip(), cargoOps, listError);
+        connectContainerToCargoOp(loadList, travel.getShip(), cargoOps, listError, doubleIdList);
         SimulatorAlgoCheck::checkAlgoCorrect(travel.getShip(), this->calculator, cargoOps, loadList,
                                              travel.getShip()->getCurrentPort(),
-                                             numberLoads, numberUnloads, listError);
+                                             numberLoads, numberUnloads, listError,doubleIdList);
         errorAmount += listError.size();
         FileHandler::simulatorErrorsToFile(listError, travelErrorPath, travel.getTravelName(),
                                            travel.getShip()->getCurrentPort(), travel.getCurrentVisitNumber());

@@ -41,7 +41,6 @@ public:
 
     int getRouteError() { return this->routeError; };
 
-    void setToOriginalTravel();
 
     bool didTravelEnd() { return this->ship->getShipRoute().empty(); };
 

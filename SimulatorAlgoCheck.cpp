@@ -89,7 +89,7 @@ void orderListLoadContainer(list<shared_ptr<Container>> &containerListToLoad, li
 }
 
 void checkLoadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, list<shared_ptr<Container>> &loadList,
-                        map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToIndex,
+                        map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToCargoOp,
                         const string &currentPort,
                         int &maxNumberPortLoaded, list<SimulatorError> &errorList) {
 
@@ -101,7 +101,7 @@ void checkLoadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, list<sha
         return;
     }
     int numberOfIdInList = 0;
-    shared_ptr<Container> containerFromList = nullptr;
+    shared_ptr<Container> containerFromLoadList = nullptr;
     indexAccessible(ship, cargoOp, errorList);
     if (ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] !=
         nullptr) {
@@ -116,7 +116,7 @@ void checkLoadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, list<sha
         cargoOp.getContainer()->setIsContainerLoaded(1);
         return;
     }
-    for (auto pair: rememberToLoadAgainIdToIndex) {
+    for (auto pair: rememberToLoadAgainIdToCargoOp) {
         if (pair.first == cargoOp.getContainer()->getId()) {
             numberOfIdInList++;
         }
@@ -124,7 +124,7 @@ void checkLoadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, list<sha
     for (auto container: loadList) {
         if (container->getId() == cargoOp.getContainer()->getId() && container->getIsContainerLoaded() != 1) {
             numberOfIdInList++;
-            containerFromList = container;
+            containerFromLoadList = cargoOp.getContainer();
         }
     }
     if (numberOfIdInList <= 0) {
@@ -138,11 +138,11 @@ void checkLoadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, list<sha
     ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = cargoOp.getContainer();
     cargoOp.getContainer()->setIsContainerLoaded(1);
     //load from remember
-    if (containerFromList == nullptr) {
+    if (containerFromLoadList == nullptr) {
         ship->getShipMap().getContainerIDOnShip().insert(cargoOp.getContainer()->getId());
-        auto itrRemember = rememberToLoadAgainIdToIndex.find(cargoOp.getContainer()->getId());
-        if (itrRemember != rememberToLoadAgainIdToIndex.cend()) {
-            rememberToLoadAgainIdToIndex.erase(itrRemember);
+        auto itrRemember = rememberToLoadAgainIdToCargoOp.find(cargoOp.getContainer()->getId());
+        if (itrRemember != rememberToLoadAgainIdToCargoOp.cend()) {
+            rememberToLoadAgainIdToCargoOp.erase(itrRemember);
         }
     }
         //load from loadList
@@ -159,19 +159,19 @@ void checkLoadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, list<sha
                                    SimErrorType::OPERATION_PORT, cargoOp);
             return;
         }
-        if (containerFromList->getPortIndex() == 0) {
-            errorList.emplace_back("should not load container with destination-" + containerFromList->getDestination() +
+        if (containerFromLoadList->getPortIndex() == 0) {
+            errorList.emplace_back("should not load container with destination-" + containerFromLoadList->getDestination() +
                                    " which is not in the ship's route", SimErrorType::OPERATION_PORT, cargoOp);
             return;
         }
-        if (containerFromList->getPortIndex() > maxNumberPortLoaded) {
-            maxNumberPortLoaded = containerFromList->getPortIndex();
+        if (containerFromLoadList->getPortIndex() > maxNumberPortLoaded) {
+            maxNumberPortLoaded = containerFromLoadList->getPortIndex();
         }
     }
 }
 
 void checkUnloadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, const string &currentPort,
-                          map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToIndex,
+                          map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToCargoOp,
                           list<SimulatorError> &errorList) {
     indexAccessible(ship, cargoOp, errorList);
     shared_ptr<Container> containerOnTheShipInThisPlace = ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()];
@@ -193,9 +193,9 @@ void checkUnloadOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, const 
             ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()]->getId());
     ship->getShipMap().getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = nullptr;
     //maybe future error
-    if (cargoOp.getContainer()->getDestination().compare(currentPort) != 0) {
+    if (cargoOp.getContainer()->getDestination() != currentPort) {
         cargoOp.getContainer()->setIsContainerLoaded(0);
-        rememberToLoadAgainIdToIndex[cargoOp.getContainer()->getId()] = std::make_shared<CargoOperation>(cargoOp);
+        rememberToLoadAgainIdToCargoOp[cargoOp.getContainer()->getId()] = std::make_shared<CargoOperation>(cargoOp);
     }
 }
 
@@ -293,14 +293,24 @@ void checkRejectOperation(shared_ptr<Ship> ship, CargoOperation &cargoOp, list<s
 }
 
 //make sure nothing left on port with no reason
-void nothingLeftNoReason(map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToIndex,
+void nothingLeftNoReason(map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToCargoOp,
                          list<SimulatorError> &errorList,
-                         const string &currentPort) {
-    for (auto pair : rememberToLoadAgainIdToIndex) {
-        errorList.emplace_back(
-                "unload container in port- " + currentPort + " instead of destination port " +
-                pair.second->getContainer()->getDestination() +
-                " ", SimErrorType::OPERATION_PORT, *pair.second);
+                         const string &currentPort,list<shared_ptr<Container>>& doubleIdList) {
+    for (auto pair : rememberToLoadAgainIdToCargoOp) {
+        bool found=false;
+        for(auto itr= doubleIdList.begin();itr!=doubleIdList.end() && !found ;itr++){
+            if((*itr)->getId()== pair.first && (*itr)->getDestination()== currentPort){
+                errorList.emplace_back(
+                        "when rejects double id from the container list to load in this port, it rejects the first container and choose other container to load- ", SimErrorType::OPERATION_PORT, *pair.second);
+                found= true;
+            }
+        }
+        if(!found){
+            errorList.emplace_back(
+                    "unload container in port- " + currentPort + " instead of destination port " +
+                    pair.second->getContainer()->getDestination() +
+                    " ", SimErrorType::OPERATION_PORT, *pair.second);
+        }
     }
 }
 
@@ -318,8 +328,8 @@ list<SimulatorError>
 SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<Ship> ship,WeightBalanceCalculator& calculator, list<shared_ptr<CargoOperation>> &cargoOpsList,
                             list<shared_ptr<Container>> &loadList,
                             const string &currentPort, int &numberLoads, int &numberUnloads,
-                            list<SimulatorError> &errorList) {
-    map<string, shared_ptr<CargoOperation>> rememberToLoadAgainIdToIndex;
+                            list<SimulatorError> &errorList,list<shared_ptr<Container>>& doubleIdList) {
+    map<string, shared_ptr<CargoOperation>> rememberToLoadAgainIdToCargoOp;
     int number = 1;
     int maxNumberPortLoaded = 0;
     orderListLoadContainer(loadList, ship->getShipRoute());
@@ -340,12 +350,12 @@ SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<Ship> ship,WeightBalanceCalculat
                 switch (op) {
                     case AbstractAlgorithm::Action::LOAD:
                         numberLoads++;
-                        checkLoadOperation(ship, *cargoOp, loadList, rememberToLoadAgainIdToIndex, currentPort,
+                        checkLoadOperation(ship, *cargoOp, loadList, rememberToLoadAgainIdToCargoOp, currentPort,
                                            maxNumberPortLoaded, errorList);
                         break;
                     case AbstractAlgorithm::Action::UNLOAD:
                         numberUnloads++;
-                        checkUnloadOperation(ship, *cargoOp, currentPort, rememberToLoadAgainIdToIndex, errorList);
+                        checkUnloadOperation(ship, *cargoOp, currentPort, rememberToLoadAgainIdToCargoOp, errorList);
                         break;
                     case AbstractAlgorithm::Action::MOVE:
                         checkMoveOperation(ship, *cargoOp, errorList);
@@ -368,8 +378,7 @@ SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<Ship> ship,WeightBalanceCalculat
             checkRejectOperation(ship, *cargoOp, loadList, maxNumberPortLoaded, errorList, currentPort);
         }
     }
-    nothingLeftNoReason(rememberToLoadAgainIdToIndex, errorList,
-                        currentPort); //make sure nothing left on port with no reason
+    nothingLeftNoReason(rememberToLoadAgainIdToCargoOp, errorList, currentPort, doubleIdList); //make sure nothing left on port with no reason
     checkAllContainersRejectedOrLoaded(loadList, errorList);
     checkIfAllUnloaded(ship, currentPort, errorList);
     return errorList;

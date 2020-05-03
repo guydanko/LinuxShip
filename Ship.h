@@ -19,8 +19,6 @@ public:
 
     ShipMap &getShipMap() { return this->shipMap; };
 
-    void resetShipMap(ShipMap& shipMap){this->shipMap = shipMap;};
-
     list<string> &getShipRoute() { return this->shipRoute; }
 
     void setShipRoute(list<string> routes) { this->shipRoute = routes; };
@@ -29,7 +27,6 @@ public:
 
     void sailToNextPort();
 
-    ~Ship() {};
 
 
 };
