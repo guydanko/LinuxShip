@@ -28,7 +28,7 @@ public:
     /*returns null ptr if ship was not created*/
 
     static int
-    createShipFromFile(const string &fileName, shared_ptr<shared_ptr<Ship>> ship, const string &errorFile = "");
+    createShipMapFromFile(const string &fileName, shared_ptr<shared_ptr<ShipMap>> ship, const string &errorFile = "");
 
     static list<shared_ptr<CargoOperation>>
     createCargoOpsFromFile(const string &fileName, list<shared_ptr<Container>> &containerList);

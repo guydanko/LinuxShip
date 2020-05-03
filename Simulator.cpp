@@ -29,7 +29,8 @@ void deleteRejectDoubleID(list<shared_ptr<CargoOperation>> &cargoOps, int countE
     }
 }
 
-void deleteDoubleID(list<shared_ptr<Container>> &loadList, const string &id, bool onShip, list<shared_ptr<Container>>& doubleIdList) {
+void deleteDoubleID(list<shared_ptr<Container>> &loadList, const string &id, bool onShip,
+                    list<shared_ptr<Container>> &doubleIdList) {
     //already on ship remove all with this id
     if (onShip) {
         loadList.remove_if([&id](shared_ptr<Container> &cont) { return cont->getId() == id; });
@@ -54,17 +55,17 @@ void deleteDoubleID(list<shared_ptr<Container>> &loadList, const string &id, boo
     }
 }
 
-void connectContainerFromShip(shared_ptr<Ship> ship, list<shared_ptr<CargoOperation>> &cargoOps) {
+void connectContainerFromShip(shared_ptr<ShipMap> shipMap, list<shared_ptr<CargoOperation>> &cargoOps) {
     for (const auto &cargoOp: cargoOps) {
-        auto inShip = ship->getShipMap().getContainerIDOnShip().find(cargoOp->getContainer()->getId());
-        if (inShip != ship->getShipMap().getContainerIDOnShip().end()) {
-            for (int i = 0; i < ship->getShipMap().getHeight(); i++) {
-                for (int j = 0; j < ship->getShipMap().getRows(); j++) {
-                    for (int k = 0; k < ship->getShipMap().getCols(); k++) {
-                        if (ship->getShipMap().getShipMapContainer()[i][j][k] != nullptr) {
-                            if (ship->getShipMap().getShipMapContainer()[i][j][k]->getId() ==
+        auto inShip = shipMap->getContainerIDOnShip().find(cargoOp->getContainer()->getId());
+        if (inShip != shipMap->getContainerIDOnShip().end()) {
+            for (int i = 0; i < shipMap->getHeight(); i++) {
+                for (int j = 0; j < shipMap->getRows(); j++) {
+                    for (int k = 0; k < shipMap->getCols(); k++) {
+                        if (shipMap->getShipMapContainer()[i][j][k] != nullptr) {
+                            if (shipMap->getShipMapContainer()[i][j][k]->getId() ==
                                 cargoOp->getContainer()->getId()) {
-                                cargoOp->setContainer(ship->getShipMap().getShipMapContainer()[i][j][k]);
+                                cargoOp->setContainer(shipMap->getShipMapContainer()[i][j][k]);
                             }
                         }
                     }
@@ -75,9 +76,9 @@ void connectContainerFromShip(shared_ptr<Ship> ship, list<shared_ptr<CargoOperat
 }
 
 void
-connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, shared_ptr<Ship> ship,
+connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, shared_ptr<ShipMap> shipMap,
                           list<shared_ptr<CargoOperation>> &cargoOps,
-                          list<SimulatorError> &listError, list<shared_ptr<Container>>& doubleIdList) {
+                          list<SimulatorError> &listError, list<shared_ptr<Container>> &doubleIdList) {
     map<string, int> containerMap;
     /*create map of id to container in load list*/
     for (const auto &cont: loadList) {
@@ -87,8 +88,8 @@ connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, shared_ptr<Ship
     //get for every id the specific number of container with id- load list + ship
     for (auto &pair : containerMap) {
         bool onShip = false;
-        auto inShip = ship->getShipMap().getContainerIDOnShip().find(pair.first);
-        if (inShip != ship->getShipMap().getContainerIDOnShip().end()) {
+        auto inShip = shipMap->getContainerIDOnShip().find(pair.first);
+        if (inShip != shipMap->getContainerIDOnShip().end()) {
             pair.second++;
             onShip = true;
         }
@@ -105,7 +106,7 @@ connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, shared_ptr<Ship
             }
         }
     }
-    connectContainerFromShip(ship, cargoOps);
+    connectContainerFromShip(shipMap, cargoOps);
 }
 
 void setUpDirectories(const string &directoryRoot) {
@@ -127,9 +128,9 @@ void Simulator::createAlgoXTravel() {
         buildTravel(p);
     }
     travelErrorsToFile(this->outputPath + "/errors");
-    this->algoList.push_back(std::make_shared<NaiveStowageAlgorithm>(nullptr, calculator));
-    this->algoList.push_back(std::make_shared<MoreNaiveAlgorithm>(nullptr, calculator));
-    this->algoList.push_back(std::make_shared<IncorrectAlgorithm>(nullptr, calculator));
+    this->algoList.push_back(std::make_shared<NaiveStowageAlgorithm>());
+    this->algoList.push_back(std::make_shared<MoreNaiveAlgorithm>());
+    this->algoList.push_back(std::make_shared<IncorrectAlgorithm>());
     for (auto algo: algoList) {
         for (Travel travel:this->travelList) {
             this->algoXtravel.emplace_back(algo, travel);
@@ -143,17 +144,18 @@ void Simulator::buildTravel(const fs::path &path) {
                                  "_generalErrors";
     int routeError = FileHandler::fileToRouteList(path.string() + "/route", route, errorFileName);
     if (route.size() > 1) {
-        auto shipPtr = std::make_shared<shared_ptr<Ship>>(std::make_shared<Ship>());
-        int shipError = FileHandler::createShipFromFile(path.string() + "/shipPlan", shipPtr,
-                                                        errorFileName);
-        (*(*shipPtr)).setShipRoute(route);
-        travelList.emplace_back(path.string(), path.filename().string(), *shipPtr, routeError, shipError);
+        auto shipPtr = std::make_shared<shared_ptr<ShipMap>>(std::make_shared<ShipMap>());
+        int shipError = FileHandler::createShipMapFromFile(path.string() + "/shipPlan", shipPtr,
+                                                           errorFileName);
+        travelList.emplace_back(path.string(), path.filename().string(), *shipPtr, route, routeError, shipError);
+
 
     }
 
 }
 
-void checkIfShipEmpty(shared_ptr<Ship> ship, list<SimulatorError> &errorList, int numberLoads, int numberUnloads) {
+void
+checkIfShipEmpty(shared_ptr<ShipMap> shipMap, list<SimulatorError> &errorList, int numberLoads, int numberUnloads) {
     if (numberLoads > numberUnloads) {
         errorList.emplace_back("algorithm gives " + std::to_string(numberLoads) + " load operation, but gives only " +
                                std::to_string(numberUnloads) + " unload operation- ship not empty",
@@ -165,13 +167,13 @@ void checkIfShipEmpty(shared_ptr<Ship> ship, list<SimulatorError> &errorList, in
                     std::to_string(numberLoads) + " load operation", SimErrorType::TRAVEL_END);
         }
     }
-    for (int i = 0; i < ship->getShipMap().getHeight(); i++) {
-        for (int j = 0; j < ship->getShipMap().getRows(); j++) {
-            for (int k = 0; k < ship->getShipMap().getCols(); k++) {
-                if (ship->getShipMap().getShipMapContainer()[i][j][k] != nullptr &&
-                    ship->getShipMap().getShipMapContainer()[i][j][k] != ship->getShipMap().getImaginary()) {
+    for (int i = 0; i < shipMap->getHeight(); i++) {
+        for (int j = 0; j < shipMap->getRows(); j++) {
+            for (int k = 0; k < shipMap->getCols(); k++) {
+                if (shipMap->getShipMapContainer()[i][j][k] != nullptr &&
+                    shipMap->getShipMapContainer()[i][j][k] != shipMap->getImaginary()) {
                     errorList.emplace_back(
-                            "Container with id- " + ship->getShipMap().getShipMapContainer()[i][j][k]->getId() +
+                            "Container with id- " + shipMap->getShipMapContainer()[i][j][k]->getId() +
                             " is still on the ship at the end of the travel", SimErrorType::TRAVEL_END);
                 }
             }
@@ -195,39 +197,39 @@ void Simulator::runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo
     while (!travel.didTravelEnd()) {
         listError = {};
         list<shared_ptr<Container>> loadList = {};
-        list<shared_ptr<Container>> doubleIdList ={};
+        list<shared_ptr<Container>> doubleIdList = {};
         travelCargoErrors += travel.getContainerList(travelErrorPath, loadList);
         //path to read container list and write cargo op
         const string writeTo =
-                travelAlgoDirectory + "/" + travel.getShip()->getCurrentPort() + "_" +
+                travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                 std::to_string(travel.getCurrentVisitNumber()) +
                 ".crane_instructions";
         pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
         list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList);
-        connectContainerToCargoOp(loadList, travel.getShip(), cargoOps, listError, doubleIdList);
-        SimulatorAlgoCheck::checkAlgoCorrect(travel.getShip(), this->calculator, cargoOps, loadList,
-                                             travel.getShip()->getCurrentPort(),
-                                             numberLoads, numberUnloads, listError,doubleIdList);
+        connectContainerToCargoOp(loadList, travel.getShipMap(), cargoOps, listError, doubleIdList);
+        SimulatorAlgoCheck::checkAlgoCorrect(travel.getShipMap(), travel.getRoute(), this->calculator, cargoOps, loadList,
+                                             travel.getCurrentPort(),
+                                             numberLoads, numberUnloads, listError, doubleIdList);
         errorAmount += listError.size();
         FileHandler::simulatorErrorsToFile(listError, travelErrorPath, travel.getTravelName(),
-                                           travel.getShip()->getCurrentPort(), travel.getCurrentVisitNumber());
+                                           travel.getCurrentPort(), travel.getCurrentVisitNumber());
         travel.goToNextPort();
     }
 
     listError = {};
-    checkIfShipEmpty(travel.getShip(), listError, numberLoads, numberUnloads);
+    checkIfShipEmpty(travel.getShipMap(), listError, numberLoads, numberUnloads);
     FileHandler::simulatorErrorsToFile(listError, travelErrorPath, travel.getTravelName());
 
 
 }
 
 void Simulator::deleteEmptyFiles() {
-    for (auto &simFiles: fs::recursive_directory_iterator(this->outputPath + "/errors")) {
-        if (!fs::is_directory(simFiles) && fs::file_size(simFiles) == 0) {
+    for (auto &simFiles: fs::directory_iterator(this->outputPath + "/errors")) {
+        if (fs::file_size(simFiles) == 0) {
             fs::remove(simFiles);
         }
     }
-    if(fs::is_empty(this->outputPath + "/errors")){
+    if (fs::is_empty(this->outputPath + "/errors")) {
         fs::remove_all(this->outputPath + "/errors");
     }
 }

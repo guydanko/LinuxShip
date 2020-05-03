@@ -23,7 +23,7 @@ class ShipMap {
 
 public:
 
-    ShipMap(int height, int rows, int cols);
+    ShipMap(int height = 0, int rows = 0, int cols = 0);
 
     ShipMap(const ShipMap &from); // copy only the structure not the containers
 

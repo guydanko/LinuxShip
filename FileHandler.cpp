@@ -228,8 +228,8 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
     outfile.close();
 }
 
-int FileHandler::createShipFromFile(const string &fileName, shared_ptr<shared_ptr<Ship>> shipPtr,
-                                    const string &errorFile) {
+int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared_ptr<ShipMap>> shipPtr,
+                                       const string &errorFile) {
     int result = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
@@ -267,7 +267,7 @@ int FileHandler::createShipFromFile(const string &fileName, shared_ptr<shared_pt
     }
 
     int height = stoi(svec[0]), rows = stoi(svec[1]), cols = stoi(svec[2]);
-    *shipPtr = std::make_shared<Ship>(height, rows, cols);
+    *shipPtr = std::make_shared<ShipMap>(height, rows, cols);
     vector<vector<int>>
             indexVector(rows, vector<int>(cols, 0));
 
@@ -320,7 +320,7 @@ int FileHandler::createShipFromFile(const string &fileName, shared_ptr<shared_pt
             //something with result error?
         } else {
             indexVector[row][col] = 1;
-            (*(*shipPtr)).getShipMap().initShipMapContainer(height - actualFloors, row, col);
+            (*(*shipPtr)).initShipMapContainer(height - actualFloors, row, col);
         }
     }
     inFile.close();

@@ -16,15 +16,15 @@
 #define SHIPGIT_INCORRECTALGORITHM_H
 
 using std::string;
+using std::list;
 
 class IncorrectAlgorithm : public AbstractAlgorithm {
 protected:
-    shared_ptr<Ship> ship;
+    shared_ptr<ShipMap> shipMap;
+    list<string> route;
     WeightBalanceCalculator calculator;
 public:
     IncorrectAlgorithm() : AbstractAlgorithm() {}
-
-    IncorrectAlgorithm(shared_ptr<Ship> ship, WeightBalanceCalculator calculator) : AbstractAlgorithm() {}
 
     //new func
     int readShipPlan(const std::string &full_path_and_file_name) override;

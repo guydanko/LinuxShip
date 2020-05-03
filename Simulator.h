@@ -31,12 +31,13 @@ class Simulator {
     void createAlgoXTravel();
 
 public:
-    Simulator(const string &travelPath, const string &algoPath = "", const string &outputPath = "") : travelPath(
+    Simulator(const string &travelPath, const string &algoPath = fs::current_path().string(),
+              const string &outputPath = fs::current_path().string()) : travelPath(
             travelPath),
-                                                                                                      algoPath(
-                                                                                                              algoPath),
-                                                                                                      outputPath(
-                                                                                                              outputPath) {};
+                                                                        algoPath(
+                                                                                algoPath),
+                                                                        outputPath(
+                                                                                outputPath) {};
 
     list<Travel> &getTravels() { return this->travelList; };
 

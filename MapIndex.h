@@ -13,8 +13,8 @@ public:
     int getHeight()const{return this->height;}
     int getRow()const{return this->row;}
     int getCol()const {return this->col;}
-    static MapIndex isPlaceToMove(MapIndex currentIndex, ShipMap& shipMap ); //find empty legal place on the "first" side of the ship in regard to currentIndex
-    static MapIndex firstLegalIndexPlace(ShipMap& shipMap);
+    static MapIndex isPlaceToMove(MapIndex currentIndex, shared_ptr<ShipMap> ); //find empty legal place on the "first" side of the ship in regard to currentIndex
+    static MapIndex firstLegalIndexPlace(shared_ptr<ShipMap> shipMap);
 };
 
 

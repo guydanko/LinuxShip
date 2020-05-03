@@ -7,7 +7,7 @@ using std::string ;
 class MoreNaiveAlgorithm: public NaiveStowageAlgorithm{
 public:
     MoreNaiveAlgorithm():NaiveStowageAlgorithm(){}
-    MoreNaiveAlgorithm(shared_ptr<Ship> ship,WeightBalanceCalculator calculator):NaiveStowageAlgorithm(ship,calculator){}
+
     string getName()const override { return "More Naive algorithm";}
     void moveTower(MapIndex index , const string& portName,shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation>& opList) override ;
 };
