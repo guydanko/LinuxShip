@@ -85,6 +85,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
             if (toWrite) {
                 outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
             }
+            containerList.emplace_back(std::make_shared<Container>(0, "", svec[1], false));
             continue;
             //to fix later depending on what error this is
         }
