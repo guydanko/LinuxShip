@@ -45,7 +45,7 @@ public:
 
     void runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> algo, const string &fileName,
                       const string &errorFileName);
-
+    bool initAlgoWithTravelParam(Travel &travel,shared_ptr<AbstractAlgorithm> pAlgo,list<SimulatorError>& listError);
 
 };
 

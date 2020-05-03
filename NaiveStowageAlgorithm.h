@@ -25,7 +25,7 @@ public:
 
     void loadAgain(shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain, list<CargoOperation> &opList);
 
-    void loadNewContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList,
+    int loadNewContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList,
                            const string &currentPort);
 
     shared_ptr<list<shared_ptr<Container>>> unloadContainerByPort(const string &portName, list<CargoOperation> &opList);
@@ -34,7 +34,7 @@ public:
     moveTower(MapIndex index, const string &portName, shared_ptr<list<shared_ptr<Container>>> rememberLoadAgain,
               list<CargoOperation> &opList);
 
-    void loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList);
+    int loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList);
 
     virtual string getName() const { return "Naive algorithm"; }
 
@@ -42,6 +42,7 @@ public:
                    list<CargoOperation> &opList);
 
     int rejectDoubleId(list<shared_ptr<Container>> &containerListToLoadInThisPort, list<CargoOperation> &opList);
+    void rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList);
 
     //new func
     int readShipPlan(const std::string &full_path_and_file_name) override;

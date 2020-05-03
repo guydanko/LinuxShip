@@ -7,7 +7,7 @@ using std::string;
 #define SHIPGIT_SIMULATORERROR_H
 
 enum class SimErrorType {
-    GENERAL_PORT, TRAVEL_END, OPERATION_PORT
+    GENERAL_PORT, TRAVEL_END, OPERATION_PORT, TRAVEL_INIT
 };
 
 

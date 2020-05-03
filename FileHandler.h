@@ -39,7 +39,7 @@ public:
 
     static void
     simulatorErrorsToFile(const list<SimulatorError> &simErrors, const string &fileName, const string &travelName,
-                          const string &portName = "", int visitNumber = 0, bool noErrors = false,
+                          const string &portName = "", int visitNumber = 0,
                           const string &errorFile = "");
 
 };

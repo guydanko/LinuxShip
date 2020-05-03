@@ -246,17 +246,18 @@ void checkMoveOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, li
 
 }
 
-void checkRejectOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, list<shared_ptr<Container>> &loadList,
+int checkRejectOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, list<shared_ptr<Container>> &loadList,
                           int maxNumberPortLoaded,
                           list<SimulatorError> &errorList, const string &currentPort) {
+    int result=0;
     cargoOp.getContainer()->setIsContainerReject(1);
     //container destination is here no reason to load
     if (cargoOp.getContainer()->getDestination() == currentPort) {
-        return;
+        return result;
     }
     //container illegal should reject
     if (!cargoOp.getContainer()->isContainerLegal()) {
-        return;
+        return result;
     }
     int numIdInLoadList = 0;
     for (auto cont :loadList) {
@@ -268,7 +269,7 @@ void checkRejectOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, 
         errorList.emplace_back("rejected container with id which is not in the container list to load in this port",
                                SimErrorType::OPERATION_PORT,
                                cargoOp);
-        return;
+        return result;
     }
     //check container Id on ship
     auto itr = shipMap->getContainerIDOnShip().find(cargoOp.getContainer()->getId());
@@ -280,17 +281,19 @@ void checkRejectOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, 
                 errorList.emplace_back(
                         "rejected container with valid destination while there is still place on the ship",
                         SimErrorType::OPERATION_PORT, cargoOp);
-                return;
+                return result;
             } else {
+                result|=1<<18;
                 if (maxNumberPortLoaded > cargoOp.getContainer()->getPortIndex()) {
                     errorList.emplace_back(
                             "rejected container with closer destination and loaded container with a further destination instead",
                             SimErrorType::OPERATION_PORT, cargoOp);
-                    return;
+                    return result;
                 }
             }
         }
     }
+    return result;
 }
 
 //make sure nothing left on port with no reason
@@ -326,12 +329,12 @@ void checkAllContainersRejectedOrLoaded(list<shared_ptr<Container>> &loadList, l
     }
 }
 
-list<SimulatorError>
-SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<string>& route, WeightBalanceCalculator &calculator,
+int SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<string>& route, WeightBalanceCalculator &calculator,
                                      list<shared_ptr<CargoOperation>> &cargoOpsList,
                                      list<shared_ptr<Container>> &loadList,
                                      const string &currentPort, int &numberLoads, int &numberUnloads,
                                      list<SimulatorError> &errorList, list<shared_ptr<Container>> &doubleIdList) {
+    int result=0;
     map<string, shared_ptr<CargoOperation>> rememberToLoadAgainIdToCargoOp;
     int number = 1;
     int maxNumberPortLoaded = 0;
@@ -376,15 +379,16 @@ SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<string>& 
                     SimErrorType::GENERAL_PORT);
         }
     }
-    for (auto cargoOp: cargoOpsList) {
+    for (const auto& cargoOp: cargoOpsList) {
         if (cargoOp->getOp() == AbstractAlgorithm::Action::REJECT) {
-            checkRejectOperation(shipMap, *cargoOp, loadList, maxNumberPortLoaded, errorList, currentPort);
+            result|= checkRejectOperation(shipMap, *cargoOp, loadList, maxNumberPortLoaded, errorList, currentPort);
         }
     }
     nothingLeftNoReason(rememberToLoadAgainIdToCargoOp, errorList, currentPort,
                         doubleIdList); //make sure nothing left on port with no reason
     checkAllContainersRejectedOrLoaded(loadList, errorList);
     checkIfAllUnloaded(shipMap, currentPort, errorList);
-    return errorList;
+
+    return result;
 }
 
