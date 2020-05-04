@@ -18,7 +18,6 @@ class CargoOperation {
     MapIndex index;
     MapIndex moveIndex;
 
-    int placeInList = 0;
 public:
     CargoOperation() {}
 
@@ -36,9 +35,6 @@ public:
 
     shared_ptr<Container> getContainer() { return this->container; }
 
-    int getPlaceInList() const { return this->placeInList; }
-
-    void setPlaceInList(int i) { this->placeInList = i; }
     void setContainer(shared_ptr<Container> cont){ this->container=cont;}
 
 };

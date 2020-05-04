@@ -13,6 +13,7 @@ using std::__cxx11::to_string;
 using std::stringstream;
 using std::ofstream;
 
+
 void Travel::initPortCounter() {
     for (const string &port : this->route) {
         auto it = portCounter.find(port);
@@ -115,6 +116,7 @@ void Travel::generalTravelErrorsToFile(const string &fileName) const {
 
     /*copy the current port map*/
     unordered_map copyMap = this->portCounter;
+
     for (auto &pair : copyMap) {
         get<0>(pair.second) = 0;
     }
