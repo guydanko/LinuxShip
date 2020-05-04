@@ -8,6 +8,31 @@
 using std::string;
 using std::map;
 
+
+const string getShipPlanPath(const fs::path &path) {
+    int planFiles = 0;
+    string fileName;
+    for (auto &p: fs::directory_iterator(path)) {
+        if (p.path().filename().extension().string().compare(".ship_plan") == 0) {
+            fileName = p.path().string();
+            planFiles++;
+        }
+    }
+    return planFiles == 1 ? fileName : "";
+}
+
+const string getRouteFilePath(const fs::path &path) {
+    int routeFiles = 0;
+    string fileName;
+    for (auto &p: fs::directory_iterator(path)) {
+        if (p.path().filename().extension().string().compare(".route") == 0) {
+            fileName = p.path().string();
+            routeFiles++;
+        }
+    }
+    return routeFiles == 1 ? fileName : "";
+}
+
 void deleteRejectDoubleID(list<shared_ptr<CargoOperation>> &cargoOps, int countErase, list<SimulatorError> &listError,
                           const string &id, bool onShip) {
     size_t countRemoveOp = cargoOps.size();
@@ -126,7 +151,7 @@ void setUpDirectories(const string &directoryRoot) {
 
 void Simulator::travelErrorsToFile(const string &fileName) {
     for (const Travel &travel:this->travelList) {
-        travel.errorsToFile(fileName);
+        travel.generalTravelErrorsToFile(fileName);
     }
 }
 
@@ -149,11 +174,17 @@ void Simulator::buildTravel(const fs::path &path) {
     int travelError = 0;
     const string errorFileName = this->outputPath + "/errors/" + path.filename().string() +
                                  "_generalErrors";
+    string shipPlanPath = getShipPlanPath(path), routePath = getRouteFilePath(path);;
+    if (shipPlanPath.empty() || routePath.empty()) {
+        FileHandler::reportPlanRouteErrors(shipPlanPath, routePath, errorFileName);
+        return;
+    }
     auto shipPtr = std::make_shared<shared_ptr<ShipMap>>(std::make_shared<ShipMap>());
-    travelError |= FileHandler::createShipMapFromFile(path.string() + "/shipPlan", shipPtr,
+    travelError |= FileHandler::createShipMapFromFile(shipPlanPath, shipPtr,
                                                       errorFileName);
-    travelError |= FileHandler::fileToRouteList(path.string() + "/route", route, errorFileName);
-    travelList.emplace_back(path.string(), path.filename().string(), *shipPtr, route, travelError);
+    travelError |= FileHandler::fileToRouteList(routePath, route, errorFileName);
+    travelList.emplace_back(path.string(), path.filename().string(), shipPlanPath, routePath, *shipPtr, route,
+                            travelError);
 
 }
 
@@ -208,7 +239,8 @@ bool Simulator::initAlgoWithTravelParam(Travel &travel, shared_ptr<AbstractAlgor
                                         list<SimulatorError> &errorList) {
     /*need to keep track of results*/
     bool shipPlanProblem = false, routeProblem = false;
-    int readShipPlanError = pAlgo->readShipPlan(travel.getTravelPath() + "/shipPlan");
+    string sda = travel.getShipPlanPath();
+    int readShipPlanError = pAlgo->readShipPlan(travel.getShipPlanPath());
     if ((readShipPlanError & (1 << 3))) {
         errorList.emplace_front(
                 "2^3 - ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)",
@@ -237,7 +269,7 @@ bool Simulator::initAlgoWithTravelParam(Travel &travel, shared_ptr<AbstractAlgor
                     SimErrorType::TRAVEL_INIT);
         }
     }
-    int readRouteError = pAlgo->readShipRoute(travel.getTravelPath() + "/route");
+    int readRouteError = pAlgo->readShipRoute(travel.getRoutePath());
     if ((readRouteError & (1 << 7))) {
         errorList.emplace_front(
                 "2^7 - travel route: travel error - empty file or file cannot be read altogether (cannot run this travel)",

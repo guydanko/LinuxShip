@@ -18,12 +18,11 @@ class Travel {
     unordered_map<string, tuple<int, int>> portCounter;
     shared_ptr<ShipMap> shipMap;
     list<string> route;
-    string travelPath;
-    string travelName;
+    string travelPath, travelName, shipPath, routePath;
     int travelError = 0;
 public:
 
-    Travel(const string &travelPath, const string &travelName, shared_ptr<ShipMap> ship,list<string> route, int travelError);
+    Travel(const string &travelPath, const string &travelName, const string&shipPath, const string& routePath, shared_ptr<ShipMap> ship,list<string> route, int travelError);
 
     Travel(const Travel &other);
 
@@ -45,18 +44,24 @@ public:
 
     int getCurrentVisitNumber() { return get<0>(this->portCounter.find(this->route.front())->second); }
 
-    void errorsToFile(const string &fileName) const;
+    void generalTravelErrorsToFile(const string &fileName) const;
 
     const string &getTravelPath() { return this->travelPath; }
 
     const string getNextCargoFilePath();
 
-    string getCurrentPort(){ return this->route.front();};
+    string &getCurrentPort(){ return this->route.front();};
+    const string &getShipPlanPath(){ return this->shipPath;};
+    const string &getRoutePath(){ return this->routePath;};
+
+
 
 private:
     void increaseVisits(const string &port);
 
     tuple<int, int> getVisits(const string &port);
+
+    void initPortCounter();
 
 };
 

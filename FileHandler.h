@@ -42,6 +42,8 @@ public:
                           const string &portName = "", int visitNumber = 0,
                           const string &errorFile = "");
 
+    static void reportPlanRouteErrors(const string& shipPlanPath,const string& routePath, const string& errorFile);
+
 };
 
 #endif //SHIPGIT_FILEHANDLER_H

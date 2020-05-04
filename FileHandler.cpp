@@ -439,3 +439,20 @@ FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Cont
     inFile.close();
     return ops;
 }
+
+void FileHandler::reportPlanRouteErrors(const string &shipPlanPath, const string &routePath, const string &errorFile) {
+    ofstream outFile(errorFile);
+
+    if (!outFile) {
+        return;
+    }
+
+    if (shipPlanPath.empty()) {
+        outFile << "travel error - could not find only one .ship_plan file\n";
+    }
+    if (routePath.empty()) {
+        outFile << "travel error - could not find only one .route file\n";
+    }
+
+    outFile.close();
+}
