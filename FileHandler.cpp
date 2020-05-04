@@ -51,7 +51,7 @@ bool needToWrite(const string &fileName) {
 }
 
 int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Container>> &containerList,
-                                     const string &errorFile) {
+                                     const string &errorFile, const string &portName) {
     int result = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
@@ -60,7 +60,9 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     /*could not open file*/
     if (!inFile) {
         if (toWrite) {
-            outFile << "File: " << fileName << " does not exist\n";
+            outFile
+                    << "containers at port: file cannot be read altogether (assuming no cargo to be loaded at this port) - file: "
+                    << fileName << "\n";
             outFile.close();
         }
         return (1 << 16);
@@ -69,6 +71,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     int lineNum = 0;
     vector<string> tokens;
     string line;
+    string port = portName.empty() ? "" : portName + ": ";
 
     while (getline(inFile, line)) {
         lineNum++;
@@ -83,11 +86,11 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
 
         if (svec.size() > 3) {
             if (toWrite) {
-                outFile << "Warning, file: " << fileName << " line number: " << lineNum << " is not in valid format!\n";
+                outFile << port << "containers at port: bad line (" << lineNum << ") format\n";
             }
-            containerList.emplace_back(std::make_shared<Container>(0, "", svec[1], false));
+            result |= (1 << 14);
             continue;
-            //to fix later depending on what error this is
+
         }
 
         size_t vecSize = svec.size();
@@ -98,23 +101,23 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
         strToUpper(destination);
         strToUpper(id);
 
-        string errorMessage = "error code: ";
+        string errorMessage = " ";
 
         if (weight.empty() || !isNumber(weight)) {
-            errorMessage += "2^12  ";
+            errorMessage += "missing or bad weight";
             result |= (1 << 12);
         }
         if (destination.empty() || !Container::isPortValid(destination)) {
-            errorMessage += "2^13  ";
+            errorMessage += ", missing or bad port dest  ";
             result |= (1 << 13);
         }
         if (id.empty()) {
-            errorMessage += "2^14  ";
-            return result |= (1 << 14);
+            errorMessage += ", ID cannot be read";
+            result |= (1 << 14);
         } else {
             if (!Container::isLegalId(id)) {
-                errorMessage += "2^15  ";
-                return result |= (1 << 15);
+                errorMessage += ", illegal ID check ISO 6346";
+                result |= (1 << 15);
             }
         }
 
@@ -122,8 +125,8 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
             containerList.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
         } else {
             if (toWrite) {
-                outFile << " line number: " << lineNum
-                        << " is not a valid container! ( " << errorMessage << " )\n";
+                outFile << port << "containers at port: bad line (" << lineNum << ") format :" << errorMessage
+                        << "\n";
             }
             containerList.emplace_back(std::make_shared<Container>(0, "", id, false));
         }
@@ -138,7 +141,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
 }
 
 int FileHandler::fileToRouteList(const string &fileName, list<string> &route, const string &errorFile) {
-    int result = 0;
+    int result = 0, errorCount = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
     bool toWrite = needToWrite(errorFile);
@@ -146,7 +149,9 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
     /*could not open file*/
     if (!inFile) {
         if (toWrite) {
-            outFile << "Could not open file: error 2^7" << fileName << "\n";
+            outFile
+                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel) file:"
+                    << fileName << "\n";
             outFile.close();
         }
         return (1 << 7);
@@ -167,9 +172,9 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
 
         if (svec.size() != 1) {
             if (toWrite) {
-                outFile << "line number: " << lineNum << " is not in valid format!\n";
+                outFile << "travel route: bad line (" << lineNum << ") " << "format (ignored)\n";
             }
-            //something with result?
+            result |= (1 << 6);
             continue;
         }
 
@@ -178,8 +183,8 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
             strToUpper(port);
             if (route.size() > 0 && route.back().compare(port) == 0) {
                 if (toWrite) {
-                    outFile << "in line: " << lineNum
-                            << " 2^5 - travel route: a port appears twice or more consecutively (ignored)\n";
+                    outFile << "travel route: a port appears twice (line: " << lineNum
+                            << ") or more consecutively (ignored)\n";
                 }
                 result |= (1 << 5);
             } else {
@@ -187,7 +192,8 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
             }
         } else {
             if (toWrite) {
-                outFile  << "in line: " << lineNum << " 2^6 - travel route: bad port symbol format (ignored)\n";
+                outFile << "travel route: bad port symbol (line: " << lineNum
+                        << " - ignored)\n";
             }
             result |= (1 << 6);
         }
@@ -195,14 +201,18 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
     }
     if (route.empty()) {
         if (toWrite) {
-            outFile << "Could not create route from file: " << fileName << ", 2^7 - travel route: travel error - empty file or file cannot be read altogether (cannot run this travel)\n";
+            outFile
+                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel) - file: "
+                    << fileName << "\n";
         }
         result |= (1 << 7);
     }
 
     if (route.size() == 1) {
         if (toWrite) {
-            outFile << "Could not create route from file: " << fileName << ", 2^8 - travel route: travel error - file with only a single valid port (cannot run this travel)\n";
+            outFile
+                    << "travel route: travel error - file with only a single valid port (cannot run this travel) - file: "
+                    << fileName << "\n";
         }
         result |= (1 << 8);
     }
@@ -239,7 +249,9 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     /*could not open file*/
     if (!inFile) {
         if (toWrite) {
-            outFile << "Could not create ship from file : " << fileName << " 2^3 - ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n" ;
+            outFile
+                    << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel) file - "
+                    << fileName << "\n";
             outFile.close();
         }
         return result | (1 << 3);
@@ -259,7 +271,8 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
         token = trim(token);
         if (!isNumber(token)) {
             if (toWrite) {
-                outFile << "Error: first line of shipPlan in file: " << fileName << " 2^3 - ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
+                outFile
+                        << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
                 outFile.close();
             }
             return result | (1 << 3);
@@ -289,8 +302,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
 
         if (svec.size() != 3) {
             if (toWrite) {
-                outFile << "in line: " << lineNum
-                        << " 2^2 - ship plan: bad line format after first line or duplicate x,y appearance with same data (ignored)\n";
+                outFile << "ship plan: bad line (" << lineNum << ") format after first line\n";
             }
             result |= (1 << 2);
             continue;
@@ -298,8 +310,8 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
         int actualFloors = stoi(svec[2]), row = stoi(svec[0]), col = stoi(svec[1]);
         if (actualFloors >= height) {
             if (toWrite) {
-                outFile << "in line: " << lineNum
-                        << " 2^0 - ship plan: a position has an equal number of floors, or more, than the number of floors provided in the first line (ignored)\n";
+                outFile << "ship plan: a position (in line: " << lineNum
+                        << ") has an equal number of floors, or more, than the number of floors provided in the first line (ignored)\n";
             }
             result |= 1;
             continue;
@@ -307,20 +319,28 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
         if (row >= rows ||
             col >= cols) {
             if (toWrite) {
-                outFile  << "in line: " << lineNum
-                        << " 2^1 - ship plan: a given position exceeds the X/Y ship limits (ignored)\n";
+                outFile << "ship plan: a given position (in line: " << lineNum
+                        << ") exceeds the X/Y ship limits (ignored)\n";
             }
             result |= (1 << 1);
             continue;
         }
         if (indexVector[row][col] != 0) {
-            if (toWrite) {
-                outFile << "in line: " << lineNum
-                        << " used indexes that were already assigned\n";
+            if (indexVector[row][col] == actualFloors) {
+                if (toWrite) {
+                    outFile << "ship plan: bad line (" << lineNum
+                            << ") format after first line - duplicate x,y appearance with same data (ignored)\n";
+                }
+                result |= (1 << 2);
+            } else {
+                outFile << "ship plan: travel error - duplicate x,y (in line: " << lineNum
+                        << "appearance with different data (cannot run this travel)\n";
+                result |= (1 << 4);
             }
+
             //something with result error?
         } else {
-            indexVector[row][col] = 1;
+            indexVector[row][col] = actualFloors;
             (*(*shipPtr)).initShipMapContainer(height - actualFloors, row, col);
         }
     }
@@ -334,7 +354,7 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
                                    const string &portName, int visitNumber,
                                    const string &errorFileName) {
     ofstream outFile;
-    outFile.open(path + ".errors", std::ios::app);
+    outFile.open(path, std::ios::app);
     ofstream errorFile(errorFileName, std::ios::app);
     if (!outFile) {
         errorFile << "Could not write error file: " << path + "/" + travelName + "AlgoErrors" << "\n";
@@ -348,8 +368,9 @@ FileHandler::simulatorErrorsToFile(const list<SimulatorError> &simErrors, const 
 //        return;
 //    }
 
-    if (!simErrors.empty() && simErrors.front().getErrorType() != SimErrorType::TRAVEL_END && simErrors.front().getErrorType() != SimErrorType::TRAVEL_INIT) {
-        outFile<<"\n";
+    if (!simErrors.empty() && simErrors.front().getErrorType() != SimErrorType::TRAVEL_END &&
+        simErrors.front().getErrorType() != SimErrorType::TRAVEL_INIT) {
+        outFile << "\n";
         outFile << "Simulation Errors in port: " << portName << " ,visit no: " << visitNumber << "\n";
     }
 

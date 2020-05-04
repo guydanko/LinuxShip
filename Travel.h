@@ -20,10 +20,10 @@ class Travel {
     list<string> route;
     string travelPath;
     string travelName;
-    int shipPlanError = 0, routeError = 0;
+    int travelError = 0;
 public:
 
-    Travel(const string &travelPath, const string &travelName, shared_ptr<ShipMap> ship,list<string> route, int routeError, int shipError);
+    Travel(const string &travelPath, const string &travelName, shared_ptr<ShipMap> ship,list<string> route, int travelError);
 
     Travel(const Travel &other);
 
@@ -37,14 +37,9 @@ public:
 
     void goToNextPort();
 
-    void setShipPlanError(int error) { this->shipPlanError = error; };
+    int getTravelError() { return this->travelError; };
 
-    void setRouteError(int error) { this->routeError = error; };
-
-    int getShipPlanError() { return this->shipPlanError; };
-
-    int getRouteError() { return this->routeError; };
-
+    bool isTravelLegal();
 
     bool didTravelEnd() { return this->route.empty(); };
 

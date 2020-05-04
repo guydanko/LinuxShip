@@ -15,8 +15,7 @@ using std::ofstream;
 
 
 Travel::Travel(const string &travelPath, const string &travelName, shared_ptr<ShipMap> shipMap, list<string> route,
-               int routeError,
-               int shipError) {
+               int TravelError) {
     this->travelPath = travelPath;
     this->travelName = travelName;
     this->shipMap = shipMap;
@@ -34,8 +33,7 @@ Travel::Travel(const string &travelPath, const string &travelName, shared_ptr<Sh
         this->increaseVisits(this->route.front());
     }
 
-    this->routeError = routeError;
-    this->shipPlanError = shipError;
+    this->travelError = travelError;
 }
 
 Travel::Travel(const Travel &other) {
@@ -44,17 +42,18 @@ Travel::Travel(const Travel &other) {
     this->portCounter = other.portCounter;
     this->travelName = other.travelName;
     this->route = other.route;
+    this->travelError = other.travelError;
 }
 
-bool does_file_exist(const string &fileName) {
-    ifstream inFile(fileName);
-    if (inFile) {
-        inFile.close();
-        return true;
-    } else {
-        return false;
-    }
-}
+//bool does_file_exist(const string &fileName) {
+//    ifstream inFile(fileName);
+//    if (inFile) {
+//        inFile.close();
+//        return true;
+//    } else {
+//        return false;
+//    }
+//}
 
 tuple<int, int> Travel::getVisits(const string &port) {
     auto it = portCounter.find(port);
@@ -90,29 +89,22 @@ int Travel::getContainerList(const string &errorFile, list<shared_ptr<Container>
         }
         return 0;
     }
-    return FileHandler::fileToContainerList(fileName, contList, errorFile + "/" + travelName + "cargoDataErrors");
+    return FileHandler::fileToContainerList(fileName, contList, errorFile,
+                                            this->route.front() + "_" + std::to_string(visitNum));
 }
 
 string Travel::getTravelName() const {
     return this->travelName;
 }
 
-//void Travel::setToOriginalTravel() {
-//    this->getShip()->setShipRoute(originalRoute);
-//    this->shipMap->clearContainers();
-//
-//    for (auto &pair : this->portCounter) {
-//        get<0>(pair.second) = 0;
-//    }
-//
-//    if (!this->ship->getShipRoute().empty()) {
-//        this->increaseVisits(this->ship->getShipRoute().front());
-//    }
-//}
+bool Travel::isTravelLegal() {
+    return this->travelError & (1 << 3) || this->travelError & (1 << 4) || this->travelError & (1 << 7) ||
+           this->travelError & (1 << 8);
+}
 
 void Travel::errorsToFile(const string &fileName) const {
     ofstream outfile;
-    outfile.open(fileName + "/" + this->getTravelName() + "FileErrors", std::ios::app);
+    outfile.open(fileName, std::ios::app);
     if (!outfile) {
         return;
     }
@@ -130,13 +122,13 @@ void Travel::errorsToFile(const string &fileName) const {
 
         string fileName = travelPath + "/" + i->c_str() + "_" + to_string(visitNum) + ".cargo_data";
         if (next(i) == this->route.end()) {
-            if (does_file_exist(
+            if (fs::exists(
                     travelPath + "/" + i->c_str() + "_" + to_string(visitNum) + ".cargo_data")) {
                 outfile << "Warning, final port: " << i->c_str() << " in " << travelPath
                         << " should not have a cargo data file\n";
             }
         } else {
-            if (!does_file_exist(fileName)) {
+            if (!fs::exists(fileName)) {
                 outfile << "Warning, missing file: " << travelPath << "/" << i->c_str() << "_" << visitNum
                         << ".cargo_data\n";
             }
