@@ -3,6 +3,88 @@
 
 using std::map;
 
+void SimulatorAlgoCheck::checkIfShipEmpty(shared_ptr<ShipMap> shipMap, list<SimulatorError> &errorList, int numberLoads, int numberUnloads) {
+    if (numberLoads > numberUnloads) {
+        errorList.emplace_back("algorithm gives " + std::to_string(numberLoads) + " load operation, but gives only " +
+                               std::to_string(numberUnloads) + " unload operation- ship not empty",
+                               SimErrorType::TRAVEL_END);
+    } else {
+        if (numberLoads < numberUnloads) {
+            errorList.emplace_back(
+                    "algorithm gives " + std::to_string(numberUnloads) + " unload operation, but gives only" +
+                    std::to_string(numberLoads) + " load operation", SimErrorType::TRAVEL_END);
+        }
+    }
+    for (int i = 0; i < shipMap->getHeight(); i++) {
+        for (int j = 0; j < shipMap->getRows(); j++) {
+            for (int k = 0; k < shipMap->getCols(); k++) {
+                if (shipMap->getShipMapContainer()[i][j][k] != nullptr &&
+                    shipMap->getShipMapContainer()[i][j][k] != shipMap->getImaginary()) {
+                    errorList.emplace_back(
+                            "Container with id- " + shipMap->getShipMapContainer()[i][j][k]->getId() +
+                            " is still on the ship at the end of the travel", SimErrorType::TRAVEL_END);
+                }
+            }
+        }
+    }
+}
+void SimulatorAlgoCheck::checkSameNumInstErrorAlgoVsSimulation(int algoGetInsError, int simulationInstError, list<SimulatorError>& errorList){
+    for(int i=10;i<19;i++){
+        if((algoGetInsError & (1<< i))==1 && (simulationInstError & (1<< i))==1){
+            errorList.emplace_front("algorithm finds error code 2^"+std::to_string(i), SimErrorType::GENERAL_PORT);
+        }
+        else{
+            if((algoGetInsError & (1<< i))==0 && (simulationInstError & (1<< i))==1){
+                errorList.emplace_front("simulation finds error code 2^"+std::to_string(i)+" but algorithm does not report this code too", SimErrorType::GENERAL_PORT);
+            }
+            else{
+                if((algoGetInsError & (1<< i))==1 && (simulationInstError & (1<< i))==0){
+                    errorList.emplace_front("algorithm finds error code 2^"+std::to_string(i)+" but simulation does not report this code too", SimErrorType::GENERAL_PORT);
+                }
+            }
+        }
+    }
+}
+bool SimulatorAlgoCheck::compareErrorAlgoSimulationInit(int algoInitError, int simulationInitError ,list<SimulatorError>& errorList){
+    /*need to keep track of results*/
+    bool shipPlanProblem=false, routeProblem=false;
+    if( (algoInitError & (1<<3)))  {
+        errorList.emplace_front("2^3 - ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)",SimErrorType::TRAVEL_INIT);
+        shipPlanProblem=true;
+    }
+    if( (algoInitError & (1<<4)))  {
+        errorList.emplace_front("2^4 - ship plan: travel error - duplicate x,y appearance with different data (cannot run this travel)",SimErrorType::TRAVEL_INIT);
+        shipPlanProblem=true;
+    }
+    if(!shipPlanProblem){
+        if( (algoInitError & (1<<0)))  {
+            errorList.emplace_front("2^0 - ship plan: a position has an equal number of floors, or more, than the number of floors provided in the first line (ignored)",SimErrorType::TRAVEL_INIT);
+        }
+        if( (algoInitError & (1<<1)))  {
+            errorList.emplace_front("2^1 - ship plan: a given position exceeds the X/Y ship limits (ignored)",SimErrorType::TRAVEL_INIT);
+        }
+        if( (algoInitError & (1<<2)))  {
+            errorList.emplace_front("2^2 - ship plan: bad line format after first line or duplicate x,y appearance with same data (ignored)",SimErrorType::TRAVEL_INIT);
+        }
+    }
+    if( (algoInitError & (1<<7)))  {
+        errorList.emplace_front("2^7 - travel route: travel error - empty file or file cannot be read altogether (cannot run this travel)",SimErrorType::TRAVEL_INIT);
+        routeProblem=true;
+    }
+    if( (algoInitError & (1<<8)))  {
+        errorList.emplace_front("2^8 - travel route: travel error - file with only a single valid port (cannot run this travel)",SimErrorType::TRAVEL_INIT);
+        routeProblem=true;
+    }
+    if(!routeProblem){
+        if( (algoInitError & (1<<5)))  {
+            errorList.emplace_front("2^5 - travel route: a port appears twice or more consecutively (ignored)",SimErrorType::TRAVEL_INIT);
+        }
+        if( (algoInitError & (1<<6)))  {
+            errorList.emplace_front("2^6 - travel route: bad port symbol format (ignored)",SimErrorType::TRAVEL_INIT);
+        }
+    }
+    return routeProblem || shipPlanProblem;
+}
 bool indexInLimit(shared_ptr<ShipMap> shipMap, MapIndex index) {
     if (index.getHeight() < 0 || index.getHeight() >= shipMap->getHeight()) {
         return false;

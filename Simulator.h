@@ -2,7 +2,6 @@
 #include "WeightBalanceCalculator.h"
 #include "AbstractAlgorithm.h"
 #include "MoreNaiveAlgorithm.h" //should erase
-#include "IncorrectAlgorithm.h" //should erase
 #include "SimulatorError.h"
 #include "Travel.h"
 #include <filesystem>
@@ -45,7 +44,7 @@ public:
 
     void runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> algo, const string &fileName,
                       const string &errorFileName);
-    bool initAlgoWithTravelParam(Travel &travel,shared_ptr<AbstractAlgorithm> pAlgo,list<SimulatorError>& listError);
+    int initAlgoWithTravelParam(Travel &travel,shared_ptr<AbstractAlgorithm> pAlgo,list<SimulatorError>& listError);
 
 };
 

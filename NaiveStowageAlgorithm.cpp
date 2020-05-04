@@ -223,9 +223,9 @@ int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadList,
 
 int NaiveStowageAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
     int result = 0;
-    result |= this->rejectDoubleId(loadList, opList);
     this->rejectIllagalContainer(loadList, opList);
     this->rejectDestNotInRoute(loadList, opList);
+    result |= this->rejectDoubleId(loadList, opList);
     return result;
 }
 
