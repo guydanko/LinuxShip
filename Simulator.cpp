@@ -1,13 +1,10 @@
-#include "WeightBalanceCalculator.h"
+
 #include "AbstractAlgorithm.h"
 #include "Simulator.h"
 #include "FileHandler.h"
-#include <map>
 #include "SimulatorAlgoCheck.h"
 
 using std::string;
-using std::map;
-
 
 const string getShipPlanPath(const fs::path &path) {
     int planFiles = 0;

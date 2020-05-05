@@ -1,5 +1,4 @@
 /*Simulator class to run a simulation of cartesian loop of algorithms and travels*/
-#include "WeightBalanceCalculator.h"
 #include "AbstractAlgorithm.h"
 #include "MoreNaiveAlgorithm.h" //should erase
 #include "SimulatorError.h"

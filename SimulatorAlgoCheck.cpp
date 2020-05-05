@@ -502,7 +502,7 @@ void nothingLeftNoReason(map<string, shared_ptr<CargoOperation>> &rememberToLoad
         for (auto itr = doubleIdList.begin(); itr != doubleIdList.end() && !found; itr++) {
             if ((*itr)->getId() == pair.first && (*itr)->getDestination() == currentPort) {
                 errorList.emplace_back(
-                        "when rejects double id from the container list to load in this port, it rejects the first container and choose other container to load- ",
+                        "when load this container there was few container with same id in load and algorithm rejects the first container and choose another container to load. It might cause other error such as weight balance and reject container with closer destination if the ship was full",
                         SimErrorType::OPERATION_PORT, *pair.second);
                 found = true;
             }
