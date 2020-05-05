@@ -29,8 +29,8 @@ class Simulator {
     void createAlgoXTravel();
 
 public:
-    Simulator(const string &travelPath, const string &algoPath = fs::current_path().string(),
-              const string &outputPath = fs::current_path().string()) : travelPath(
+    Simulator(const string &travelPath, const string &algoPath = fs::current_path().string() ,
+              const string &outputPath = fs::current_path().string() + "/SimulatorFiles") : travelPath(
             travelPath),
                                                                         algoPath(
                                                                                 algoPath),

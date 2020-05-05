@@ -30,6 +30,7 @@ public:
 
     list<string>& getRoute() { return this->route; }
 
+
     string getTravelName() const;
 
     int getContainerList(const string &errorFile, list<shared_ptr<Container>> &contList);
@@ -46,7 +47,7 @@ public:
 
     void generalTravelErrorsToFile(const string &fileName) const;
 
-    const string &getTravelPath() { return this->travelPath; }
+    const string &getTravelPath()const { return this->travelPath; }
 
     const string getNextCargoFilePath();
 
@@ -62,6 +63,12 @@ private:
     tuple<int, int> getVisits(const string &port);
 
     void initPortCounter();
+
+    list<string> getMissingCargoFiles() const;
+
+    list<string> getUnusedFiles() const;
+
+    bool isFileInTravelRoute(const string& fileName)const;
 
 };
 

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-#include <math.h>
+#include <string>
 
 namespace fs = std::filesystem;
 using std::cerr;
@@ -13,6 +13,37 @@ using std::__cxx11::to_string;
 using std::stringstream;
 using std::ofstream;
 
+bool isValidNumber(const string &s) {
+    if (s.empty()) {
+        return false;
+    }
+    for (unsigned int i = 0; i < s.length(); i++) {
+        if (!isdigit(s[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Travel::isFileInTravelRoute(const string &fileName) const {
+    vector<string> tokens;
+    stringstream sstream(fileName);
+    string token;
+
+    while (getline(sstream, token, '_')) {
+        tokens.push_back(token);
+    }
+
+    if (tokens.size() != 2 || this->portCounter.find(tokens[0]) == this->portCounter.end()) {
+        return false;
+    }
+
+    if (!isValidNumber(tokens[1])) { return false; }
+
+    if (std::stoi(tokens[1]) > get<1>(this->portCounter.find(tokens[0])->second)) { return false; }
+
+    return true;
+}
 
 void Travel::initPortCounter() {
     for (const string &port : this->route) {
@@ -50,6 +81,7 @@ Travel::Travel(const Travel &other) {
     this->travelError = other.travelError;
     this->shipPath = other.shipPath;
     this->routePath = other.routePath;
+    this->travelError = other.travelError;
 }
 
 //bool does_file_exist(const string &fileName) {
@@ -107,6 +139,47 @@ bool Travel::isTravelLegal() {
              this->travelError & (1 << 8));
 }
 
+list<string> Travel::getMissingCargoFiles() const {
+    list<string> missingCargoFiles = {};
+    unordered_map copyMap = this->portCounter;
+
+    for (auto &pair : copyMap) {
+        get<0>(pair.second) = 0;
+    }
+
+    for (std::list<std::string>::const_iterator i = this->route.begin();
+         i != this->route.end(); ++i) {
+        int visitNum = get<0>(copyMap.find(i->c_str())->second) += 1;
+
+        string fileName = travelPath + "/" + i->c_str() + "_" + to_string(visitNum) + ".cargo_data";
+        if (!fs::exists(fileName)) {
+            missingCargoFiles.emplace_back(std::string(i->c_str()) + "_" + std::to_string(visitNum) + ".cargo_data");
+        }
+    }
+
+    return missingCargoFiles;
+}
+
+list<string> Travel::getUnusedFiles() const {
+    list<string> unusedFiles = {};
+
+    for (auto &path:fs::directory_iterator(travelPath)) {
+        const string extension = path.path().filename().extension().string();
+        if (extension.compare(".cargo_data") == 0) {
+            if (!isFileInTravelRoute(path.path().stem().string())) {
+                unusedFiles.emplace_back(path.path().filename().string());
+            }
+        } else {
+            if (extension.compare(".route") != 0 && extension.compare(".ship_plan") != 0) {
+                unusedFiles.emplace_back(path.path().filename().string());
+            }
+        }
+
+
+    }
+    return unusedFiles;
+}
+
 void Travel::generalTravelErrorsToFile(const string &fileName) const {
     ofstream outfile;
     outfile.open(fileName, std::ios::app);
@@ -115,50 +188,17 @@ void Travel::generalTravelErrorsToFile(const string &fileName) const {
     }
 
     /*copy the current port map*/
-    unordered_map copyMap = this->portCounter;
-
-    for (auto &pair : copyMap) {
-        get<0>(pair.second) = 0;
+    for (string &missingFile:this->getMissingCargoFiles()) {
+        outfile << "missing file: " << missingFile << "\n";
+    }
+    for (string &unusedFile:this->getUnusedFiles()) {
+        outfile << "unused file: " << unusedFile << "\n";
     }
 
-
-    for (std::list<std::string>::const_iterator i = this->route.begin();
-         i != this->route.end(); ++i) {
-        int visitNum = get<0>(copyMap.find(i->c_str())->second) += 1;
-
-        string fileName = travelPath + "/" + i->c_str() + "_" + to_string(visitNum) + ".cargo_data";
-        if (!fs::exists(fileName)) {
-            outfile << "Warning, missing file: " << i->c_str() << "_" << visitNum
-                    << ".cargo_data\n";
-        }
-    }
-
-
-//    list<string> unusedFiles;
-//    size_t cargoFiles = 0;
-//    size_t otherFiles = 0;
-//    for (auto &path:fs::directory_iterator(travelPath)) {
-//        const string portName = path.path().filename().string().substr(4);
-//        if (path.path().filename().extension().string().compare(".cargo_data") == 0) {
-//            if(!copyMap.find(portName)){
-//                unusedFiles.emplace_back(fileName)
-//            }
-//        } else {
-//            unusedFiles.emplace_back(path.path().filename().string());
-//        }
-//    }
-//
-//
-//    if (cargoFiles >= this->route.size()) {
-//        outfile << "Warning, too many cargo_data files in travel folder\n";
-//    }
-//    if (otherFiles > 2) {
-//        outfile << "Warning, too many regular files in travel folder\n";
-//    }
-//    outfile.close();
-
+    outfile.close();
 
 }
+
 
 const string Travel::getNextCargoFilePath() {
     string currentPort = this->route.front();
