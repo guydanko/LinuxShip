@@ -56,12 +56,13 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
     bool toWrite = needToWrite(errorFile);
+    string port = portName.empty() ? "" : portName + ": ";
 
     /*could not open file*/
     if (!inFile) {
         if (toWrite) {
-            outFile
-                    << "containers at port: file cannot be read altogether (assuming no cargo to be loaded at this port) - file: "
+            outFile <<port <<
+                     "containers at port: file cannot be read altogether (assuming no cargo to be loaded at this port) - file: "
                     << fileName << "\n";
             outFile.close();
         }
@@ -71,7 +72,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     int lineNum = 0;
     vector<string> tokens;
     string line;
-    string port = portName.empty() ? "" : portName + ": ";
+
 
     while (getline(inFile, line)) {
         lineNum++;

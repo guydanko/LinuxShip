@@ -236,14 +236,14 @@ void SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(int algoGetInsError,
                                                             list<SimulatorError> &errorList) {
     for (int i = 10; i < 19; i++) {
         if ((algoGetInsError & (1 << i)) == 1 && (simulationInstError & (1 << i)) == 1) {
-            errorList.emplace_front("algorithm finds error code 2^" + std::to_string(i), SimErrorType::GENERAL_PORT);
+            errorList.emplace_front("Algorithm Error: algorithm reported error code 2^" + std::to_string(i), SimErrorType::GENERAL_PORT);
         } else {
             if ((algoGetInsError & (1 << i)) == 0 && (simulationInstError & (1 << i)) == 1) {
-                errorList.emplace_front("simulation finds error code 2^" + std::to_string(i) +
+                errorList.emplace_front("Simulation error: simulation reported error code 2^" + std::to_string(i) +
                                         " but algorithm does not report this code too", SimErrorType::GENERAL_PORT);
             } else {
                 if ((algoGetInsError & (1 << i)) == 1 && (simulationInstError & (1 << i)) == 0) {
-                    errorList.emplace_front("algorithm finds error code 2^" + std::to_string(i) +
+                    errorList.emplace_front("Algorithm Error: algorithm reported error code 2^" + std::to_string(i) +
                                             " but simulation does not report this code too",
                                             SimErrorType::GENERAL_PORT);
                 }
@@ -262,7 +262,7 @@ bool SimulatorAlgoCheck::compareErrorAlgoSimulationInit(int algoInitError, int s
                 simulationAgree = ", but simulation does not find this error, algorithm incorrect";
             }
             errorList.emplace_front(
-                    "algorithm reports error 2^" + std::to_string(i) + simulationAgree,
+                    "Algorithm Error: algorithm reported error 2^" + std::to_string(i) + simulationAgree,
                     SimErrorType::TRAVEL_INIT);
             simulationAgree = "";
             if (i == 3 || i == 4 || i == 7 || i == 8) {
