@@ -53,7 +53,7 @@ void Simulator::createAlgoXTravel() {
     list<shared_ptr<AbstractAlgorithm>> algoList;
     //register and push all algos (with names?)
     algoList.push_back(std::make_shared<NaiveStowageAlgorithm>());
-    algoList.push_back(std::make_shared<MoreNaiveAlgorithm>());
+//    algoList.push_back(std::make_shared<MoreNaiveAlgorithm>());
     for (auto algo: algoList) {
         for (Travel travel:this->travelList) {
             if (travel.isTravelLegal()) {
@@ -101,27 +101,25 @@ void Simulator::runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo
                                                                                   travel.getTravelError(), errorList);
         string travelErrorPath = this->outputPath + "/errors" + "/" + errorFileName;
         FileHandler::simulatorErrorsToFile(errorList, travelErrorPath, travel.getTravelName());
-        int numberLoads = 0, numberUnloads = 0;
+        list<shared_ptr<Container>> doubleIdList = {};
         while (!travel.didTravelEnd() && algoInitSucceed) {
+            set<string> rejectedID = {};
             int simulationInstError = 0;
             errorList = {};
             list<shared_ptr<Container>> loadList = {};
-            list<shared_ptr<Container>> doubleIdList = {};
-            set<string> rejectedID = {};
             simulationInstError |= travel.getContainerList(travelErrorPath, loadList);
             //path to read container list and write cargo op
             const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                                    std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
             int algoGetInsError = pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
-            list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList);
+           list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList);
             simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                  cargoOps, errorList,
                                                                                  doubleIdList, travel.getRoute(),
                                                                                  rejectedID);
             simulationInstError |= SimulatorAlgoCheck::checkAlgoCorrect(travel.getShipMap(), travel.getRoute(),
                                                                         this->calculator, cargoOps, loadList,
-                                                                        travel.getCurrentPort(),
-                                                                        numberLoads, numberUnloads, errorList,
+                                                                        travel.getCurrentPort(), errorList,
                                                                         doubleIdList, rejectedID);
             SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(algoGetInsError, simulationInstError, errorList);
             FileHandler::simulatorErrorsToFile(errorList, travelErrorPath, travel.getTravelName(),
@@ -129,7 +127,7 @@ void Simulator::runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo
             travel.goToNextPort();
         }
         errorList = {};
-        SimulatorAlgoCheck::checkIfShipEmpty(travel.getShipMap(), errorList, numberLoads, numberUnloads);
+        SimulatorAlgoCheck::checkIfShipEmpty(travel.getShipMap(), errorList);
         FileHandler::simulatorErrorsToFile(errorList, travelErrorPath, travel.getTravelName());
 
     }
