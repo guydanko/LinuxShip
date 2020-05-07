@@ -17,6 +17,7 @@ class CargoOperation {
     shared_ptr<Container> container;
     MapIndex index;
     MapIndex moveIndex;
+    bool connectedToOp=false;
 
 public:
     CargoOperation() {}
@@ -36,6 +37,8 @@ public:
     shared_ptr<Container> getContainer() { return this->container; }
 
     void setContainer(shared_ptr<Container> cont){ this->container=cont;}
+    int getConnected(){ return this->connectedToOp;}
+    void setConnected(bool connect){ this->connectedToOp=connect;}
 
 };
 
