@@ -4,12 +4,14 @@
 #include <sstream>
 #include "SimulatorError.h"
 #include <unordered_map>
+#include <filesystem>
 
 
 using std::ifstream;
 using std::cerr;
 using std::stringstream;
 using std::ofstream;
+namespace fs = std::filesystem;
 
 
 const std::string WHITESPACE = " \n\r\t\f\v";
@@ -61,9 +63,8 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     /*could not open file*/
     if (!inFile) {
         if (toWrite) {
-            outFile <<port <<
-                     "containers at port: file cannot be read altogether (assuming no cargo to be loaded at this port) - file: "
-                    << fileName << "\n";
+            outFile << port <<
+                    "containers at port: file cannot be read altogether (assuming no cargo to be loaded at this port)\n";
             outFile.close();
         }
         return (1 << 16);
@@ -142,7 +143,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
 }
 
 int FileHandler::fileToRouteList(const string &fileName, list<string> &route, const string &errorFile) {
-    int result = 0, errorCount = 0;
+    int result = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
     bool toWrite = needToWrite(errorFile);
@@ -242,13 +243,14 @@ void FileHandler::operationsToFile(list<CargoOperation> operations, const string
 
 int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared_ptr<ShipMap>> shipPtr,
                                        const string &errorFile) {
+
     int result = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
     bool toWrite = needToWrite(errorFile);
 
     /*could not open file*/
-    if (!inFile) {
+    if (!inFile || fs::is_empty(fileName)) {
         if (toWrite) {
             outFile
                     << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel) file - "
@@ -276,10 +278,11 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
                         << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
                 outFile.close();
             }
-            return result | (1 << 3);
+            return (1 << 3);
         }
         svec.push_back(token);
     }
+
 
     int height = stoi(svec[0]), rows = stoi(svec[1]), cols = stoi(svec[2]);
     *shipPtr = std::make_shared<ShipMap>(height, rows, cols);
@@ -456,4 +459,49 @@ void FileHandler::reportPlanRouteErrors(const string &shipPlanPath, const string
     }
 
     outFile.close();
+}
+
+void
+FileHandler::printSimulatorResults(const string &filePath, list<string> &algoNameList, list<string> &travelNameList,
+                                   unordered_map<string, unordered_map<string, int>> simulatorResultMap) {
+    /*nothing to print*/
+    if (simulatorResultMap.empty()) {
+        return;
+    }
+
+    ofstream outFile(filePath);
+
+    /*could not open file*/
+    if (!outFile) {
+        return;
+    }
+
+    for (std::list<std::string>::const_iterator i = algoNameList.begin(); i != algoNameList.end(); ++i) {
+        /*print title*/
+        if (i == algoNameList.begin()) {
+            outFile << "RESULTS,    ";
+            for (const string &travelName:travelNameList) {
+                outFile << travelName << ",   ";
+            }
+            outFile << "Sum,    Num Errors\n";
+        }
+
+        int sumOps = 0, numErrors = 0;
+        outFile << i->c_str() << ",    ";
+        for (const string &travelName:travelNameList) {
+            int ops = simulatorResultMap[i->c_str()][travelName];
+            if (ops == -1) {
+                numErrors++;
+            } else {
+                sumOps += ops;
+            }
+            outFile << ops << ",   ";
+        }
+
+        outFile << sumOps << ",    " << numErrors << "\n";
+
+    }
+
+    outFile.close();
+
 }

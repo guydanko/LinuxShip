@@ -221,7 +221,8 @@ int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadList,
     return result;
 }
 
-int NaiveStowageAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+int
+NaiveStowageAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
     int result = 0;
     this->rejectIllagalContainer(loadList, opList);
     this->rejectDestNotInRoute(loadList, opList);
@@ -255,12 +256,17 @@ int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full
         const string currentPort = this->route.front();
         this->route.pop_front();
 
-        result |= FileHandler::fileToContainerList(input_full_path_and_file_name, loadList);
-        if (!loadList.empty() && this->route.empty() && result > 0) {
-            result |= 1 << 17;
-            loadList = {};
+        int fileResult = FileHandler::fileToContainerList(input_full_path_and_file_name, loadList);
+        /*was last port*/
+        if (this->route.empty()) {
+            if (!loadList.empty() || fileResult != (1 << 16)) {
+                result = 1 << 17;
+            }
         }
-        result |= rejectAllBesideShipFull(loadList, opList);
+        if(fileResult != 1<<16){
+            result |= fileResult;
+        }
+        result |=  rejectAllBesideShipFull(loadList, opList);
         loadList.sort([](const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) -> bool {
             return cont1->getPortIndex() < cont2->getPortIndex();
         });

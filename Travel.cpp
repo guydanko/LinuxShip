@@ -13,6 +13,11 @@ using std::__cxx11::to_string;
 using std::stringstream;
 using std::ofstream;
 
+bool Travel::isTravelErrorLegal(int errorCode) {
+    return !(errorCode & (1 << 3) || errorCode & (1 << 4) || errorCode & (1 << 7) ||
+             errorCode & (1 << 8));
+}
+
 bool isValidNumber(const string &s) {
     if (s.empty()) {
         return false;
@@ -122,9 +127,16 @@ int Travel::getContainerList(const string &errorFile, list<shared_ptr<Container>
 
     string fileName = travelPath + "/" + currentPort + "_" + to_string(visitNum) + ".cargo_data";
     if (this->route.size() == 1) {
-        FileHandler::fileToContainerList(fileName, checkList);
-        if (fs::exists(fileName) && fs::is_empty(fileName)) { return 0; }
-        return (1 << 17);
+        int result = FileHandler::fileToContainerList(fileName, checkList);
+        /*no file for last port - OK*/
+        if (result & (1 << 16)) {
+            return 0;
+        }
+            /*there were containers in last port file, or there was corrupt line*/
+        else if (!checkList.empty() || result > 0) { return 1 << 17; }
+        /*file exists but not lines in it*/
+        return 0;
+
     }
     return FileHandler::fileToContainerList(fileName, contList, errorFile,
                                             this->route.front() + "_" + std::to_string(visitNum));
@@ -147,10 +159,11 @@ list<string> Travel::getMissingCargoFiles() const {
         get<0>(pair.second) = 0;
     }
 
-    for (std::list<std::string>::const_iterator i = this->route.begin();
-         i != this->route.end(); ++i) {
+    for (std::list<std::string>::const_iterator i = this->route.begin(); i != this->route.end(); ++i) {
+        if (next(i) == this->route.end()) {
+            continue;
+        }
         int visitNum = get<0>(copyMap.find(i->c_str())->second) += 1;
-
         string fileName = travelPath + "/" + i->c_str() + "_" + to_string(visitNum) + ".cargo_data";
         if (!fs::exists(fileName)) {
             missingCargoFiles.emplace_back(std::string(i->c_str()) + "_" + std::to_string(visitNum) + ".cargo_data");

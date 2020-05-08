@@ -3,8 +3,10 @@
 #include "Simulator.h"
 #include "FileHandler.h"
 #include "SimulatorAlgoCheck.h"
+#include <map>
 
 using std::string;
+using std::multimap;
 
 const string getShipPlanPath(const fs::path &path) {
     int planFiles = 0;
@@ -53,7 +55,7 @@ void Simulator::createAlgoXTravel() {
     list<shared_ptr<AbstractAlgorithm>> algoList;
     //register and push all algos (with names?)
     algoList.push_back(std::make_shared<NaiveStowageAlgorithm>());
-//    algoList.push_back(std::make_shared<MoreNaiveAlgorithm>());
+    algoList.push_back(std::make_shared<MoreNaiveAlgorithm>());
     for (auto algo: algoList) {
         for (Travel travel:this->travelList) {
             if (travel.isTravelLegal()) {
@@ -73,12 +75,15 @@ void Simulator::buildTravel(const fs::path &path) {
         FileHandler::reportPlanRouteErrors(shipPlanPath, routePath, errorFileName);
         return;
     }
+
     auto shipPtr = std::make_shared<shared_ptr<ShipMap>>(std::make_shared<ShipMap>());
     travelError |= FileHandler::createShipMapFromFile(shipPlanPath, shipPtr,
                                                       errorFileName);
     travelError |= FileHandler::fileToRouteList(routePath, route, errorFileName);
-    travelList.emplace_back(path.string(), path.filename().string(), shipPlanPath, routePath, *shipPtr, route,
-                            travelError);
+    if(Travel::isTravelErrorLegal(travelError)) {
+        travelList.emplace_back(path.string(), path.filename().string(), shipPlanPath, routePath, *shipPtr, route,
+                                travelError);
+    }
 
 }
 
@@ -91,6 +96,7 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, shared_ptr<AbstractAlgori
     return algoInitError;
 }
 
+/* returns amount of operations in a travel algo pair*/
 int Simulator::runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
     int algoInitError = 0;
@@ -100,7 +106,8 @@ int Simulator::runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo,
         list<SimulatorError> errorList;
         algoInitError = initAlgoWithTravelParam(travel, pAlgo, errorList);
         correctAlgo = SimulatorAlgoCheck::compareErrorAlgoSimulationInit(algoInitError,
-                                                                         travel.getTravelError(), errorList,correctAlgo);
+                                                                         travel.getTravelError(), errorList,
+                                                                         correctAlgo);
         string travelErrorPath = this->outputPath + "/errors" + "/" + errorFileName;
         FileHandler::simulatorErrorsToFile(errorList, travelErrorPath, travel.getTravelName());
         list<shared_ptr<Container>> doubleIdList = {};
@@ -154,18 +161,63 @@ void Simulator::deleteEmptyFiles() {
     }
 }
 
+list<string> getAlgosByOrder(unordered_map<string, unordered_map<string, int>> &algoOpMap) {
+    list<string> algosInOrder;
+    multimap<pair<int, int>, string> algoSumErrorMap;
+    for (auto &algo: algoOpMap) {
+        int algoErrors = 0, algoSum = 0;
+        for (auto &travelName: algo.second) {
+            if (travelName.second == -1) {
+                algoErrors++;
+            } else {
+                algoSum += travelName.second;
+            }
+        }
+        algoSumErrorMap.insert(std::make_pair(std::make_pair(algoErrors, algoSum), algo.first));
+    }
+    for (auto &pair:algoSumErrorMap) {
+        algosInOrder.emplace_back(pair.second);
+    }
+    return algosInOrder;
+}
+
 void Simulator::run() {
     setUpDirectories(this->outputPath);
     createAlgoXTravel();
+    unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     int algoNum = 1;
     for (auto algoTravelPair: algoXtravel) {
+        /*to be changed with actual names of algorithm*/
+        string algoName;
+        if (algoNum <= 1) {
+            algoName = "NaiveAlgo";
+        } else {
+            algoName = "MoreNaiveAlgo";
+        }
         string fileName =
                 this->outputPath + "/" + std::to_string(algoNum) + "_" + algoTravelPair.second.getTravelName();
         fs::create_directory(fileName);
-        runOneTravel(algoTravelPair.second, algoTravelPair.first, fileName,
-                     std::to_string(algoNum) + "_" + algoTravelPair.second.getTravelName());
+        int opAmount = runOneTravel(algoTravelPair.second, algoTravelPair.first, fileName,
+                                    std::to_string(algoNum) + "_" + algoTravelPair.second.getTravelName());
+        algoOperationsMap[algoName][algoTravelPair.second.getTravelName()] = opAmount;
         algoNum++;
     }
+    /*checking differnet outcomes of operations - MUST DELETE AFTER!!*/
+    algoOperationsMap["NaiveAlgo"]["Travel1"] = -1;
+    algoOperationsMap["WeirdAlgo"]["Travel1"] = 200;
+    algoOperationsMap["WeirdAlgo"]["Travel2"] = 200;
+    algoOperationsMap["AmirKirshAlgo"]["Travel1"] = -1;
+    algoOperationsMap["SaeedAlgo"]["Travel1"] = -1;
+    algoOperationsMap["AdamAlgo"]["Travel1"] = 20;
+
+
+    list<string> algosInOrder = getAlgosByOrder(algoOperationsMap);
+    list<string> travelNameOrder = {};
+    for (auto &travel: this->travelList) {
+        travelNameOrder.emplace_back(travel.getTravelName());
+    }
+    FileHandler::printSimulatorResults(this->outputPath + "/simulation.results", algosInOrder, travelNameOrder,
+                                       algoOperationsMap);
     deleteEmptyFiles();
 }
 

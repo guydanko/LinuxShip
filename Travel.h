@@ -55,6 +55,8 @@ public:
     const string &getShipPlanPath(){ return this->shipPath;};
     const string &getRoutePath(){ return this->routePath;};
 
+    static bool isTravelErrorLegal(int errorCode);
+
 
 
 private:

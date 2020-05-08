@@ -21,7 +21,7 @@ class FileHandler {
 public:
     /*appends containers to list*/
     static int fileToContainerList(const string &fileName, list<shared_ptr<Container>> &containerList,
-                                   const string &errorFile = "", const string& portName = "");
+                                   const string &errorFile = "", const string &portName = "");
 
     static int fileToRouteList(const string &fileName, list<string> &route, const string &errorFile = "");
 
@@ -42,7 +42,10 @@ public:
                           const string &portName = "", int visitNumber = 0,
                           const string &errorFile = "");
 
-    static void reportPlanRouteErrors(const string& shipPlanPath,const string& routePath, const string& errorFile);
+    static void reportPlanRouteErrors(const string &shipPlanPath, const string &routePath, const string &errorFile);
+
+    static void printSimulatorResults(const string &filePath, list<string> &algoNameList, list<string> &travelNameList,
+                                      unordered_map<string, unordered_map<string, int>> simulatorResultMap);
 
 };
 
