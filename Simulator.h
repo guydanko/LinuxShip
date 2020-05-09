@@ -28,22 +28,25 @@ class Simulator {
 
     void createAlgoXTravel();
 
+    void printResults(unordered_map<string, unordered_map<string, int>> simResults);
+
 public:
-    Simulator(const string &travelPath, const string &algoPath = fs::current_path().string() ,
+    Simulator(const string &travelPath, const string &algoPath = fs::current_path().string(),
               const string &outputPath = fs::current_path().string() + "/SimulatorFiles") : travelPath(
             travelPath),
-                                                                        algoPath(
-                                                                                algoPath),
-                                                                        outputPath(
-                                                                                outputPath) {};
+                                                                                            algoPath(
+                                                                                                    algoPath),
+                                                                                            outputPath(
+                                                                                                    outputPath) {};
 
     list<Travel> &getTravels() { return this->travelList; };
 
     void run();
 
     int runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> algo, const string &fileName,
-                      const string &errorFileName);
-    int initAlgoWithTravelParam(Travel &travel,shared_ptr<AbstractAlgorithm> pAlgo,list<SimulatorError>& listError);
+                     const string &errorFileName);
+
+    int initAlgoWithTravelParam(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo, list<SimulatorError> &listError);
 
 };
 

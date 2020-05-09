@@ -80,7 +80,7 @@ void Simulator::buildTravel(const fs::path &path) {
     travelError |= FileHandler::createShipMapFromFile(shipPlanPath, shipPtr,
                                                       errorFileName);
     travelError |= FileHandler::fileToRouteList(routePath, route, errorFileName);
-    if(Travel::isTravelErrorLegal(travelError)) {
+    if (Travel::isTravelErrorLegal(travelError)) {
         travelList.emplace_back(path.string(), path.filename().string(), shipPlanPath, routePath, *shipPtr, route,
                                 travelError);
     }
@@ -181,6 +181,16 @@ list<string> getAlgosByOrder(unordered_map<string, unordered_map<string, int>> &
     return algosInOrder;
 }
 
+void Simulator::printResults(unordered_map<string, unordered_map<string, int>> simResults) {
+    list<string> algosInOrder = getAlgosByOrder(simResults);
+    list<string> travelNameOrder = {};
+    for (auto &travel: this->travelList) {
+        travelNameOrder.emplace_back(travel.getTravelName());
+    }
+    FileHandler::printSimulatorResults(this->outputPath + "/simulation.results", algosInOrder, travelNameOrder,
+                                       simResults);
+}
+
 void Simulator::run() {
     setUpDirectories(this->outputPath);
     createAlgoXTravel();
@@ -210,14 +220,7 @@ void Simulator::run() {
     algoOperationsMap["SaeedAlgo"]["Travel1"] = -1;
     algoOperationsMap["AdamAlgo"]["Travel1"] = 20;
 
-
-    list<string> algosInOrder = getAlgosByOrder(algoOperationsMap);
-    list<string> travelNameOrder = {};
-    for (auto &travel: this->travelList) {
-        travelNameOrder.emplace_back(travel.getTravelName());
-    }
-    FileHandler::printSimulatorResults(this->outputPath + "/simulation.results", algosInOrder, travelNameOrder,
-                                       algoOperationsMap);
+    printResults(algoOperationsMap);
     deleteEmptyFiles();
 }
 
