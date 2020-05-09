@@ -1,6 +1,6 @@
 /*Simulator class to run a simulation of cartesian loop of algorithms and travels*/
 #include "../interfaces/AbstractAlgorithm.h"
-#include "../algorithms/MoreNaiveAlgorithm.h" //should erase
+#include "../algorithms/_316294636_b.h" //should erase
 #include "SimulatorError.h"
 #include "Travel.h"
 #include <filesystem>

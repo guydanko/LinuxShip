@@ -52,8 +52,8 @@ void Simulator::createAlgoXTravel() {
     }
     travelErrorsToFile(this->outputPath + "/errors");
     //register and push all algos (with names?)
-    algoList.push_back(std::make_unique<NaiveStowageAlgorithm>());
-    algoList.push_back(std::make_unique<MoreNaiveAlgorithm>());
+    algoList.push_back(std::make_unique<_316294636_a>());
+    algoList.push_back(std::make_unique<_316294636_b>());
 
 }
 

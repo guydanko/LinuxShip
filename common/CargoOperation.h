@@ -20,7 +20,7 @@ class CargoOperation {
     bool connectedToOp=false;
 
 public:
-    CargoOperation() {}
+    CargoOperation() = default;
 
     CargoOperation(AbstractAlgorithm::Action op, shared_ptr<Container> container, MapIndex index = {-1, -1, -1},
                    MapIndex moveIndex = {-1, 1, -1}) : operation(op), container(container), index(index),

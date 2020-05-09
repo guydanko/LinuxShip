@@ -3,11 +3,12 @@
 #include "../common/Container.h"
 #include "../common/CargoOperation.h"
 #include "../common/MapIndex.h"
-#include "MoreNaiveAlgorithm.h"
+#include "_316294636_b.h"
 
+REGISTER_ALGORITHM (_316294636_b);
 void
-MoreNaiveAlgorithm::moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>> &rememberLoadAgain,
-                              list<CargoOperation> &opList) {
+_316294636_b::moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>> &rememberLoadAgain,
+                        list<CargoOperation> &opList) {
     for (int i = this->shipMap->getHeight() - 1; i >= index.getHeight(); i--) {
         if (this->shipMap->getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr) {
             //discover container should be unload again later

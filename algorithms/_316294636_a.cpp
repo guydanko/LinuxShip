@@ -1,11 +1,12 @@
-#include "NaiveStowageAlgorithm.h"
+#include "_316294636_a.h"
 #include <map>
 #include "../common/FileHandler.h"
 
 using std::map;
+REGISTER_ALGORITHM (_316294636_a);
 
-void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
-                                      list<CargoOperation> &opList) {
+void _316294636_a::tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
+                             list<CargoOperation> &opList) {
     MapIndex moveIndex = MapIndex::isPlaceToMove(MapIndex(i, index.getRow(), index.getCol()), this->shipMap);
     //can move on the ship
     if (moveIndex.validIndex()) {
@@ -48,9 +49,9 @@ void NaiveStowageAlgorithm::tryToMove(int i, MapIndex index, list<shared_ptr<Con
     }
 }
 
-void NaiveStowageAlgorithm::moveTower(MapIndex index, const string &portName,
-                                      list<shared_ptr<Container>> &rememberLoadAgain,
-                                      list<CargoOperation> &opList) {
+void _316294636_a::moveTower(MapIndex index, const string &portName,
+                             list<shared_ptr<Container>> &rememberLoadAgain,
+                             list<CargoOperation> &opList) {
 
     for (int i = this->shipMap->getHeight() - 1; i >= index.getHeight(); i--) {
         if (this->shipMap->getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr) {
@@ -77,8 +78,8 @@ void NaiveStowageAlgorithm::moveTower(MapIndex index, const string &portName,
     }
 }
 
-void NaiveStowageAlgorithm::unloadContainerByPort(const string &portName, list<CargoOperation> &opList,
-                                                  list<shared_ptr<Container>> &rememberLoadAgain) {
+void _316294636_a::unloadContainerByPort(const string &portName, list<CargoOperation> &opList,
+                                         list<shared_ptr<Container>> &rememberLoadAgain) {
 
     for (int i = 0; i < this->shipMap->getRows(); i++) {
         for (int j = 0; j < this->shipMap->getCols(); j++) {
@@ -94,8 +95,8 @@ void NaiveStowageAlgorithm::unloadContainerByPort(const string &portName, list<C
     }
 }
 
-void NaiveStowageAlgorithm::loadAgain(list<shared_ptr<Container>> &rememberLoadAgain,
-                                      list<CargoOperation> &opList) {
+void _316294636_a::loadAgain(list<shared_ptr<Container>> &rememberLoadAgain,
+                             list<CargoOperation> &opList) {
     for (auto cont: rememberLoadAgain) {
         MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap);
         //should always be true because it load again container which have been on ship
@@ -115,7 +116,7 @@ void NaiveStowageAlgorithm::loadAgain(list<shared_ptr<Container>> &rememberLoadA
 }
 
 
-int NaiveStowageAlgorithm::loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) {
+int _316294636_a::loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) {
     int result = 0;
     MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap);
     if (loadIndex.validIndex()) {
@@ -138,8 +139,8 @@ int NaiveStowageAlgorithm::loadOneContainer(shared_ptr<Container> cont, list<Car
     return result;
 }
 
-int NaiveStowageAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad,
-                                             list<CargoOperation> &opList) {
+int _316294636_a::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad,
+                                    list<CargoOperation> &opList) {
     int result = 0;
     for (auto cont : containerListToLoad) {
         result |= loadOneContainer(cont, opList);
@@ -147,7 +148,7 @@ int NaiveStowageAlgorithm::loadNewContainers(list<shared_ptr<Container>> &contai
     return result;
 }
 
-void NaiveStowageAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+void _316294636_a::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
     map<string, int> portNumberMap;
     int number = 1;
     for (const string &port : this->route) {
@@ -171,7 +172,7 @@ void NaiveStowageAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &lo
 }
 
 void
-NaiveStowageAlgorithm::rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+_316294636_a::rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
     for (auto itr = loadList.begin(); itr != loadList.end();) {
         if (!(*itr)->isContainerLegal()) {
             opList.emplace_back(Action::REJECT, (*itr));
@@ -182,7 +183,7 @@ NaiveStowageAlgorithm::rejectIllagalContainer(list<shared_ptr<Container>> &loadL
     }
 }
 
-int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+int _316294636_a::rejectDoubleId(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
     map<string, int> containerMap;
     map<string, bool> containerMapFirst;
     int result = 0;
@@ -220,7 +221,7 @@ int NaiveStowageAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadList,
 }
 
 int
-NaiveStowageAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+_316294636_a::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
     int result = 0;
     this->rejectIllagalContainer(loadList, opList);
     this->rejectDestNotInRoute(loadList, opList);
@@ -228,24 +229,24 @@ NaiveStowageAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &load
     return result;
 }
 
-int NaiveStowageAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
+int _316294636_a::readShipPlan(const std::string &full_path_and_file_name) {
     auto shipPtr = std::make_shared<shared_ptr<ShipMap>>(std::make_shared<ShipMap>());
     int result = FileHandler::createShipMapFromFile(full_path_and_file_name, shipPtr);
     this->shipMap = *shipPtr;
     return result;
 }
 
-int NaiveStowageAlgorithm::readShipRoute(const std::string &full_path_and_file_name) {
+int _316294636_a::readShipRoute(const std::string &full_path_and_file_name) {
     return FileHandler::fileToRouteList(full_path_and_file_name, this->route);
 }
 
-int NaiveStowageAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &calculator) {
+int _316294636_a::setWeightBalanceCalculator(WeightBalanceCalculator &calculator) {
     this->calculator = calculator;
     return 0;
 }
 
-int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
-                                                   const std::string &output_full_path_and_file_name) {
+int _316294636_a::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
+                                          const std::string &output_full_path_and_file_name) {
     int result = 0;
     list<CargoOperation> opList = {};
     list<shared_ptr<Container>> loadList = {};

@@ -3,6 +3,7 @@
 #include "../common/MapIndex.h"
 #include "../common/CargoOperation.h"
 #include <memory>
+#include "../interfaces/AlgorithmRegistration.h"
 
 
 #ifndef SHIPGIT_NAIVESTOWAGEALGORITHM_H
@@ -12,14 +13,14 @@ using std::shared_ptr;
 using std::string;
 using std::list;
 
-class NaiveStowageAlgorithm : public AbstractAlgorithm {
+class _316294636_a : public AbstractAlgorithm {
 
 protected:
     shared_ptr<ShipMap> shipMap;
     list<string> route;
     WeightBalanceCalculator calculator;
 public:
-    NaiveStowageAlgorithm() : AbstractAlgorithm() {}
+    _316294636_a() : AbstractAlgorithm() {}
 
     void loadAgain(list<shared_ptr<Container>>& rememberLoadAgain, list<CargoOperation> &opList);
 
