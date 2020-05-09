@@ -1,8 +1,6 @@
-
 #include "NaiveStowageAlgorithm.h"
 #include <map>
-#include "FileHandler.h"
-#include "WeightBalanceCalculator.h"
+#include "../common/FileHandler.h"
 
 using std::map;
 
@@ -259,14 +257,13 @@ int NaiveStowageAlgorithm::getInstructionsForCargo(const std::string &input_full
         int fileResult = FileHandler::fileToContainerList(input_full_path_and_file_name, loadList);
         /*was last port*/
         if (this->route.empty()) {
-            if (!loadList.empty() || fileResult != (1 << 16)) {
+            if (!loadList.empty() || (fileResult != (1 << 16) && fileResult != 0)) {
                 result = 1 << 17;
             }
-        }
-        if(fileResult != 1<<16){
+        } else {
             result |= fileResult;
         }
-        result |=  rejectAllBesideShipFull(loadList, opList);
+        result |= rejectAllBesideShipFull(loadList, opList);
         loadList.sort([](const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) -> bool {
             return cont1->getPortIndex() < cont2->getPortIndex();
         });

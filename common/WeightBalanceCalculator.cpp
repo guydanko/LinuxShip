@@ -2,7 +2,7 @@
 // TODO: on targil 3
 //
 #include <string>
-#include "WeightBalanceCalculator.h"
+#include "../interfaces/WeightBalanceCalculator.h"
 
 int WeightBalanceCalculator::readShipPlan(const std::string& full_path_and_file_name){
     return 0;

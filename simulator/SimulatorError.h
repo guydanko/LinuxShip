@@ -1,5 +1,5 @@
 /*Data structure that represents an error found during simulation*/
-#include "CargoOperation.h"
+#include "../common/CargoOperation.h"
 
 using std::string;
 
@@ -26,6 +26,11 @@ public:
     string getErrorMessage() const { return this->errorMessage; };
 
     SimErrorType getErrorType() const { return this->generalError; };
+
+    static void
+    simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, const string &fileName, const string &travelName,
+                          const string &portName = "", int visitNumber = 0,
+                          const string &errorFile = "");
 
     friend ostream &operator<<(ostream &os, const SimulatorError &simulatorError);
 };

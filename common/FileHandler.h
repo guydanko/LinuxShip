@@ -1,10 +1,9 @@
 /*class that handles input and output of different data objects to files and vice versa*/
 #include <string>
 #include <list>
-#include "Ship.h"
 #include "CargoOperation.h"
 #include "Container.h"
-#include "SimulatorError.h"
+#include "../simulator/SimulatorError.h"
 #include <memory>
 #include <unordered_map>
 
@@ -36,11 +35,6 @@ public:
     static void operationsToFile(list<CargoOperation> operations, const string &fileName, const string &currentPort);
 
     /*returns empty list if invalid file or no legal containers*/
-
-    static void
-    simulatorErrorsToFile(const list<SimulatorError> &simErrors, const string &fileName, const string &travelName,
-                          const string &portName = "", int visitNumber = 0,
-                          const string &errorFile = "");
 
     static void reportPlanRouteErrors(const string &shipPlanPath, const string &routePath, const string &errorFile);
 

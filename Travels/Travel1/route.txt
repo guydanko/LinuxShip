@@ -1,5 +1,0 @@
-AA AAa
-bb bbb
-cc ccc
-bb bbb
-AA AAA

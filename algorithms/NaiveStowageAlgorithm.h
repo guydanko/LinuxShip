@@ -1,7 +1,7 @@
 /*working algorithm for stowage operations*/
-#include "AbstractAlgorithm.h"
-#include "MapIndex.h"
-#include "CargoOperation.h"
+#include "../interfaces/AbstractAlgorithm.h"
+#include "../common/MapIndex.h"
+#include "../common/CargoOperation.h"
 #include <memory>
 
 

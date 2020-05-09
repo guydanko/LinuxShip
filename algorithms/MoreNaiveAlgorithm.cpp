@@ -1,8 +1,8 @@
 
 #include <list>
-#include "Container.h"
-#include "CargoOperation.h"
-#include "MapIndex.h"
+#include "../common/Container.h"
+#include "../common/CargoOperation.h"
+#include "../common/MapIndex.h"
 #include "MoreNaiveAlgorithm.h"
 
 void

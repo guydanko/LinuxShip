@@ -4,9 +4,8 @@
 
 #include <unordered_map>
 #include <iostream>
-#include "Container.h"
-#include "Ship.h"
-#include "ShipMap.h"
+#include "../common/Container.h"
+#include "../common/ShipMap.h"
 
 using std::tuple;
 using std::string;

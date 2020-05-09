@@ -4,8 +4,6 @@
 #ifndef LINUXSHIP_SIMULATORALGOCHECK_H
 #define LINUXSHIP_SIMULATORALGOCHECK_H
 
-#endif //LINUXSHIP_SIMULATORALGOCHECK_H
-
 using std::list;
 
 class SimulatorAlgoCheck{
@@ -20,3 +18,5 @@ public:
                                                       list<shared_ptr<CargoOperation>> &cargoOps,
                                                       list<SimulatorError> &listError, list<shared_ptr<Container>> &doubleIdList, list<string>& route,set<string> &rejectedID,bool& correctAlgo);
 };
+
+#endif //LINUXSHIP_SIMULATORALGOCHECK_H

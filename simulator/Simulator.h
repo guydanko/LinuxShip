@@ -1,21 +1,22 @@
 /*Simulator class to run a simulation of cartesian loop of algorithms and travels*/
-#include "AbstractAlgorithm.h"
-#include "MoreNaiveAlgorithm.h" //should erase
+#include "../interfaces/AbstractAlgorithm.h"
+#include "../algorithms/MoreNaiveAlgorithm.h" //should erase
 #include "SimulatorError.h"
 #include "Travel.h"
 #include <filesystem>
 #include <iostream>
+#include <memory>
 
 namespace fs = std::filesystem;
 using std::pair;
+using std::unique_ptr;
 
 #ifndef SHIPGIT_SIMULATOR_H
 #define SHIPGIT_SIMULATOR_H
 
 
 class Simulator {
-    list<pair<shared_ptr<AbstractAlgorithm>, Travel>> algoXtravel;
-    list<shared_ptr<AbstractAlgorithm>> algoList;
+    list<unique_ptr<AbstractAlgorithm>> algoList;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
     string outputPath = "SimulatorFiles", travelPath, algoPath;
@@ -43,10 +44,10 @@ public:
 
     void run();
 
-    int runOneTravel(Travel &travel, shared_ptr<AbstractAlgorithm> algo, const string &fileName,
+    int runOneTravel(Travel &travel, AbstractAlgorithm *algo, const string &fileName,
                      const string &errorFileName);
 
-    int initAlgoWithTravelParam(Travel &travel, shared_ptr<AbstractAlgorithm> pAlgo, list<SimulatorError> &listError);
+    int initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError> &listError);
 
 };
 
