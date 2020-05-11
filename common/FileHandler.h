@@ -30,9 +30,9 @@ public:
     createShipMapFromFile(const string &fileName, shared_ptr<shared_ptr<ShipMap>> ship, const string &errorFile = "");
 
     static list<shared_ptr<CargoOperation>>
-    createCargoOpsFromFile(const string &fileName, list<shared_ptr<Container>> &containerList);
+    createCargoOpsFromFile(const string &fileName);
 
-    static void operationsToFile(list<CargoOperation> operations, const string &fileName, const string &currentPort);
+    static void operationsToFile(list<CargoOperation> operations, const string &fileName);
 
     /*returns empty list if invalid file or no legal containers*/
 

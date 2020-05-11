@@ -3,7 +3,7 @@
 #include "../common/FileHandler.h"
 
 using std::map;
-REGISTER_ALGORITHM (_316294636_a);
+REGISTER_ALGORITHM (_316294636_a)
 
 void _316294636_a::tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
                              list<CargoOperation> &opList) {
@@ -271,7 +271,7 @@ int _316294636_a::getInstructionsForCargo(const std::string &input_full_path_and
         this->unloadContainerByPort(currentPort, opList, rememberLoadAgain);
         this->loadAgain(rememberLoadAgain, opList);
         result |= this->loadNewContainers(loadList, opList);
-        FileHandler::operationsToFile(opList, output_full_path_and_file_name, currentPort);
+        FileHandler::operationsToFile(opList, output_full_path_and_file_name);
         return result;
     }
     return result;

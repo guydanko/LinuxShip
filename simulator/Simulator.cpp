@@ -79,8 +79,7 @@ void Simulator::buildTravel(const fs::path &path) {
 
 }
 
-int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo,
-                                       list<SimulatorError> &errorList) {
+int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo) {
     int algoInitError = 0;
     algoInitError |= pAlgo->readShipPlan(travel.getShipPlanPath());
     algoInitError |= pAlgo->readShipRoute(travel.getRoutePath());
@@ -96,7 +95,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
         list<SimulatorError> errorList;
-        algoInitError = initAlgoWithTravelParam(travel, pAlgo, errorList);
+        algoInitError = initAlgoWithTravelParam(travel, pAlgo);
         correctAlgo = SimulatorAlgoCheck::compareErrorAlgoSimulationInit(algoInitError,
                                                                          travel.getTravelError(), errorList,
                                                                          correctAlgo);
@@ -114,7 +113,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
                 int algoGetInsError = pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
-                list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo, loadList);
+                list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo);
                 sumCargoOperation += cargoOps.size();
                 simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                      cargoOps, errorList,
@@ -123,7 +122,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 simulationInstError |= SimulatorAlgoCheck::checkAlgoCorrect(travel.getShipMap(), travel.getRoute(),
                                                                             this->calculator, cargoOps, loadList,
                                                                             travel.getCurrentPort(), errorList,
-                                                                            doubleIdList, rejectedID, correctAlgo);
+                                                                            doubleIdList, correctAlgo);
                 SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(algoGetInsError, simulationInstError, errorList,
                                                                        correctAlgo);
                 SimulatorError::simulatorErrorsToFile(errorList, travelErrorPath, travel.getTravelName(),

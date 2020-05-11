@@ -5,7 +5,7 @@
 #include "../common/MapIndex.h"
 #include "_316294636_b.h"
 
-REGISTER_ALGORITHM (_316294636_b);
+REGISTER_ALGORITHM (_316294636_b)
 void
 _316294636_b::moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>> &rememberLoadAgain,
                         list<CargoOperation> &opList) {

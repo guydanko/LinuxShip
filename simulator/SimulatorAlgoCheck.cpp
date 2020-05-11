@@ -346,7 +346,7 @@ bool solidGround(shared_ptr<ShipMap> shipMap, MapIndex index) {
 bool portStillInRoute(list<string> &route, const string &port) {
     auto itr = route.begin();
     itr++;
-    for (itr; itr != route.end(); itr++) {
+    for (; itr != route.end(); itr++) {
         if ((*itr) == port) {
             return true;
         }
@@ -550,9 +550,7 @@ void checkMoveOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, li
 }
 
 int
-checkRejectOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, list<shared_ptr<Container>> &loadList,
-                     int maxNumberPortLoaded,
-                     list<SimulatorError> &errorList, const string &currentPort, bool &correctAlgo) {
+checkRejectOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp,int maxNumberPortLoaded,list<SimulatorError> &errorList, bool &correctAlgo) {
     int result = 0;
     if (cargoOp.getContainer()->getIsContainerLoaded()) {
         errorList.emplace_back(
@@ -627,7 +625,7 @@ int SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<strin
                                          list<shared_ptr<Container>> &loadList,
                                          const string &currentPort,
                                          list<SimulatorError> &errorList, list<shared_ptr<Container>> &doubleIdList,
-                                         set<string> &rejectedID, bool &correctAlgo) {
+                                          bool &correctAlgo) {
     int result = 0;
     map<string, shared_ptr<CargoOperation>> rememberToLoadAgainIdToCargoOp;
     int maxNumberPortLoaded = 0;
@@ -667,8 +665,7 @@ int SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<strin
     }
     for (const auto &cargoOp: cargoOpsList) {
         if (cargoOp->getOp() == AbstractAlgorithm::Action::REJECT) {
-            result |= checkRejectOperation(shipMap, *cargoOp, loadList, maxNumberPortLoaded, errorList,
-                                           currentPort, correctAlgo);
+            result |= checkRejectOperation(shipMap, *cargoOp, maxNumberPortLoaded, errorList, correctAlgo);
         }
     }
     nothingLeftNoReason(rememberToLoadAgainIdToCargoOp, errorList, currentPort,

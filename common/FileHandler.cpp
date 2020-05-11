@@ -226,8 +226,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
 
 }
 
-void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName,
-                                   const string &currentPort) {
+void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName) {
     ofstream outfile;
     outfile.open(fileName, std::ios::app);
     if (!outfile) {
@@ -354,7 +353,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
 }
 
 list<shared_ptr<CargoOperation>>
-FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<Container>> &containerList) {
+FileHandler::createCargoOpsFromFile(const string &fileName) {
     list<shared_ptr<CargoOperation>> ops = {};
     ifstream inFile(fileName);
 
