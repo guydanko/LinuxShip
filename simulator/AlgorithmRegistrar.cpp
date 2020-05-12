@@ -1,42 +1,53 @@
-
 #include <dlfcn.h>
-
 #include "AlgorithmRegistrar.h"
-
-AlgorithmRegistrar AlgorithmRegistrar::instance;
 
 void AlgorithmRegistrar::DlCloser::operator()(void *dlhandle) const noexcept {
     dlclose(dlhandle);
 }
 
 AlgorithmRegistrar::~AlgorithmRegistrar() {
-    _factories.clear();
-    _handles.clear();
+    factories.clear();
+    handles.clear();
 }
 
-list<unique_ptr<AbstractAlgorithm>> AlgorithmRegistrar::getAlgorithms() const {
-    list<unique_ptr<AbstractAlgorithm>> algorithms;
-    for (auto algorithmFactoryFunc : algorithmFactories) {
-        algorithms.push_back(algorithmFactoryFunc());
+AlgorithmRegistrar& AlgorithmRegistrar::getInstance(){
+    static AlgorithmRegistrar instance;
+    return instance;
+}
+
+std::list<std::unique_ptr<AbstractAlgorithm>> AlgorithmRegistrar::getAlgorithms() const {
+    std::cout << "factory size in registrar is: " << factories.size() << "\n";
+    std::list<std::unique_ptr<AbstractAlgorithm>> algorithms;
+    for (auto factory:factories) {
+        algorithms.push_back(factory());
+        std::cout << "pushed new algo to algo list in registrar\n";
     }
+    std::cout << "algoList size getting returned is : " << algorithms.size() << "\n";
     return algorithms;
 }
 
 int AlgorithmRegistrar::loadAlgorithm(const char *path, const std::string &so_file_name_without_so_suffix) {
-    size_t size = instance.size();
+    std::cout << "starting to load algo in registrar\n";
 
-    DlHandler algoHandle(dlopen(path,RTLD_LAZY));
-    // this is mockup code, real code will load the .so files
-    std::unique_ptr<void, DlCloser> handle(dlopen(path, RTLD_LAZY));
+    size_t size = getInstance().size();
+    std::cout << "factory size before :" << size  << "\n";
 
-    if (!handle) {
-        return FILE_CANNOT_BE_LOADED;
+    std::unique_ptr<void, DlCloser> algoHandle(dlopen(path, RTLD_LAZY));
+
+    std::cout << "factory size after :" << getInstance().size()  << "\n";
+
+    std::cout << "finished dlopen\n";
+
+    if (algoHandle != nullptr) {
+        if (getInstance().size() == size) {
+            return NO_ALGORITHM_REGISTERED; // no algorithm registered
+        }
+     handles[path] = std::move(algoHandle);
+    } else {
+        return FILE_CANNOT_BE_LOADED; //dlopen failed
     }
-    if (instance.size() == size) {
-        return NO_ALGORITHM_REGISTERED; // no algorithm registered
-    }
 
-    instance.setNameForLastAlgorithm(so_file_name_without_so_suffix);
-
+    getInstance().setNameForLastAlgorithm(so_file_name_without_so_suffix);
+    std::cout << "Loaded algorithm successfully registrar\n";
     return ALGORITHM_REGISTERED_SUCCESSFULY;
 }

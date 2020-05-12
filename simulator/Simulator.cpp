@@ -1,4 +1,3 @@
-
 #include "../interfaces/AbstractAlgorithm.h"
 #include "Simulator.h"
 #include "../common/FileHandler.h"
@@ -52,16 +51,16 @@ void Simulator::createAlgoXTravel() {
         buildTravel(p);
     }
     travelErrorsToFile(this->outputPath + "/errors");
-    //register and push all algos (with names?)
 
     for (auto &p: fs::directory_iterator(this->algoPath)) {
-        if(p.path().extension().compare("so") == 0){
-            AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(),p.path().filename().string());
+//        std::cout << p.path().extension() << "\n";
+        if (p.path().extension().compare(".so") == 0) {
+            std::cout << "Found so file, trying to load algo" << p.path().stem().string() << " \n";
+            AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(), p.path().stem().string());
         }
     }
-//    algoList.push_back(std::make_unique<_316294636_a>());
-//    algoList.push_back(std::make_unique<_316294636_b>());
-
+    this->algoList = AlgorithmRegistrar::getInstance().getAlgorithms();
+    std::cout << "new algo list is size: " <<algoList.size() << "\n";
 }
 
 void Simulator::buildTravel(const fs::path &path) {
@@ -97,6 +96,7 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo)
 /* returns amount of operations in a travel algo pair*/
 int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
+    std::cout << "running travel\n";
     int algoInitError = 0;
     bool correctAlgo = true;
     int sumCargoOperation = 0;
@@ -142,6 +142,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
             SimulatorError::simulatorErrorsToFile(errorList, travelErrorPath, travel.getTravelName());
         }
     }
+    std::cout << "finished running travel\n";
     if (correctAlgo) {
         return sumCargoOperation;
     } else {
@@ -196,27 +197,24 @@ void Simulator::run() {
     setUpDirectories(this->outputPath);
     createAlgoXTravel();
     unordered_map<string, unordered_map<string, int>> algoOperationsMap;
-    int algoNum = 1;
-    for (auto &algo: algoList) {
-        /*to be changed with actual names of algorithm*/
-        string algoName;
-        if (algoNum <= 1) {
-            algoName = "NaiveAlgo";
-        } else {
-            algoName = "MoreNaiveAlgo";
-        }
+    list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
 
-        //delete above
+    std::cout << "AlgoNamesSize: " << algoNames.size() << "\n";
+    std::cout << "AlgoListSize: " << algoList.size() << "\n";
+    for (auto algoName: algoNames) {
+        std::cout << "algoName is: " << algoName << "\n";
+    }
+    auto j = algoNames.begin();
+    for (auto i = this->algoList.begin(); i != this->algoList.end(); ++i) {
+        string algoName = j->c_str();
+//        std::cout << "i is: " << i << " algoname: " << algoName << "\n";
+        j++;
         for (Travel travel: travelList) {
-            string fileName =
-                    this->outputPath + "/" + std::to_string(algoNum) + "_" + travel.getTravelName();
+            string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName();
             fs::create_directory(fileName);
-            int opAmount = runOneTravel(travel, algo.get(), fileName,
-                                        std::to_string(algoNum) + "_" + travel.getTravelName());
+            int opAmount = runOneTravel(travel, i->get(), fileName, algoName + "_" + travel.getTravelName());
             algoOperationsMap[algoName][travel.getTravelName()] = opAmount;
         }
-
-        algoNum++;
     }
     /*checking differnet outcomes of operations - MUST DELETE AFTER!!*/
     algoOperationsMap["NaiveAlgo"]["Travel1"] = -1;

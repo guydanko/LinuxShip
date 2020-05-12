@@ -18,7 +18,6 @@ using std::list;
 
 class AlgorithmRegistrar {
     friend class AlgorithmRegistration;
-    static AlgorithmRegistrar instance;
 
     struct DlCloser {
         void operator()(void *dlhandle) const noexcept;
@@ -27,11 +26,9 @@ class AlgorithmRegistrar {
     typedef std::function<std::unique_ptr<AbstractAlgorithm>()> AlgorithmFactory;
     typedef std::unique_ptr<void, DlCloser> DlHandler;
 
-    std::map<std::string, DlHandler> _handles;
-    std::vector<AlgorithmFactory> _factories;
-    std::vector<std::string> _algoNames;
-
-    typedef decltype(_factories)::const_iterator const_iterator;
+    std::map<std::string, DlHandler> handles;
+    std::list<AlgorithmFactory> factories;
+    std::list<std::string> algoNames;
 
     AlgorithmRegistrar() = default;
 
@@ -41,13 +38,10 @@ class AlgorithmRegistrar {
 
     AlgorithmRegistrar &operator=(const AlgorithmRegistrar &) = delete;
 
-    list<std::function<unique_ptr<AbstractAlgorithm>()>> algorithmFactories;
-
-    inline void registerAlgorithm(AlgorithmFactory factory) { _factories.push_back(factory); };
+    void registerAlgorithm(AlgorithmFactory factory) { factories.push_back(factory); };
 
     void setNameForLastAlgorithm(const std::string &algorithmName) {
-        std::cout << "assert" << std::endl;
-        _algoNames.push_back(algorithmName);
+        algoNames.push_back(algorithmName);
     }
 
 public:
@@ -58,13 +52,13 @@ public:
 
     int loadAlgorithm(const char *path, const std::string &so_file_name_without_so_suffix);
 
-    list<unique_ptr<AbstractAlgorithm>> getAlgorithms() const;
+    std::list<std::unique_ptr<AbstractAlgorithm>> getAlgorithms() const;
 
-    const std::vector<std::string> &getAlgorithmNames() const { return _algoNames; }
+    const std::list<std::string> &getAlgorithmNames() const { return algoNames; }
 
-    size_t size() const { return algorithmFactories.size(); }
+    size_t size() const { return factories.size(); }
 
-    static AlgorithmRegistrar &getInstance(){ return instance;};
+    static AlgorithmRegistrar &getInstance();
 
 };
 
