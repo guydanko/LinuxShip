@@ -4,7 +4,7 @@ COMMONDIR = ../common/
 OBJS = ../main.o AlgorithmRegistrar.o $(COMMONDIR)CargoOperation.o $(COMMONDIR)Container.o $(COMMONDIR)ShipMap.o $(COMMONDIR)MapIndex.o $(COMMONDIR)FileHandler.o $(INTERFACEDIR)WeightBalanceCalculator.o AlgorithmRegistration.o Simulator.o Travel.o SimulatorError.o SimulatorAlgoCheck.o
 EXEC = simulator 
 CPP_COMP_FLAG = -std=c++2a -Wall -Wextra -Werror -pedantic-errors -DNDEBUG
-CPP_LINK_FLAG = -ldl -export-dynamic #(-rdynamic)
+CPP_LINK_FLAG = -lstdc++fs -ldl -export-dynamic #(-rdynamic)
 
 $(EXEC): $(OBJS)
 	$(COMP) $(OBJS) $(CPP_LINK_FLAG) -o $@

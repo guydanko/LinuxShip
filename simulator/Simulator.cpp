@@ -4,6 +4,7 @@
 #include "../common/FileHandler.h"
 #include "SimulatorAlgoCheck.h"
 #include <map>
+#include "AlgorithmRegistrar.h"
 
 using std::string;
 using std::multimap;
@@ -52,8 +53,14 @@ void Simulator::createAlgoXTravel() {
     }
     travelErrorsToFile(this->outputPath + "/errors");
     //register and push all algos (with names?)
-    algoList.push_back(std::make_unique<_316294636_a>());
-    algoList.push_back(std::make_unique<_316294636_b>());
+
+    for (auto &p: fs::directory_iterator(this->algoPath)) {
+        if(p.path().extension().compare("so") == 0){
+            AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(),p.path().filename().string());
+        }
+    }
+//    algoList.push_back(std::make_unique<_316294636_a>());
+//    algoList.push_back(std::make_unique<_316294636_b>());
 
 }
 

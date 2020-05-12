@@ -19,7 +19,7 @@ class Simulator {
     list<unique_ptr<AbstractAlgorithm>> algoList;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
-    string  travelPath, algoPath,outputPath = "SimulatorFiles";
+    string travelPath, algoPath, outputPath = "SimulatorFiles";
 
     void travelErrorsToFile(const string &fileName);
 
