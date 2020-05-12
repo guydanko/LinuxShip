@@ -32,12 +32,9 @@ const string getRouteFilePath(const fs::path &path) {
     return routeFiles == 1 ? fileName : "";
 }
 
-void setUpDirectories(const string &directoryRoot) {
-    if (fs::exists(directoryRoot)) {
-        fs::remove_all(directoryRoot);
-    }
-    fs::create_directory(directoryRoot);
-    fs::create_directory(directoryRoot + "/" + "errors");
+void Simulator::setUpDirectories() {
+    fs::remove_all(this->outputPath + "/" + "errors");
+    fs::create_directory(this->outputPath + "/" + "errors");
 }
 
 void Simulator::travelErrorsToFile(const string &writeTo) {
@@ -60,7 +57,7 @@ void Simulator::createAlgoXTravel() {
         }
     }
     this->algoList = AlgorithmRegistrar::getInstance().getAlgorithms();
-    std::cout << "new algo list is size: " <<algoList.size() << "\n";
+    std::cout << "new algo list is size: " << algoList.size() << "\n";
 }
 
 void Simulator::buildTravel(const fs::path &path) {
@@ -194,7 +191,7 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
 }
 
 void Simulator::run() {
-    setUpDirectories(this->outputPath);
+    setUpDirectories();
     createAlgoXTravel();
     unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
@@ -212,18 +209,11 @@ void Simulator::run() {
         for (Travel travel: travelList) {
             string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName();
             fs::create_directory(fileName);
-            int opAmount = runOneTravel(travel, i->get(), fileName, algoName + "_" + travel.getTravelName());
+            string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName();
+            int opAmount = runOneTravel(travel, i->get(), fileName, errorFile);
             algoOperationsMap[algoName][travel.getTravelName()] = opAmount;
         }
     }
-    /*checking differnet outcomes of operations - MUST DELETE AFTER!!*/
-    algoOperationsMap["NaiveAlgo"]["Travel1"] = -1;
-    algoOperationsMap["WeirdAlgo"]["Travel1"] = 200;
-    algoOperationsMap["WeirdAlgo"]["Travel2"] = 200;
-    algoOperationsMap["AmirKirshAlgo"]["Travel1"] = -1;
-    algoOperationsMap["SaeedAlgo"]["Travel1"] = -1;
-    algoOperationsMap["AdamAlgo"]["Travel1"] = 20;
-
     printResults(algoOperationsMap);
     deleteEmptyFiles();
 }

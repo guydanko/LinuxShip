@@ -228,7 +228,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
 
 void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName) {
     ofstream outfile;
-    outfile.open(fileName, std::ios::app);
+    outfile.open(fileName);
     if (!outfile) {
         return;
     }

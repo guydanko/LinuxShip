@@ -19,7 +19,7 @@ class Simulator {
     list<unique_ptr<AbstractAlgorithm>> algoList;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
-    string travelPath, algoPath, outputPath = "SimulatorFiles";
+    string travelPath, algoPath, outputPath;
 
     void travelErrorsToFile(const string &fileName);
 
@@ -29,11 +29,12 @@ class Simulator {
 
     void createAlgoXTravel();
 
+    void setUpDirectories();
+
     void printResults(unordered_map<string, unordered_map<string, int>> simResults);
 
 public:
-    Simulator(const string &travelPath, const string &algoPath = fs::current_path().string(),
-              const string &outputPath = fs::current_path().string() + "/SimulatorFiles") : travelPath(travelPath),
+    Simulator(const string &travelPath, const string &algoPath, const string &outputPath) : travelPath(travelPath),
                                                                                             algoPath(algoPath),
                                                                                             outputPath(outputPath) {};
 
