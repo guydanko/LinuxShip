@@ -2,7 +2,7 @@
 // TODO: on targil 3
 //
 #include <string>
-#include "WeightBalanceCalculator.h"
+#include "../interfaces/WeightBalanceCalculator.h"
 
 
 
