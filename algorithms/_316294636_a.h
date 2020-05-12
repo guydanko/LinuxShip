@@ -34,8 +34,6 @@ public:
 
     int loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList);
 
-    virtual string getName() const { return "Naive algorithm"; }
-
     void tryToMove(int i, MapIndex index, list<shared_ptr<Container>>& rememberLoadAgain,
                    list<CargoOperation> &opList);
 
