@@ -472,3 +472,14 @@ FileHandler::printSimulatorResults(const string &filePath, list<string> &algoNam
     outFile.close();
 
 }
+
+void FileHandler::setUpErrorFiles(const string &outPath) {
+    if (!fs::exists(outPath)) {
+        fs::remove_all(fs::current_path().string() + "/" + "errors");
+        fs::create_directories(fs::current_path().string() + "/errors");
+    } else {
+        fs::remove_all(outPath + "/" + "errors");
+        fs::create_directories(outPath + "/errors");
+    }
+
+}

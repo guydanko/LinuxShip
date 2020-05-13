@@ -41,6 +41,8 @@ public:
     static void printSimulatorResults(const string &filePath, list<string> &algoNameList, list<string> &travelNameList,
                                       unordered_map<string, unordered_map<string, int>> simulatorResultMap);
 
+    static void setUpErrorFiles(const string &outputPath);
+
 };
 
 #endif //SHIPGIT_FILEHANDLER_H
