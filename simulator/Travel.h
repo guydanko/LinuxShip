@@ -15,7 +15,7 @@ using std::get;
 
 class Travel {
     unordered_map<string, tuple<int, int>> portCounter;
-    shared_ptr<ShipMap> shipMap;
+    std::shared_ptr<ShipMap> shipMap;
     list<string> route;
     string travelPath, travelName, shipPath, routePath;
     int travelError = 0;
@@ -25,7 +25,7 @@ public:
 
     Travel(const Travel &other);
 
-    shared_ptr<ShipMap> getShipMap() { return this->shipMap; }
+    ShipMap* getShipMap() { return this->shipMap.get(); }
 
     list<string>& getRoute() { return this->route; }
 
@@ -46,7 +46,7 @@ public:
 
     void generalTravelErrorsToFile(const string &fileName) const;
 
-    const string &getTravelPath()const { return this->travelPath; }
+   // const string &getTravelPath()const { return this->travelPath; }
 
     const string getNextCargoFilePath();
 

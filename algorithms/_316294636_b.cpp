@@ -7,7 +7,7 @@ REGISTER_ALGORITHM (_316294636_b)
 
 void _316294636_b::tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
                              list<CargoOperation> &opList) {
-    MapIndex moveIndex = MapIndex::isPlaceToMove(MapIndex(i, index.getRow(), index.getCol()), this->shipMap);
+    MapIndex moveIndex = MapIndex::isPlaceToMove(MapIndex(i, index.getRow(), index.getCol()), this->shipMap.get());
     //can move on the ship
     if (moveIndex.validIndex()) {
         CargoOperation opUnload(AbstractAlgorithm::Action::UNLOAD,
@@ -90,7 +90,7 @@ void _316294636_b::unloadContainerByPort(const string &portName, list<CargoOpera
 void _316294636_b::loadAgain(list<shared_ptr<Container>> &rememberLoadAgain,
                              list<CargoOperation> &opList) {
     for (auto cont: rememberLoadAgain) {
-        MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap);
+        MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap.get());
         //should always be true because it load again container which have been on ship
         if (loadIndex.validIndex()) {
             CargoOperation cargoOp(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
@@ -110,7 +110,7 @@ void _316294636_b::loadAgain(list<shared_ptr<Container>> &rememberLoadAgain,
 
 int _316294636_b::loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) {
     int result = 0;
-    MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap);
+    MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap.get());
     if (loadIndex.validIndex()) {
         CargoOperation op(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
         if (this->calculator.tryOperation('L', op.getContainer()->getWeight(), op.getIndex().getCol(),

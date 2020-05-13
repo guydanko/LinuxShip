@@ -51,7 +51,7 @@ void deleteDoubleID(list<shared_ptr<Container>> &loadList, const string &id, boo
     }
 }
 
-void connectContainerFromShip(shared_ptr<ShipMap> shipMap, list<shared_ptr<CargoOperation>> &cargoOps) {
+void connectContainerFromShip(ShipMap *shipMap, list<shared_ptr<CargoOperation>> &cargoOps) {
     for (const auto &cargoOp: cargoOps) {
         auto inShip = shipMap->getContainerIDOnShip().find(cargoOp->getContainer()->getId());
         if (inShip != shipMap->getContainerIDOnShip().end()) {
@@ -150,7 +150,7 @@ void findRejectToIlligalContainer(list<shared_ptr<Container>> &loadList, list<sh
     }
 }
 
-int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, shared_ptr<ShipMap> shipMap,
+int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, ShipMap *shipMap,
                                                   list<shared_ptr<CargoOperation>> &opList,
                                                   list<SimulatorError> &errorList,
                                                   list<shared_ptr<Container>> &doubleIdList, list<string> &route,
@@ -232,7 +232,7 @@ int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &l
 }
 
 void
-SimulatorAlgoCheck::checkIfShipEmpty(shared_ptr<ShipMap> shipMap, list<SimulatorError> &errorList, bool &correctAlgo) {
+SimulatorAlgoCheck::checkIfShipEmpty(ShipMap *shipMap, list<SimulatorError> &errorList, bool &correctAlgo) {
     for (int i = 0; i < shipMap->getHeight(); i++) {
         for (int j = 0; j < shipMap->getRows(); j++) {
             for (int k = 0; k < shipMap->getCols(); k++) {
@@ -299,7 +299,7 @@ bool SimulatorAlgoCheck::compareErrorAlgoSimulationInit(int algoInitError, int s
     return canRun;
 }
 
-bool indexInLimit(shared_ptr<ShipMap> shipMap, MapIndex index) {
+bool indexInLimit(ShipMap *shipMap, MapIndex index) {
     if (index.getHeight() < 0 || index.getHeight() >= shipMap->getHeight()) {
         return false;
     }
@@ -309,7 +309,7 @@ bool indexInLimit(shared_ptr<ShipMap> shipMap, MapIndex index) {
     return !(index.getCol() < 0 || index.getCol() >= shipMap->getCols());
 }
 
-bool containerAbove(shared_ptr<ShipMap> shipMap, MapIndex index) {
+bool containerAbove(ShipMap *shipMap, MapIndex index) {
     for (int i = shipMap->getHeight() - 1; i > index.getHeight(); i--) {
         if (shipMap->getShipMapContainer()[i][index.getRow()][index.getCol()] != nullptr) {
             return true;
@@ -318,7 +318,7 @@ bool containerAbove(shared_ptr<ShipMap> shipMap, MapIndex index) {
     return false;
 }
 
-bool indexAccessible(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, list<SimulatorError> &errorList,
+bool indexAccessible(ShipMap *shipMap, CargoOperation &cargoOp, list<SimulatorError> &errorList,
                      bool &correctAlgo) {
     if (!indexInLimit(shipMap, cargoOp.getIndex())) {
         errorList.emplace_back("illegal index, exceeds ship plan limits- operation ignored",
@@ -335,7 +335,7 @@ bool indexAccessible(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, list<
     return true;
 }
 
-bool solidGround(shared_ptr<ShipMap> shipMap, MapIndex index) {
+bool solidGround(ShipMap *shipMap, MapIndex index) {
     if (index.getHeight() == 0) {
         return true;
     }
@@ -354,7 +354,7 @@ bool portStillInRoute(list<string> &route, const string &port) {
     return false;
 }
 
-void checkIfAllUnloaded(shared_ptr<ShipMap> shipMap, const string &port, list<SimulatorError> &errorList,
+void checkIfAllUnloaded(ShipMap *shipMap, const string &port, list<SimulatorError> &errorList,
                         list<shared_ptr<Container>> &doubleIdList, list<string> &route, bool &correctAlgo) {
     for (int i = 0; i < shipMap->getHeight(); i++) {
         for (int j = 0; j < shipMap->getRows(); j++) {
@@ -391,7 +391,7 @@ void checkIfAllUnloaded(shared_ptr<ShipMap> shipMap, const string &port, list<Si
     }
 }
 
-void checkLoadOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, list<shared_ptr<Container>> &loadList,
+void checkLoadOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<shared_ptr<Container>> &loadList,
                         map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToCargoOp,
                         const string &currentPort,
                         int &maxNumberPortLoaded, list<SimulatorError> &errorList, bool &correctAlgo) {
@@ -459,7 +459,7 @@ void checkLoadOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, li
     }
 }
 
-void checkUnloadOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, const string &currentPort,
+void checkUnloadOperation(ShipMap *shipMap, CargoOperation &cargoOp, const string &currentPort,
                           map<string, shared_ptr<CargoOperation>> &rememberToLoadAgainIdToCargoOp,
                           list<SimulatorError> &errorList, bool &correctAlgo) {
     bool access = indexAccessible(shipMap, cargoOp, errorList, correctAlgo);
@@ -493,7 +493,7 @@ void checkUnloadOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, 
     }
 }
 
-void checkMoveOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, list<SimulatorError> &errorList,
+void checkMoveOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<SimulatorError> &errorList,
                         bool &correctAlgo) {
     bool accsees = indexAccessible(shipMap, cargoOp, errorList, correctAlgo);
     if (!accsees) {
@@ -550,7 +550,7 @@ void checkMoveOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, li
 }
 
 int
-checkRejectOperation(shared_ptr<ShipMap> shipMap, CargoOperation &cargoOp, int maxNumberPortLoaded,
+checkRejectOperation(ShipMap *shipMap, CargoOperation &cargoOp, int maxNumberPortLoaded,
                      list<SimulatorError> &errorList, bool &correctAlgo) {
     int result = 0;
     if (cargoOp.getContainer()->getIsContainerLoaded()) {
@@ -620,7 +620,43 @@ void checkAllContainersRejectedOrLoaded(list<shared_ptr<Container>> &loadList, l
     }
 }
 
-int SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<string> &route,
+bool checkBalance(CargoOperation *cargoOp, list<SimulatorError> &errorList, WeightBalanceCalculator &calculator) {
+    AbstractAlgorithm::Action op = cargoOp->getOp();
+    if (op == AbstractAlgorithm::Action::REJECT) {
+        return true;
+    }
+    if (op == AbstractAlgorithm::Action::LOAD || op == AbstractAlgorithm::Action::UNLOAD) {
+        if (calculator.tryOperation((char) op, cargoOp->getContainer()->getWeight(),
+                                    cargoOp->getIndex().getCol(),
+                                    cargoOp->getIndex().getRow()) !=
+            WeightBalanceCalculator::BalanceStatus::APPROVED) {
+            //TODO: calculator denied operation
+            errorList.emplace_back("weight calculator does not approve this operation- operation ignored",
+                                   SimErrorType::OPERATION_PORT, *cargoOp);
+            return false;
+        } else {
+            return true;
+        }
+    }
+    if (calculator.tryOperation('L', cargoOp->getContainer()->getWeight(),
+                                cargoOp->getIndex().getCol(),
+                                cargoOp->getIndex().getRow()) !=
+        WeightBalanceCalculator::BalanceStatus::APPROVED ||
+        calculator.tryOperation('U', cargoOp->getContainer()->getWeight(),
+                                cargoOp->getMoveIndex().getCol(),
+                                cargoOp->getMoveIndex().getRow()) !=
+        WeightBalanceCalculator::BalanceStatus::APPROVED) {
+
+        //TODO: calculator denied operation
+        errorList.emplace_back("weight calculator does not approve this operation- operation ignored",
+                               SimErrorType::OPERATION_PORT, *cargoOp);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+int SimulatorAlgoCheck::checkAlgoCorrect(ShipMap *shipMap, list<string> &route,
                                          WeightBalanceCalculator &calculator,
                                          list<shared_ptr<CargoOperation>> &cargoOpsList,
                                          list<shared_ptr<Container>> &loadList,
@@ -634,16 +670,10 @@ int SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<strin
         return cont1->getPortIndex() < cont2->getPortIndex();
     });
     for (auto cargoOp: cargoOpsList) {
-        AbstractAlgorithm::Action op = cargoOp->getOp();
-        if (calculator.tryOperation((char) op, cargoOp->getContainer()->getWeight(),
-                                    cargoOp->getIndex().getCol(),
-                                    cargoOp->getIndex().getRow()) !=
-            WeightBalanceCalculator::BalanceStatus::APPROVED) {
-            //TODO: calculator denied operation
-            errorList.emplace_back("weight calculator does not approve this operation- operation ignored",
-                                   SimErrorType::OPERATION_PORT, *cargoOp);
+        if (!checkBalance(cargoOp.get(), errorList, calculator)) {
             correctAlgo = false;
         } else {
+            AbstractAlgorithm::Action op = cargoOp->getOp();
             switch (op) {
                 case AbstractAlgorithm::Action::LOAD:
                     checkLoadOperation(shipMap, *cargoOp, loadList, rememberToLoadAgainIdToCargoOp, currentPort,
@@ -657,9 +687,6 @@ int SimulatorAlgoCheck::checkAlgoCorrect(shared_ptr<ShipMap> shipMap, list<strin
                     checkMoveOperation(shipMap, *cargoOp, errorList, correctAlgo);
                     break;
                 case AbstractAlgorithm::Action::REJECT:
-                    break;
-                default:
-                    //TODO: deal with operation which not CargoOperation - maybe in targil 2
                     break;
             }
         }

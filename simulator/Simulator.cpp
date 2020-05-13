@@ -83,6 +83,7 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo)
     int algoInitError = 0;
     algoInitError |= pAlgo->readShipPlan(travel.getShipPlanPath());
     algoInitError |= pAlgo->readShipRoute(travel.getRoutePath());
+    this->calculator.readShipPlan(travel.getShipPlanPath());
     pAlgo->setWeightBalanceCalculator(calculator);
     return algoInitError;
 }

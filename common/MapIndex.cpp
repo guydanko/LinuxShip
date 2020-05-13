@@ -1,7 +1,7 @@
 
 #include "MapIndex.h"
 
- MapIndex MapIndex::isPlaceToMove(MapIndex currentIndex, shared_ptr<ShipMap> shipMap ){
+ MapIndex MapIndex::isPlaceToMove(MapIndex currentIndex, ShipMap* shipMap ){
     for(int i = 0; i < currentIndex.row; i++){
         for(int j = 0; j < shipMap->getCols(); j++){
             for (int k = 0; k < shipMap->getHeight(); k++) {
@@ -20,7 +20,7 @@
     }
     return MapIndex();
 }
-MapIndex MapIndex::firstLegalIndexPlace(shared_ptr<ShipMap> shipMap){
+MapIndex MapIndex::firstLegalIndexPlace(ShipMap* shipMap){
     for(int i = 0; i < shipMap->getRows(); i++){
         for(int j = 0; j < shipMap->getCols(); j++){
             for (int k = 0; k < shipMap->getHeight(); k++) {
