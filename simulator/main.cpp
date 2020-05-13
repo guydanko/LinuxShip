@@ -59,9 +59,9 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    errorFile.close();
     Simulator simulator(travelPath, algoPath, outPath);
     simulator.run();
-    errorFile.close();
     return EXIT_SUCCESS;
 
 }

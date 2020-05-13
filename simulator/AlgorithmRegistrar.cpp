@@ -1,4 +1,4 @@
-#include <dlfcn.h>
+//#include <dlfcn.h>
 #include "AlgorithmRegistrar.h"
 
 void AlgorithmRegistrar::DlCloser::operator()(void *dlhandle) const noexcept {

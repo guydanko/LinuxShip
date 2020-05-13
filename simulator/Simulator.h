@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <iostream>
 #include <memory>
+//#include "../algorithms/_316294636_b.h"
+//#include "../algorithms/_316294636_a.h"
 
 namespace fs = std::filesystem;
 using std::pair;
@@ -41,6 +43,8 @@ public:
 //    list<Travel> &getTravels() { return this->travelList; };
 
     void run();
+
+//    void runWindows();
 
     int runOneTravel(Travel &travel, AbstractAlgorithm *algo, const string &fileName,
                      const string &errorFileName);
