@@ -32,10 +32,10 @@ const string getRouteFilePath(const fs::path &path) {
     return routeFiles == 1 ? fileName : "";
 }
 
-void Simulator::setUpDirectories() {
-    fs::remove_all(this->outputPath + "/" + "errors");
-    fs::create_directory(this->outputPath + "/" + "errors");
-}
+//void Simulator::setUpDirectories() {
+//    fs::remove_all(this->outputPath + "/" + "errors");
+//    fs::create_directory(this->outputPath + "/" + "errors");
+//}
 
 void Simulator::travelErrorsToFile(const string &writeTo) {
     for (const Travel &travel:this->travelList) {
@@ -187,7 +187,6 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
 }
 
 void Simulator::run() {
-    setUpDirectories();
     createAlgoXTravel();
     unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();

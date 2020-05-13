@@ -3,13 +3,14 @@
 #include <iostream>
 #include "map"
 #include <fstream>
+#include "../common/FileHandler.h"
 
 namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
 
     const string travelFlag = "-travel_path", algoFlag = "-algorithm_path", outputFlag = "-output";
-    string argTravelPath = "", argAlgoPath = "", argOutputPath = "";
+    string argTravelPath = "", argAlgoPath = "", argOutputPath = "", errorString = "";
 
     for (int i = 1; i < argc; i += 2) {
         if (0 == travelFlag.compare(argv[i])) {
@@ -19,32 +20,28 @@ int main(int argc, char *argv[]) {
         } else if (0 == outputFlag.compare(argv[i])) {
             argOutputPath = argc >= i + 2 ? argv[i + 1] : "";
         } else {
-            std::cerr << "Cannot run simulator, illegal flag - " << argv[i] << "!\n";
-            return EXIT_FAILURE;
+            errorString += "Fatal Error: illegal flag - " + std::string(argv[i]) + "!\n";
         }
     }
+
 
     const string travelPath = argTravelPath;
     const string outPath = argOutputPath.empty() ? fs::current_path().string() : argOutputPath;
     const string algoPath = argAlgoPath.empty() ? fs::current_path().string() : argAlgoPath;
 
-    string errorFilePath;
 
-    if (!fs::exists(outPath)) {
-        errorFilePath = fs::current_path().string() + "/simulator.errors";
-    } else {
-        errorFilePath = outPath + "/simulator.errors";
-    }
-
+    FileHandler::setUpErrorFiles(outPath);
+    const string errorFilePath = fs::exists(outPath) ? outPath + "/errors/command.errors" :
+                                 fs::current_path().string() + "/errors/command.errors";
 
     std::ofstream errorFile(errorFilePath);
-    bool toRunSimulator = true;
+    errorFile << errorString;
+    bool toRunSimulator = errorString.empty() ? true : false;
 
     if (argTravelPath.empty()) {
         errorFile << "Fatal error: program must receive travel path!\n";
         toRunSimulator = false;
-    }
-    if (!fs::exists(argTravelPath)) {
+    } else if (!fs::exists(argTravelPath)) {
         errorFile << "Fatal error: travelPath does not exist!\n";
         toRunSimulator = false;
     }
