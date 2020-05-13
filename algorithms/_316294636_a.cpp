@@ -148,7 +148,7 @@ int _316294636_a::loadNewContainers(list<shared_ptr<Container>> &containerListTo
     return result;
 }
 
-void _316294636_a::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+void _316294636_a::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList, const string& currentPort) {
     map<string, int> portNumberMap;
     int number = 1;
     for (const string &port : this->route) {
@@ -161,7 +161,7 @@ void _316294636_a::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, l
     for (auto itr = loadList.begin(); itr != loadList.end();) {
         auto itrFind = portNumberMap.find((*itr)->getDestination());
         // container destination is not in route- REJECT
-        if (itrFind == portNumberMap.end()) {
+        if (itrFind == portNumberMap.end()|| (*itr)->getDestination()==currentPort) {
             opList.emplace_back(AbstractAlgorithm::Action::REJECT, (*itr), MapIndex());
             itr = loadList.erase(itr);
         } else {
@@ -221,10 +221,11 @@ int _316294636_a::rejectDoubleId(list<shared_ptr<Container>> &loadList, list<Car
 }
 
 int
-_316294636_a::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+_316294636_a::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
+                                      const string currentPort) {
     int result = 0;
     this->rejectIllagalContainer(loadList, opList);
-    this->rejectDestNotInRoute(loadList, opList);
+    this->rejectDestNotInRoute(loadList, opList, currentPort);
     result |= this->rejectDoubleId(loadList, opList);
     return result;
 }
@@ -264,7 +265,7 @@ int _316294636_a::getInstructionsForCargo(const std::string &input_full_path_and
         } else {
             result |= fileResult;
         }
-        result |= rejectAllBesideShipFull(loadList, opList);
+        result |= rejectAllBesideShipFull(loadList, opList, currentPort);
         loadList.sort([](const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) -> bool {
             return cont1->getPortIndex() < cont2->getPortIndex();
         });
