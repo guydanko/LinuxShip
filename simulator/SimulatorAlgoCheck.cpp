@@ -90,8 +90,8 @@ void findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<shar
 
     for (auto contItr = loadList.begin(); contItr != loadList.end();) {
         auto itrFind = portNumberMap.find((*contItr)->getDestination());
-        // container destination is not in route- REJECT
-        if (itrFind == portNumberMap.end()) {
+        // container destination is not in route or current destination- REJECT
+        if (itrFind == portNumberMap.end() || (*contItr)->getDestination() == route.front()) {
             bool notFound = true;
             for (auto opItr = opList.begin(); opItr != opList.end() && notFound;) {
                 if ((*opItr)->getOp() == AbstractAlgorithm::Action::REJECT &&
