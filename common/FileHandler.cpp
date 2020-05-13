@@ -130,7 +130,8 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
                 outFile << port << "containers at port: bad line (" << lineNum << ") format :" << errorMessage
                         << "\n";
             }
-            containerList.emplace_back(std::make_shared<Container>(0, "", id, false));
+            if (!(result & (1 << 14))) { containerList.emplace_back(std::make_shared<Container>(0, "", id, false)); }
+
         }
 
 

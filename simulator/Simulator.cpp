@@ -35,7 +35,7 @@ const string getRouteFilePath(const fs::path &path) {
 
 void Simulator::travelErrorsToFile(const string &writeTo) {
     for (const Travel &travel:this->travelList) {
-        travel.generalTravelErrorsToFile(writeTo + "/" + travel.getTravelName() + ".general_errors");
+        travel.generalTravelErrorsToFile(writeTo + "/" + travel.getTravelName() + "_general.errors");
     }
 }
 
@@ -193,9 +193,9 @@ void Simulator::run() {
         string algoName = j->c_str();
         j++;
         for (Travel travel: travelList) {
-            string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName();
+            string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
             fs::create_directory(fileName);
-            string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName();
+            string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
             int opAmount = runOneTravel(travel, i->get(), fileName, errorFile);
             algoOperationsMap[algoName][travel.getTravelName()] = opAmount;
         }
