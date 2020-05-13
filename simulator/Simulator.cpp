@@ -50,14 +50,11 @@ void Simulator::createAlgoXTravel() {
     travelErrorsToFile(this->outputPath + "/errors");
 
     for (auto &p: fs::directory_iterator(this->algoPath)) {
-//        std::cout << p.path().extension() << "\n";
         if (p.path().extension().compare(".so") == 0) {
-            std::cout << "Found so file, trying to load algo" << p.path().stem().string() << " \n";
             AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(), p.path().stem().string());
         }
     }
     this->algoList = AlgorithmRegistrar::getInstance().getAlgorithms();
-    std::cout << "new algo list is size: " << algoList.size() << "\n";
 }
 
 void Simulator::buildTravel(const fs::path &path) {
@@ -93,7 +90,6 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo)
 /* returns amount of operations in a travel algo pair*/
 int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
-    std::cout << "running travel\n";
     int algoInitError = 0;
     bool correctAlgo = true;
     int sumCargoOperation = 0;
@@ -139,7 +135,6 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
             SimulatorError::simulatorErrorsToFile(errorList, travelErrorPath, travel.getTravelName());
         }
     }
-    std::cout << "finished running travel\n";
     if (correctAlgo) {
         return sumCargoOperation;
     } else {
@@ -196,15 +191,9 @@ void Simulator::run() {
     unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
 
-    std::cout << "AlgoNamesSize: " << algoNames.size() << "\n";
-    std::cout << "AlgoListSize: " << algoList.size() << "\n";
-    for (auto algoName: algoNames) {
-        std::cout << "algoName is: " << algoName << "\n";
-    }
     auto j = algoNames.begin();
     for (auto i = this->algoList.begin(); i != this->algoList.end(); ++i) {
         string algoName = j->c_str();
-//        std::cout << "i is: " << i << " algoname: " << algoName << "\n";
         j++;
         for (Travel travel: travelList) {
             string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName();
