@@ -222,7 +222,7 @@ int _316294636_a::rejectDoubleId(list<shared_ptr<Container>> &loadList, list<Car
 
 int
 _316294636_a::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
-                                      const string currentPort) {
+                                      const string& currentPort) {
     int result = 0;
     this->rejectIllagalContainer(loadList, opList);
     this->rejectDestNotInRoute(loadList, opList, currentPort);

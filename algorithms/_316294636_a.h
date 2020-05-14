@@ -38,10 +38,10 @@ public:
                    list<CargoOperation> &opList);
 
     int rejectDoubleId(list<shared_ptr<Container>> &containerListToLoadInThisPort, list<CargoOperation> &opList);
-    void rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList);
+    static void rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList);
     void rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,const string& currentPort);
     int rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
-                                const string basicString);
+                                const string& basicString);
 
     //new func
     int readShipPlan(const std::string &full_path_and_file_name) override;
