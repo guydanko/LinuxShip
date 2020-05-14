@@ -222,23 +222,31 @@ _316294636_b::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, lis
 }
 
 int _316294636_b::readShipPlan(const std::string &full_path_and_file_name) {
+    std::cout<<"algo func read ship plan start"<< std::endl;
     auto shipPtr = std::make_shared<shared_ptr<ShipMap>>(std::make_shared<ShipMap>());
     int result = FileHandler::createShipMapFromFile(full_path_and_file_name, shipPtr);
     this->shipMap = *shipPtr;
+    std::cout<<"algo func read ship plan finish"<< std::endl;
     return result;
 }
 
 int _316294636_b::readShipRoute(const std::string &full_path_and_file_name) {
-    return FileHandler::fileToRouteList(full_path_and_file_name, this->route);
+    std::cout<<"algo func read ship route start"<< std::endl;
+    int result= FileHandler::fileToRouteList(full_path_and_file_name, this->route);
+    std::cout<<"algo func read ship route finish"<< std::endl;
+    return result;
 }
 
 int _316294636_b::setWeightBalanceCalculator(WeightBalanceCalculator &calculator) {
+    std::cout<<"algo func set calculator start"<< std::endl;
     this->calculator = calculator;
+    std::cout<<"algo func set calculator finish"<< std::endl;
     return 0;
 }
 
 int _316294636_b::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
                                           const std::string &output_full_path_and_file_name) {
+    std::cout<<"algo func get instruction start"<< std::endl;
     int result = 0;
     list<CargoOperation> opList = {};
     list<shared_ptr<Container>> loadList = {};
@@ -246,8 +254,9 @@ int _316294636_b::getInstructionsForCargo(const std::string &input_full_path_and
     if (!this->route.empty()) {
         const string currentPort = this->route.front();
         this->route.pop_front();
-
+        std::cout<<"algo func get instruction read container list start"<< std::endl;
         int fileResult = FileHandler::fileToContainerList(input_full_path_and_file_name, loadList);
+        std::cout<<"algo func get instruction read container list finish"<< std::endl;
         /*was last port*/
         if (this->route.empty()) {
             if (!loadList.empty() || (fileResult != (1 << 16) && fileResult != 0)) {
@@ -264,6 +273,7 @@ int _316294636_b::getInstructionsForCargo(const std::string &input_full_path_and
         this->loadAgain(rememberLoadAgain, opList);
         result |= this->loadNewContainers(loadList, opList);
         FileHandler::operationsToFile(opList, output_full_path_and_file_name);
+        std::cout<<"algo func get instruction finish"<< std::endl;
         return result;
     }
     return result;

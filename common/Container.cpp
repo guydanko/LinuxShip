@@ -34,7 +34,7 @@ bool isSerialNumberValid(const string &ownerCode) {
         }
     }
     int afterOp = (sum / 11) * 11;
-    return (sum - afterOp) == (ownerCode[10] - 48);
+    return (sum - afterOp)%10 == (ownerCode[10] - 48);
 
 }
 

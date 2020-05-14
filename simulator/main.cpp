@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
     errorFile.close();
     Simulator simulator(travelPath, algoPath, outPath);
     simulator.run();
+    std::cout<<"end main\n";
     return EXIT_SUCCESS;
 
 }

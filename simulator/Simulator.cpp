@@ -78,27 +78,36 @@ void Simulator::buildTravel(const fs::path &path) {
 
 int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo) {
     int algoInitError = 0;
+    std::cout<<"start readshipPlan"<< std::endl;
     algoInitError |= pAlgo->readShipPlan(travel.getShipPlanPath());
+    std::cout<<"finish readshipPlan"<< std::endl;
     algoInitError |= pAlgo->readShipRoute(travel.getRoutePath());
+    std::cout<<"finish readshipRoute"<< std::endl;
     this->calculator.readShipPlan(travel.getShipPlanPath());
+    std::cout<<"finish calculator read ship route"<< std::endl;
     pAlgo->setWeightBalanceCalculator(calculator);
+    std::cout<<"finish set calculator "<< std::endl;
     return algoInitError;
 }
 
 /* returns amount of operations in a travel algo pair*/
 int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
+    std::cout<<"start run one travel"<< std::endl;
     int algoInitError = 0;
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
         list<SimulatorError> errorList;
+        std::cout<<"start init algorithms"<< std::endl;
         algoInitError = initAlgoWithTravelParam(travel, pAlgo);
+        std::cout<<"finish init algorithms"<< std::endl;
         correctAlgo = SimulatorAlgoCheck::compareErrorAlgoSimulationInit(algoInitError,
                                                                          travel.getTravelError(), errorList,
                                                                          correctAlgo);
         SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());
         list<shared_ptr<Container>> doubleIdList = {};
+        std::cout<<"finish init algo"<< std::endl;
         if (correctAlgo) {
             while (!travel.didTravelEnd()) {
                 set<string> rejectedID = {};
@@ -109,7 +118,9 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 //path to read container list and write cargo op
                 const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
+                std::cout<<"start cargo instruction"<< std::endl;
                 int algoGetInsError = pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
+                std::cout<<"finish cargo instruction"<< std::endl;
                 list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo);
                 sumCargoOperation += cargoOps.size();
                 simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
@@ -132,6 +143,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
             SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());
         }
     }
+    std::cout<<"end run one travel"<< std::endl;
     if (correctAlgo) {
         return sumCargoOperation;
     } else {

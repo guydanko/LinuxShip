@@ -4,6 +4,6 @@ project(LinuxShip)
 set(CMAKE_CXX_STANDARD 17)
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -Werror -pedantic-errors -DNDEBUG")
 
-add_executable(LinuxShip main.cpp Ship.h Ship.cpp Container.h Container.cpp ShipMap.cpp ShipMap.h CargoOperation.cpp CargoOperation.h Simulator.cpp Simulator.h NaiveStowageAlgorithm.cpp NaiveStowageAlgorithm.h MoreNaiveAlgorithm.h MoreNaiveAlgorithm.cpp MapIndex.h
-        MapIndex.cpp FileHandler.cpp FileHandler.h Travel.h Travel.cpp WeightBalanceCalculator.h WeightBalanceCalculator.cpp
-        SimulatorError.cpp SimulatorError.h IncorrectAlgorithm.h IncorrectAlgorithm.cpp AbstractAlgorithm.h SimulatorAlgoCheck.cpp SimulatorAlgoCheck.h AlgoTravelPair.cpp AlgoTravelPair.h)
+add_executable(LinuxShip simulator/main.cpp common/Container.h common/Container.cpp common/ShipMap.cpp common/ShipMap.h common/CargoOperation.cpp common/CargoOperation.h simulator/Simulator.cpp simulator/Simulator.h algorithms/_316294636_a.cpp algorithms/_316294636_a.h algorithms/_316294636_b.h algorithms/_316294636_b.cpp common/MapIndex.h
+        common/MapIndex.cpp common/FileHandler.cpp common/FileHandler.h simulator/Travel.h simulator/Travel.cpp interfaces/WeightBalanceCalculator.h simulator/WeightBalanceCalculator.cpp
+        simulator/SimulatorError.cpp simulator/SimulatorError.h interfaces/AbstractAlgorithm.h simulator/SimulatorAlgoCheck.cpp simulator/SimulatorAlgoCheck.h interfaces/AlgorithmRegistration.h simulator/AlgorithmRegistrar.cpp simulator/AlgorithmRegistrar.h)
