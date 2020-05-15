@@ -36,7 +36,7 @@ public:
 
     int rejectDoubleId(list<shared_ptr<Container>> &containerListToLoadInThisPort, list<CargoOperation> &opList);
     static void rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList);
-    void rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,const string& currentPort);
+    int rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,const string& currentPort);
     int rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
                                 const string& basicString);
 

@@ -119,9 +119,10 @@ int AbstractCommonAlgorithm::loadNewContainers(list<shared_ptr<Container>> &cont
     return result;
 }
 
-void AbstractCommonAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList, const string& currentPort) {
+int AbstractCommonAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList, const string& currentPort) {
     map<string, int> portNumberMap;
     int number = 1;
+    int result=0;
     for (const string &port : this->route) {
         auto itr = portNumberMap.find(port);
         if (itr == portNumberMap.end()) {
@@ -131,15 +132,17 @@ void AbstractCommonAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &
     }
     for (auto itr = loadList.begin(); itr != loadList.end();) {
         auto itrFind = portNumberMap.find((*itr)->getDestination());
-        // container destination is not in route- REJECT
+        // container destination is not in route or container destination is current port- REJECT
         if (itrFind == portNumberMap.end()|| (*itr)->getDestination()==currentPort) {
             opList.emplace_back(AbstractAlgorithm::Action::REJECT, (*itr), MapIndex());
             itr = loadList.erase(itr);
+            result= 1<<13;
         } else {
             (*itr)->setPortIndex(portNumberMap[itrFind->first]);
             itr++;
         }
     }
+    return result;
 }
 
 void
@@ -196,7 +199,7 @@ AbstractCommonAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &lo
                                       const string& currentPort) {
     int result = 0;
     this->rejectIllagalContainer(loadList, opList);
-    this->rejectDestNotInRoute(loadList, opList, currentPort);
+    result |=this->rejectDestNotInRoute(loadList, opList, currentPort);
     result |= this->rejectDoubleId(loadList, opList);
     return result;
 }

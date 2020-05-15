@@ -72,11 +72,11 @@ void connectContainerFromShip(ShipMap *shipMap, list<shared_ptr<CargoOperation>>
     }
 }
 
-void findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<shared_ptr<CargoOperation>> &opList,
+int findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<shared_ptr<CargoOperation>> &opList,
                                 list<SimulatorError> &errorList, list<string> &route, set<string> &rejectedID,
                                 bool &correctAlgo) {
     map<string, int> portNumberMap;
-
+    int result=0;
     int number = 1;
     auto itrPort = route.begin();
     itrPort++;
@@ -92,6 +92,7 @@ void findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<shar
         auto itrFind = portNumberMap.find((*contItr)->getDestination());
         // container destination is not in route or current destination- REJECT
         if (itrFind == portNumberMap.end() || (*contItr)->getDestination() == route.front()) {
+            result= 1<<13;
             bool notFound = true;
             for (auto opItr = opList.begin(); opItr != opList.end() && notFound;) {
                 if ((*opItr)->getOp() == AbstractAlgorithm::Action::REJECT &&
@@ -116,6 +117,7 @@ void findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<shar
             contItr++;
         }
     }
+    return result;
 }
 
 void findRejectToIlligalContainer(list<shared_ptr<Container>> &loadList, list<shared_ptr<CargoOperation>> &opList,
@@ -197,7 +199,7 @@ int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &l
                                                   set<string> &rejectedID, bool &correctAlgo) {
     int result = 0;
     findRejectToIlligalContainer(loadList, opList, errorList, rejectedID, correctAlgo);
-    findRejectToDestNotInRoute(loadList, opList, errorList, route, rejectedID, correctAlgo);
+    result |= findRejectToDestNotInRoute(loadList, opList, errorList, route, rejectedID, correctAlgo);
     //start take care of double id
     map<string, int> containerMap;
     /*create map of id to container in load list*/
