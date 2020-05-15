@@ -12,8 +12,8 @@ class Container {
     string id;
     int portIndex = 0;
     bool isLegalContainer;
-    int isContainerLoaded=0; //0- unload, 1-load
-    int isContainerReject=0; //0- no, 1-yes
+    bool isContainerLoaded=false;
+    bool isContainerReject=false;
 
 public:
 
@@ -38,13 +38,13 @@ public:
 
     bool isContainerLegal() { return this->isLegalContainer; }
 
-    void setIsContainerLoaded(int i) { this->isContainerLoaded = i; }
+    void setIsContainerLoaded(bool val) { this->isContainerLoaded = val; }
 
-    int getIsContainerLoaded() const { return this->isContainerLoaded; }
+    bool getIsContainerLoaded() const { return this->isContainerLoaded; }
 
-    void setIsContainerReject(int i) { this->isContainerReject = i; }
+    void setIsContainerReject(bool val) { this->isContainerReject = val; }
 
-    int getIsContainerReject() const { return this->isContainerReject; }
+    bool getIsContainerReject() const { return this->isContainerReject; }
 
     static bool isPortValid(const string &port);
 

@@ -406,14 +406,14 @@ void checkLoadOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<shared_p
         errorList.emplace_back(
                 "index is occupied by container or cannot be place due to ship plan- operation ignored",
                 SimErrorType::OPERATION_PORT, cargoOp);
-        cargoOp.getContainer()->setIsContainerLoaded(1);
+        cargoOp.getContainer()->setIsContainerLoaded(true);
         correctAlgo = false;
         return;
     }
     if (!solidGround(shipMap, cargoOp.getIndex())) {
         errorList.emplace_back("cannot place container without underneath platform- operation ignored",
                                SimErrorType::OPERATION_PORT, cargoOp);
-        cargoOp.getContainer()->setIsContainerLoaded(1);
+        cargoOp.getContainer()->setIsContainerLoaded(true);
         correctAlgo = false;
         return;
     }
@@ -423,7 +423,7 @@ void checkLoadOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<shared_p
         }
     }
     for (auto container: loadList) {
-        if (container->getId() == cargoOp.getContainer()->getId() && container->getIsContainerLoaded() != 1) {
+        if (container->getId() == cargoOp.getContainer()->getId() && !container->getIsContainerLoaded()) {
             inLoadList = true;
         }
     }
@@ -435,7 +435,7 @@ void checkLoadOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<shared_p
     }
     //load succeed
     shipMap->getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = cargoOp.getContainer();
-    cargoOp.getContainer()->setIsContainerLoaded(1);
+    cargoOp.getContainer()->setIsContainerLoaded(true);
     //load from remember
     if (inRemember) {
         shipMap->getContainerIDOnShip().insert(cargoOp.getContainer()->getId());
@@ -488,7 +488,7 @@ void checkUnloadOperation(ShipMap *shipMap, CargoOperation &cargoOp, const strin
     shipMap->getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = nullptr;
     //maybe future error
     if (cargoOp.getContainer()->getDestination() != currentPort) {
-        cargoOp.getContainer()->setIsContainerLoaded(0);
+        cargoOp.getContainer()->setIsContainerLoaded(false);
         rememberToLoadAgainIdToCargoOp[cargoOp.getContainer()->getId()] = std::make_shared<CargoOperation>(cargoOp);
     }
 }
@@ -560,7 +560,7 @@ checkRejectOperation(ShipMap *shipMap, CargoOperation &cargoOp, int maxNumberPor
         correctAlgo = false;
         return result;
     }
-    cargoOp.getContainer()->setIsContainerReject(1);
+    cargoOp.getContainer()->setIsContainerReject(true);
 
     //destination in route
     MapIndex index = MapIndex::firstLegalIndexPlace(shipMap);
@@ -611,7 +611,7 @@ void nothingLeftNoReason(map<string, shared_ptr<CargoOperation>> &rememberToLoad
 void checkAllContainersRejectedOrLoaded(list<shared_ptr<Container>> &loadList, list<SimulatorError> &errorList,
                                         bool &correctAlgo) {
     for (auto container: loadList) {
-        if (container->getIsContainerLoaded() == 0 && container->getIsContainerReject() == 0) {
+        if (container->getIsContainerLoaded() == 0 && !container->getIsContainerReject()) {
             errorList.emplace_back("container id- " + container->getId() + " was not rejected or loaded",
                                    SimErrorType::GENERAL_PORT);
             correctAlgo = false;

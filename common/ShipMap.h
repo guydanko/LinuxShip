@@ -17,7 +17,7 @@ class ShipMap {
     int height;
     int rows;
     int cols;
-    shared_ptr<Container> imaginaryContainer = nullptr;
+    shared_ptr<Container> imaginaryContainer ;
     vector<vector<vector<shared_ptr<Container>>>> shipMapContainer;
     set<string> containerIDOnShip = set<string>();
 
