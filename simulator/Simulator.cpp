@@ -40,6 +40,7 @@ void Simulator::travelErrorsToFile(const string &writeTo) {
 }
 
 void Simulator::createAlgoXTravel() {
+    std::cout<<"algoXtravel"<<std::endl;
     for (auto &p: fs::directory_iterator(this->travelPath)) {
         buildTravel(p);
     }
@@ -49,6 +50,7 @@ void Simulator::createAlgoXTravel() {
     for (auto &p: fs::directory_iterator(this->algoPath)) {
         if (p.path().extension().compare(".so") == 0) {
             AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(), p.path().stem().string());
+            std::cout<<"so"<<std::endl;
         }
     }
     this->algoList = AlgorithmRegistrar::getInstance().getAlgorithms();
@@ -196,10 +198,10 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
 }
 
 void Simulator::run() {
+    std::cout<<"run start"<<std::endl;
     createAlgoXTravel();
     unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
-
     auto j = algoNames.begin();
     for (auto i = this->algoList.begin(); i != this->algoList.end(); ++i) {
         string algoName = j->c_str();

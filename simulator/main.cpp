@@ -13,11 +13,11 @@ int main(int argc, char *argv[]) {
     string argTravelPath = "", argAlgoPath = "", argOutputPath = "", errorString = "";
 
     for (int i = 1; i < argc; i += 2) {
-        if (argv[i] == travelFlag) {
+        if (0 == travelFlag.compare(argv[i])) {
             argTravelPath = argc >= i + 2 ? argv[i + 1] : "";
-        } else if (argv[i] == algoFlag) {
+        } else if (0 == algoFlag.compare(argv[i])) {
             argAlgoPath = argc >= i + 2 ? argv[i + 1] : "";
-        } else if (argv[i] == outputFlag) {
+        } else if (0 == outputFlag.compare(argv[i])) {
             argOutputPath = argc >= i + 2 ? argv[i + 1] : "";
         } else {
             errorString += "Fatal Error: illegal flag - " + std::string(argv[i]) + "!\n";
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
     std::ofstream errorFile(errorFilePath);
     errorFile << errorString;
-    bool toRunSimulator = errorString.empty();
+    bool toRunSimulator = errorString.empty() ? true : false;
 
     if (argTravelPath.empty()) {
         errorFile << "Fatal error: program must receive travel path!\n";
