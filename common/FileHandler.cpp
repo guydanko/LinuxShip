@@ -184,7 +184,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
         string port = svec[0];
         if (Container::isPortValid(port)) {
             strToUpper(port);
-            if (route.size() > 0 && route.back().compare(port) == 0) {
+            if (route.size() > 0 && route.back() == port) {
                 if (toWrite) {
                     outFile << "travel route: a port appears twice (line: " << lineNum
                             << ") or more consecutively (ignored)\n";
@@ -227,14 +227,14 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
 
 }
 
-void FileHandler::operationsToFile(list<CargoOperation> operations, const string &fileName) {
+void FileHandler::operationsToFile( list<CargoOperation>& operations, const string &fileName) {
     ofstream outfile;
     outfile.open(fileName);
     if (!outfile) {
         return;
     }
 
-    for (CargoOperation &op: operations) {
+    for (CargoOperation& op: operations) {
         outfile << op << "\n";
     }
 
@@ -444,7 +444,7 @@ FileHandler::printSimulatorResults(const string &filePath, list<string> &algoNam
         return;
     }
 
-    for (std::list<std::string>::const_iterator i = algoNameList.begin(); i != algoNameList.end(); ++i) {
+    for (auto i = algoNameList.begin(); i != algoNameList.end(); ++i) {
         /*print title*/
         if (i == algoNameList.begin()) {
             outFile << "RESULTS,    ";

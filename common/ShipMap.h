@@ -40,7 +40,6 @@ public:
     shared_ptr<Container> getImaginary() const { return this->imaginaryContainer; }
 
     ShipMap &operator=(const ShipMap &other); // copy only the structure not the containers
-    void clearContainers();
 
     set<string> &getContainerIDOnShip() { return containerIDOnShip; }
 

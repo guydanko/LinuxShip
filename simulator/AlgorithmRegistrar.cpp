@@ -17,7 +17,7 @@ AlgorithmRegistrar& AlgorithmRegistrar::getInstance(){
 
 std::list<std::unique_ptr<AbstractAlgorithm>> AlgorithmRegistrar::getAlgorithms() const {
     std::list<std::unique_ptr<AbstractAlgorithm>> algorithms;
-    for (auto factory:factories) {
+    for (const auto& factory:factories) {
         algorithms.push_back(factory());
     }
     return algorithms;

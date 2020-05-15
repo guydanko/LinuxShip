@@ -47,15 +47,3 @@ void ShipMap::initShipMapContainer(int height, int row, int col) {
         shipMapContainer[i][row][col] = imaginaryContainer;
     }
 }
-
-void ShipMap::clearContainers() {
-    for (int i = 0; i < this->height; i++) {
-        for (int j = 0; j < rows; j++) {
-            for (int k = 0; k < cols; k++) {
-                if (shipMapContainer[i][j][k] != imaginaryContainer) {
-                    shipMapContainer[i][j][k] = nullptr;
-                }
-            }
-        }
-    }
-}

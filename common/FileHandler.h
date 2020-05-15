@@ -32,7 +32,7 @@ public:
     static list<shared_ptr<CargoOperation>>
     createCargoOpsFromFile(const string &fileName);
 
-    static void operationsToFile(list<CargoOperation> operations, const string &fileName);
+    static void operationsToFile(list<CargoOperation>& operations, const string &fileName);
 
     /*returns empty list if invalid file or no legal containers*/
 

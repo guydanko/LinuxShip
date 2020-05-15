@@ -9,7 +9,7 @@
 using std::string;
 using std::multimap;
 
-const string getShipPlanPath(const fs::path &path) {
+string getShipPlanPath(const fs::path &path) {
     int planFiles = 0;
     string fileName;
     for (auto &p: fs::directory_iterator(path)) {
@@ -21,7 +21,7 @@ const string getShipPlanPath(const fs::path &path) {
     return planFiles == 1 ? fileName : "";
 }
 
-const string getRouteFilePath(const fs::path &path) {
+string getRouteFilePath(const fs::path &path) {
     int routeFiles = 0;
     string fileName;
     for (auto &p: fs::directory_iterator(path)) {
@@ -40,7 +40,6 @@ void Simulator::travelErrorsToFile(const string &writeTo) {
 }
 
 void Simulator::createAlgoXTravel() {
-    std::cout<<"algoXtravel"<<std::endl;
     for (auto &p: fs::directory_iterator(this->travelPath)) {
         buildTravel(p);
     }
@@ -50,7 +49,6 @@ void Simulator::createAlgoXTravel() {
     for (auto &p: fs::directory_iterator(this->algoPath)) {
         if (p.path().extension().compare(".so") == 0) {
             AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(), p.path().stem().string());
-            std::cout<<"so"<<std::endl;
         }
     }
     this->algoList = AlgorithmRegistrar::getInstance().getAlgorithms();
@@ -80,36 +78,27 @@ void Simulator::buildTravel(const fs::path &path) {
 
 int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo) {
     int algoInitError = 0;
-    std::cout<<"start readshipPlan"<< std::endl;
     algoInitError |= pAlgo->readShipPlan(travel.getShipPlanPath());
-    std::cout<<"finish readshipPlan"<< std::endl;
     algoInitError |= pAlgo->readShipRoute(travel.getRoutePath());
-    std::cout<<"finish readshipRoute"<< std::endl;
     this->calculator.readShipPlan(travel.getShipPlanPath());
-    std::cout<<"finish calculator read ship route"<< std::endl;
     pAlgo->setWeightBalanceCalculator(calculator);
-    std::cout<<"finish set calculator "<< std::endl;
     return algoInitError;
 }
 
 /* returns amount of operations in a travel algo pair*/
 int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
-    std::cout<<"start run one travel"<< std::endl;
     int algoInitError = 0;
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
         list<SimulatorError> errorList;
-        std::cout<<"start init algorithms"<< std::endl;
         algoInitError = initAlgoWithTravelParam(travel, pAlgo);
-        std::cout<<"finish init algorithms"<< std::endl;
         correctAlgo = SimulatorAlgoCheck::compareErrorAlgoSimulationInit(algoInitError,
                                                                          travel.getTravelError(), errorList,
                                                                          correctAlgo);
         SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());
         list<shared_ptr<Container>> doubleIdList = {};
-        std::cout<<"finish init algo"<< std::endl;
         if (correctAlgo) {
             while (!travel.didTravelEnd()) {
                 set<string> rejectedID = {};
@@ -120,9 +109,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 //path to read container list and write cargo op
                 const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
-                std::cout<<"start cargo instruction"<< std::endl;
                 int algoGetInsError = pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
-                std::cout<<"finish cargo instruction"<< std::endl;
                 list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo);
                 sumCargoOperation += cargoOps.size();
                 simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
@@ -145,7 +132,6 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
             SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());
         }
     }
-    std::cout<<"end run one travel"<< std::endl;
     if (correctAlgo) {
         return sumCargoOperation;
     } else {
@@ -198,19 +184,18 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
 }
 
 void Simulator::run() {
-    std::cout<<"run start"<<std::endl;
     createAlgoXTravel();
     unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
-    auto j = algoNames.begin();
-    for (auto i = this->algoList.begin(); i != this->algoList.end(); ++i) {
-        string algoName = j->c_str();
-        j++;
+    auto currentAlgoName = algoNames.begin();
+    for (auto & pAlgo : this->algoList) {
+        string algoName = *currentAlgoName;
+        currentAlgoName++;
         for (Travel travel: travelList) {
             string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
             fs::create_directory(fileName);
             string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
-            int opAmount = runOneTravel(travel, i->get(), fileName, errorFile);
+            int opAmount = runOneTravel(travel, pAlgo.get(), fileName, errorFile);
             algoOperationsMap[algoName][travel.getTravelName()] = opAmount;
         }
     }
