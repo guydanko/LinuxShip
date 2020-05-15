@@ -34,10 +34,6 @@ class AlgorithmRegistrar {
 
     ~AlgorithmRegistrar();
 
-    AlgorithmRegistrar(const AlgorithmRegistrar &) = delete;
-
-    AlgorithmRegistrar &operator=(const AlgorithmRegistrar &) = delete;
-
     void registerAlgorithm(AlgorithmFactory factory) { factories.push_back(factory); };
 
     void setNameForLastAlgorithm(const std::string &algorithmName) {
@@ -46,9 +42,13 @@ class AlgorithmRegistrar {
 
 public:
 
-    enum {
+    enum RegistrationError{
         ALGORITHM_REGISTERED_SUCCESSFULY = 0, FILE_CANNOT_BE_LOADED = -1, NO_ALGORITHM_REGISTERED = -2
     };
+
+    AlgorithmRegistrar(const AlgorithmRegistrar &) = delete;
+
+    AlgorithmRegistrar &operator=(const AlgorithmRegistrar &) = delete;
 
     int loadAlgorithm(const char *path, const std::string &so_file_name_without_so_suffix);
 

@@ -227,14 +227,14 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
 
 }
 
-void FileHandler::operationsToFile( list<CargoOperation>& operations, const string &fileName) {
+void FileHandler::operationsToFile(list<CargoOperation> &operations, const string &fileName) {
     ofstream outfile;
     outfile.open(fileName);
     if (!outfile) {
         return;
     }
 
-    for (CargoOperation& op: operations) {
+    for (CargoOperation &op: operations) {
         outfile << op << "\n";
     }
 
@@ -438,7 +438,6 @@ FileHandler::printSimulatorResults(const string &filePath, list<string> &algoNam
     }
 
     ofstream outFile(filePath);
-
     /*could not open file*/
     if (!outFile) {
         return;
@@ -475,12 +474,63 @@ FileHandler::printSimulatorResults(const string &filePath, list<string> &algoNam
 }
 
 void FileHandler::setUpErrorFiles(const string &outPath) {
+    string errorPath;
     if (!fs::exists(outPath)) {
-        fs::remove_all(fs::current_path().string() + "/errors");
-        fs::create_directories(fs::current_path().string() + "/errors");
+        errorPath = fs::current_path().string() + "/errors";
     } else {
-        fs::remove_all(outPath + "/errors");
-        fs::create_directories(outPath + "/errors");
+        errorPath = outPath + "/errors";
+    }
+    fs::remove_all(errorPath);
+    fs::create_directories(errorPath);
+}
+
+string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *argv[], int argc) {
+    string errorString = "";
+    for (int i = 1; i < argc; i++) {
+        // if the command is a legal flag
+        if (flagMap.find(argv[i]) != flagMap.end()) {
+            if (argc >= i + 2) {
+                // if value of flag is another flag
+                if (flagMap.find(argv[i + 1]) != flagMap.end() || argv[i + 1][0] == '-') {
+                    errorString += "Error: provided flag " + std::string(argv[i]) + " without value\n";
+                } else {
+                    flagMap[argv[i]] = argv[i + 1];
+                    i++;
+                }
+            } else {
+                errorString += "Error: provided flag " + std::string(argv[i]) + " without value\n";
+            }
+        } else {
+            if (argv[i][0] == '-') {
+                errorString += "Error: provided illegal flag " + std::string(argv[i]) + "\n";
+            } else {
+                errorString += "Error: provided illegal command " + std::string(argv[i]) + "\n";
+            }
+        }
+    }
+    return errorString;
+}
+
+void FileHandler::printAlgoRegistrationError(const string &fileName, const string &algoName,
+                                             int result) {
+    ofstream outfile;
+    outfile.open(fileName, std::ios::app);
+    if (!outfile) {
+        return;
     }
 
+    switch (result) {
+        case AlgorithmRegistrar::RegistrationError::NO_ALGORITHM_REGISTERED: {
+            outfile << "Algorithm: " << algoName << " was not registered successfully\n";
+            break;
+        }
+        case AlgorithmRegistrar::RegistrationError::FILE_CANNOT_BE_LOADED: {
+            outfile << "Algorithm: " << algoName << ".so file cannot be loaded\n";
+            break;
+        }
+        default:
+            break;
+    }
+
+    outfile.close();
 }

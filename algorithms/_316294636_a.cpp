@@ -5,8 +5,6 @@
 using std::map;
 REGISTER_ALGORITHM (_316294636_a)
 
-
-
 void _316294636_a::moveTower(MapIndex index, const string &portName,
                              list<shared_ptr<Container>> &rememberLoadAgain,
                              list<CargoOperation> &opList) {

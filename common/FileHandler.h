@@ -6,6 +6,7 @@
 #include "../simulator/SimulatorError.h"
 #include <memory>
 #include <unordered_map>
+#include "../simulator/AlgorithmRegistrar.h"
 
 using std::list;
 using std::string;
@@ -32,7 +33,7 @@ public:
     static list<shared_ptr<CargoOperation>>
     createCargoOpsFromFile(const string &fileName);
 
-    static void operationsToFile(list<CargoOperation>& operations, const string &fileName);
+    static void operationsToFile(list<CargoOperation> &operations, const string &fileName);
 
     /*returns empty list if invalid file or no legal containers*/
 
@@ -42,6 +43,11 @@ public:
                                       unordered_map<string, unordered_map<string, int>> simulatorResultMap);
 
     static void setUpErrorFiles(const string &outputPath);
+
+    static string setCommandMap(unordered_map<string, string> &flagMap, char *argv[], int argc);
+
+    static void printAlgoRegistrationError(const string &fileName, const string &algoName,
+                                           int result);
 
 };
 

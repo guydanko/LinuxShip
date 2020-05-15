@@ -31,9 +31,11 @@ class Simulator {
 
     void createAlgoXTravel();
 
-    void setUpDirectories();
+    void cleanFiles(list<string>& algoNames);
 
     void printResults(unordered_map<string, unordered_map<string, int>> simResults);
+
+    void createAlgoList();
 
 public:
     Simulator(const string &travelPath, const string &algoPath, const string &outputPath) : travelPath(travelPath),

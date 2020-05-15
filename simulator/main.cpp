@@ -1,57 +1,45 @@
 #include "Simulator.h"
 #include <filesystem>
 #include <iostream>
-#include "map"
 #include <fstream>
 #include "../common/FileHandler.h"
+#include <unordered_map>
 
 namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
 
-    const string travelFlag = "-travel_path", algoFlag = "-algorithm_path", outputFlag = "-output";
-    string argTravelPath = "", argAlgoPath = "", argOutputPath = "", errorString = "";
+    unordered_map<string, string> flagMap = {{"-travel_path",    ""},
+                                             {"-output",         ""},
+                                             {"-algorithm_path", ""}};
 
-    for (int i = 1; i < argc; i += 2) {
-        if (0 == travelFlag.compare(argv[i])) {
-            argTravelPath = argc >= i + 2 ? argv[i + 1] : "";
-        } else if (0 == algoFlag.compare(argv[i])) {
-            argAlgoPath = argc >= i + 2 ? argv[i + 1] : "";
-        } else if (0 == outputFlag.compare(argv[i])) {
-            argOutputPath = argc >= i + 2 ? argv[i + 1] : "";
-        } else {
-            errorString += "Fatal Error: illegal flag - " + std::string(argv[i]) + "!\n";
-        }
-    }
+    string errorString = FileHandler::setCommandMap(flagMap, argv, argc);
 
-
-    const string travelPath = argTravelPath;
-    const string outPath = argOutputPath.empty() ? fs::current_path().string() : argOutputPath;
-    const string algoPath = argAlgoPath.empty() ? fs::current_path().string() : argAlgoPath;
-
+    const string travelPath = flagMap["-travel_path"];
+    const string outPath = flagMap["-output"].empty() ? fs::current_path().string() : flagMap["-output"];
+    const string algoPath = flagMap["-algorithm_path"].empty() ? fs::current_path().string()
+                                                               : flagMap["-algorithm_path"];
 
     FileHandler::setUpErrorFiles(outPath);
-    const string errorFilePath = fs::exists(outPath) ? outPath + "/errors/command.errors" :
-                                 fs::current_path().string() + "/errors/command.errors";
+    const string errorFilePath = outPath + "/errors/command.errors";
 
     std::ofstream errorFile(errorFilePath);
     errorFile << errorString;
-    bool toRunSimulator = errorString.empty() ? true : false;
+    bool toRunSimulator = true;
 
-    if (argTravelPath.empty()) {
+    if (travelPath.empty()) {
         errorFile << "Fatal error: program must receive travel path!\n";
         toRunSimulator = false;
-    } else if (!fs::exists(argTravelPath)) {
+    } else if (!fs::exists(travelPath)) {
         errorFile << "Fatal error: travelPath does not exist!\n";
         toRunSimulator = false;
     }
-    if (!argAlgoPath.empty() && !fs::exists(argAlgoPath)) {
+    if (!fs::exists(algoPath)) {
         errorFile << "Fatal error: algorithm path does not exist!\n";
         toRunSimulator = false;
     }
     if (!fs::exists(outPath)) {
-        errorFile << "Fatal error: output path does not exist!\n";
-        toRunSimulator = false;
+        errorFile << "Error: output path does not exist!\n";
     }
 
     if (!toRunSimulator) {
