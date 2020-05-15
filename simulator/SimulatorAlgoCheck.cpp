@@ -150,48 +150,8 @@ void findRejectToIlligalContainer(list<shared_ptr<Container>> &loadList, list<sh
     }
 }
 
-int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, ShipMap *shipMap,
-                                                  list<shared_ptr<CargoOperation>> &opList,
-                                                  list<SimulatorError> &errorList,
-                                                  list<shared_ptr<Container>> &doubleIdList, list<string> &route,
-                                                  set<string> &rejectedID, bool &correctAlgo) {
-    int result = 0;
-    findRejectToIlligalContainer(loadList, opList, errorList, rejectedID, correctAlgo);
-    findRejectToDestNotInRoute(loadList, opList, errorList, route, rejectedID, correctAlgo);
-
-    //start take care of double id **********************************************
-    map<string, int> containerMap;
-    /*create map of id to container in load list*/
-    for (const auto &cont: loadList) {
-        auto itr = containerMap.find(cont->getId());
-        if (itr == containerMap.end()) {
-            containerMap[cont->getId()] = 1;
-        } else {
-            containerMap[cont->getId()] += 1;
-        }
-
-
-    }
-    //get for every id the specific number of container with id- load list + ship
-    for (auto &pair : containerMap) {
-        bool onShip = false;
-        auto inShip = shipMap->getContainerIDOnShip().find(pair.first);
-        if (inShip != shipMap->getContainerIDOnShip().end()) {
-            pair.second++;
-            onShip = true;
-        }
-        if (pair.second > 1) {
-            if (onShip) {
-                result |= 1 << 11;
-            } else {
-                result |= 1 << 10;
-            }
-            deleteDoubleID(loadList, pair.first, onShip, doubleIdList);
-            deleteRejectDoubleID(opList, pair.second - 1, errorList, pair.first, correctAlgo);
-        }
-    }
-    connectContainerFromShip(shipMap, opList);
-
+void makeSureAllCargoOpConnected(list<shared_ptr<Container>> &loadList, list<shared_ptr<CargoOperation>> &opList,
+                            list<SimulatorError> &errorList, set<string> &rejectedID, bool &correctAlgo) {
     for (auto opItr = opList.begin(); opItr != opList.end(); opItr++) {
         bool notFindCont = true;
         for (auto contItr = loadList.begin(); contItr != loadList.end() && notFindCont; contItr++) {
@@ -228,6 +188,47 @@ int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &l
             opItr++;
         }
     }
+}
+
+int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &loadList, ShipMap *shipMap,
+                                                  list<shared_ptr<CargoOperation>> &opList,
+                                                  list<SimulatorError> &errorList,
+                                                  list<shared_ptr<Container>> &doubleIdList, list<string> &route,
+                                                  set<string> &rejectedID, bool &correctAlgo) {
+    int result = 0;
+    findRejectToIlligalContainer(loadList, opList, errorList, rejectedID, correctAlgo);
+    findRejectToDestNotInRoute(loadList, opList, errorList, route, rejectedID, correctAlgo);
+    //start take care of double id **********************************************
+    map<string, int> containerMap;
+    /*create map of id to container in load list*/
+    for (const auto &cont: loadList) {
+        auto itr = containerMap.find(cont->getId());
+        if (itr == containerMap.end()) {
+            containerMap[cont->getId()] = 1;
+        } else {
+            containerMap[cont->getId()] += 1;
+        }
+    }
+    //get for every id the specific number of container with id- load list + ship
+    for (auto &pair : containerMap) {
+        bool onShip = false;
+        auto inShip = shipMap->getContainerIDOnShip().find(pair.first);
+        if (inShip != shipMap->getContainerIDOnShip().end()) {
+            pair.second++;
+            onShip = true;
+        }
+        if (pair.second > 1) {
+            if (onShip) {
+                result |= 1 << 11;
+            } else {
+                result |= 1 << 10;
+            }
+            deleteDoubleID(loadList, pair.first, onShip, doubleIdList);
+            deleteRejectDoubleID(opList, pair.second - 1, errorList, pair.first, correctAlgo);
+        }
+    }
+    connectContainerFromShip(shipMap, opList);
+    makeSureAllCargoOpConnected(loadList,opList,errorList,rejectedID,correctAlgo);
     return result;
 }
 
