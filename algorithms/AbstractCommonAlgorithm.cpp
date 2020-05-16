@@ -231,10 +231,11 @@ int AbstractCommonAlgorithm::getInstructionsForCargo(const std::string &input_fu
         const string currentPort = this->route.front();
         this->route.pop_front();
         int fileResult = FileHandler::fileToContainerList(input_full_path_and_file_name, loadList);
-        /*was last port*/
+        /* current port is the last one in route*/
         if (this->route.empty()) {
             if (!loadList.empty() || (fileResult != (1 << 16) && fileResult != 0)) {
                 result = 1 << 17;
+                loadList={};
             }
         } else {
             result |= fileResult;

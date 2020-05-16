@@ -106,41 +106,41 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
         string errorMessage = " ";
 
         if (weight.empty() || !isNumber(weight)) {
-            errorMessage += "missing or bad weight";
+            errorMessage += "- missing or bad weight ";
             result |= (1 << 12);
         }
-        if (destination.empty() || !Container::isPortValid(destination)) {
-            errorMessage += ", missing or bad port dest  ";
+        if (destination.empty() || !Container::isPortValid(destination) || destination==portName) {
+            errorMessage += "- missing or bad port dest ";
             result |= (1 << 13);
         }
         if (id.empty()) {
-            errorMessage += ", ID cannot be read";
+            errorMessage += "- ID cannot be read";
             result |= (1 << 14);
         } else {
             if (!Container::isLegalId(id)) {
-                errorMessage += ", illegal ID check ISO 6346";
+                errorMessage += "- illegal ID check ISO 6346 ";
                 result |= (1 << 15);
             }
         }
-
         if (isNumber(weight) && Container::isLegalParamContainer(stoi(weight), destination, id)) {
             containerList.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
-        } else {
-            if (toWrite) {
-                outFile << port << "containers at port: bad line (" << lineNum << ") format :" << errorMessage
+
+            if(destination==portName && toWrite){
+                outFile << port << "containers at port: bad line (" << lineNum << ") format" << errorMessage
                         << "\n";
             }
-            if (!(result & (1 << 14))) { containerList.emplace_back(std::make_shared<Container>(0, "", id, false)); }
-
         }
-
-
+        else {
+            if (toWrite) {
+                outFile << port << "containers at port: bad line (" << lineNum << ") format" << errorMessage
+                        << "\n";
+            }
+            if (!id.empty()) { containerList.emplace_back(std::make_shared<Container>(0, "", id, false)); }
+        }
     }
-
     inFile.close();
     outFile.close();
     return result;
-
 }
 
 int FileHandler::fileToRouteList(const string &fileName, list<string> &route, const string &errorFile) {
@@ -338,7 +338,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
                 result |= (1 << 2);
             } else {
                 outFile << "ship plan: travel error - duplicate x,y (in line: " << lineNum
-                        << "appearance with different data (cannot run this travel)\n";
+                        << ") appearance with different data (cannot run this travel)\n";
                 result |= (1 << 4);
             }
 
@@ -362,7 +362,6 @@ FileHandler::createCargoOpsFromFile(const string &fileName) {
     if (!inFile) {
         return ops;
     }
-
     string line;
 
     while (getline(inFile, line)) {
@@ -375,8 +374,6 @@ FileHandler::createCargoOpsFromFile(const string &fileName) {
             token = trim(token);
             svec.push_back(token);
         }
-
-
         AbstractAlgorithm::Action action;
         shared_ptr<Container> cont =
                 svec.size() > 1 ? std::make_shared<Container>(0, "", svec[1]) : std::make_shared<Container>(0, "", "");
@@ -404,8 +401,6 @@ FileHandler::createCargoOpsFromFile(const string &fileName) {
                                                                                          stoi(svec[4]))));
                 break;
         }
-
-
     }
 
     inFile.close();
@@ -414,11 +409,9 @@ FileHandler::createCargoOpsFromFile(const string &fileName) {
 
 void FileHandler::reportPlanRouteErrors(const string &shipPlanPath, const string &routePath, const string &errorFile) {
     ofstream outFile(errorFile);
-
     if (!outFile) {
         return;
     }
-
     if (shipPlanPath.empty()) {
         outFile << "travel error - could not find only one .ship_plan file\n";
     }

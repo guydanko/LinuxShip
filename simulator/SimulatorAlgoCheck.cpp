@@ -219,9 +219,13 @@ int SimulatorAlgoCheck::connectContainerToCargoOp(list<shared_ptr<Container>> &l
             pair.second++;
             onShip = true;
         }
+
         if (pair.second > 1) {
             if (onShip) {
                 result |= 1 << 11;
+                if(pair.second>2){
+                    result |= 1 << 10;
+                }
             } else {
                 result |= 1 << 10;
             }
@@ -272,13 +276,17 @@ void SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(int algoGetInsError,
             }
         }
     }
+    if((simulationInstError & (1 << 17)) == (1 << 17)){
+        errorList.emplace_front("cargo data file is not empty although it is last port",
+                                SimErrorType::GENERAL_PORT);
+    }
 }
 
 bool SimulatorAlgoCheck::compareErrorAlgoSimulationInit(int algoInitError, int simulationInitError,
                                                         list<SimulatorError> &errorList, bool &correctAlgo) {
     bool canRun = true;
     string simulationAgree = "";
-    for (int i = 1; i < 9; i++) {
+    for (int i = 0; i < 9; i++) {
         if ((algoInitError & (1 << i))) {
             if (!(simulationInitError & (1 << i))) {
                 simulationAgree = ", but simulation does not find this error, algorithm incorrect";
