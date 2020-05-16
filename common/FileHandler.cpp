@@ -124,11 +124,6 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
         }
         if (isNumber(weight) && Container::isLegalParamContainer(stoi(weight), destination, id)) {
             containerList.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
-
-            if(destination==portName && toWrite){
-                outFile << port << "containers at port: bad line (" << lineNum << ") format" << errorMessage
-                        << "\n";
-            }
         }
         else {
             if (toWrite) {
