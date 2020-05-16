@@ -93,6 +93,9 @@ int findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<share
         // container destination is not in route or current destination- REJECT
         if (itrFind == portNumberMap.end() || (*contItr)->getDestination() == route.front()) {
             result= 1<<13;
+            if((*contItr)->getDestination() == route.front()){
+                errorList.emplace_front("in cargo data file - id "+(*contItr)->getId()+" has current port destination. It is illegal",SimErrorType::GENERAL_PORT);
+            }
             bool notFound = true;
             for (auto opItr = opList.begin(); opItr != opList.end() && notFound;) {
                 if ((*opItr)->getOp() == AbstractAlgorithm::Action::REJECT &&
