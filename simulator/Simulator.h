@@ -51,7 +51,7 @@ public:
     int runOneTravel(Travel &travel, AbstractAlgorithm *algo, const string &fileName,
                      const string &errorFileName);
 
-    int initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo);
+    int initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError>& errorList, bool& correctAlgo);
 
 };
 

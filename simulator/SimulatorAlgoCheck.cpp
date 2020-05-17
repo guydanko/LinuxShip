@@ -94,7 +94,7 @@ int findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<share
         if (itrFind == portNumberMap.end() || (*contItr)->getDestination() == route.front()) {
             result= 1<<13;
             if((*contItr)->getDestination() == route.front()){
-                errorList.emplace_front("in cargo data file - id "+(*contItr)->getId()+" has current port destination. It is illegal",SimErrorType::GENERAL_PORT);
+                errorList.emplace_front("in cargo data file - id "+(*contItr)->getId()+" has current port destination, it is illegal line.",SimErrorType::GENERAL_PORT);
             }
             bool notFound = true;
             for (auto opItr = opList.begin(); opItr != opList.end() && notFound;) {
@@ -110,7 +110,7 @@ int findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<share
             }
             if (notFound) {
                 errorList.emplace_back("algorithm does not report REJECT to id- " + (*contItr)->getId() +
-                                       " although it has destination not in route", SimErrorType::GENERAL_PORT);
+                                       " although it has destination not in route or current destination", SimErrorType::GENERAL_PORT);
                 rejectedID.insert((*contItr)->getId());
                 contItr = loadList.erase(contItr);
                 correctAlgo = false;

@@ -208,16 +208,21 @@ int AbstractCommonAlgorithm::readShipPlan(const std::string &full_path_and_file_
     auto shipPtr = std::make_shared<shared_ptr<ShipMap>>(std::make_shared<ShipMap>());
     int result = FileHandler::createShipMapFromFile(full_path_and_file_name, shipPtr);
     this->shipMap = *shipPtr;
+    isReadShipPlanSucceed = !(result & (1 << 3) || result & (1 << 4));
+    errorCode|=result;
     return result;
 }
 
 int AbstractCommonAlgorithm::readShipRoute(const std::string &full_path_and_file_name) {
     int result= FileHandler::fileToRouteList(full_path_and_file_name, this->route);
+    isReadShipRouteSucceed = !(result & (1 << 7) || result & (1 << 8));
+    errorCode|=result;
     return result;
 }
 
 int AbstractCommonAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &calculator) {
     this->calculator = calculator;
+    isSetCalculatorSucceed=true;
     return 0;
 }
 
@@ -227,6 +232,10 @@ int AbstractCommonAlgorithm::getInstructionsForCargo(const std::string &input_fu
     list<CargoOperation> opList = {};
     list<shared_ptr<Container>> loadList = {};
     list<shared_ptr<Container>> rememberLoadAgain = {};
+    if(!isSetCalculatorSucceed || !isReadShipRouteSucceed || !isReadShipPlanSucceed){
+        FileHandler::operationsToFile(opList, output_full_path_and_file_name);
+        return errorCode;
+    }
     if (!this->route.empty()) {
         const string currentPort = this->route.front();
         this->route.pop_front();
