@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 
     errorFile.close();
     Simulator simulator(travelPath, algoPath, outPath);
-    simulator.runWindows();
+    simulator.run();
     return EXIT_SUCCESS;
 
 }

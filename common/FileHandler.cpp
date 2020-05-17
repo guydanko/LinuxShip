@@ -30,7 +30,7 @@ std::string trim(const std::string &s) {
 }
 
 bool isLineEmpty(const std::string &s) {
-    for (int i = 0; i < s.length(); i++) {
+    for (size_t i = 0; i < s.length(); i++) {
         if (!isspace(s[i])) {
             return false;
         }
@@ -518,10 +518,10 @@ string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *
     return errorString;
 }
 
-bool canWriteinPath(const string &path){
+bool FileHandler::canWriteinPath(const string &path) {
     ofstream tryToWrite(path + "/test");
 
-    if(!tryToWrite){
+    if (!tryToWrite) {
         return false;
     }
 
@@ -530,26 +530,26 @@ bool canWriteinPath(const string &path){
     return true;
 }
 
-//void FileHandler::printAlgoRegistrationError(const string &fileName, const string &algoName,
-//                                             int result) {
-//    ofstream outfile;
-//    outfile.open(fileName, std::ios::app);
-//    if (!outfile) {
-//        return;
-//    }
-//
-//    switch (result) {
-//        case AlgorithmRegistrar::RegistrationError::NO_ALGORITHM_REGISTERED: {
-//            outfile << "Algorithm: " << algoName << " was not registered successfully\n";
-//            break;
-//        }
-//        case AlgorithmRegistrar::RegistrationError::FILE_CANNOT_BE_LOADED: {
-//            outfile << "Algorithm: " << algoName << ".so file cannot be loaded\n";
-//            break;
-//        }
-//        default:
-//            break;
-//    }
-//
-//    outfile.close();
-//}
+void FileHandler::printAlgoRegistrationError(const string &fileName, const string &algoName,
+                                             int result) {
+    ofstream outfile;
+    outfile.open(fileName, std::ios::app);
+    if (!outfile) {
+        return;
+    }
+
+    switch (result) {
+        case AlgorithmRegistrar::RegistrationError::NO_ALGORITHM_REGISTERED: {
+            outfile << "Algorithm: " << algoName << " was not registered successfully\n";
+            break;
+        }
+        case AlgorithmRegistrar::RegistrationError::FILE_CANNOT_BE_LOADED: {
+            outfile << "Algorithm: " << algoName << ".so file cannot be loaded\n";
+            break;
+        }
+        default:
+            break;
+    }
+
+    outfile.close();
+}
