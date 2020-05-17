@@ -1,12 +1,12 @@
 /*class that handles input and output of different data objects to files and vice versa*/
 #include <string>
 #include <list>
-#include "CargoOperation.h"
-#include "Container.h"
-#include "../simulator/SimulatorError.h"
+#include "../../ShipProjectWindows/common/CargoOperation.h"
+#include "../../ShipProjectWindows/common/Container.h"
+#include "../../ShipProjectWindows/simulator/SimulatorError.h"
 #include <memory>
 #include <unordered_map>
-#include "../simulator/AlgorithmRegistrar.h"
+#include "../../ShipProjectWindows/simulator/AlgorithmRegistrar.h"
 
 using std::list;
 using std::string;
@@ -48,6 +48,8 @@ public:
 
     static void printAlgoRegistrationError(const string &fileName, const string &algoName,
                                            int result);
+
+    static bool canWriteinPath(const string &path);
 
 };
 

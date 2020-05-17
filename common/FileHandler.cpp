@@ -1,8 +1,7 @@
-#include "FileHandler.h"
+#include "../common/FileHandler.h"
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include "../simulator/SimulatorError.h"
+#include "../../ShipProjectWindows/simulator/SimulatorError.h"
 #include <unordered_map>
 #include <filesystem>
 
@@ -14,7 +13,7 @@ using std::ofstream;
 namespace fs = std::filesystem;
 
 
-const std::string WHITESPACE = " \n\r\t\f\v";
+const std::string WHITESPACE = " \n\r\t\f\v ";
 
 std::string ltrim(const std::string &s) {
     size_t start = s.find_first_not_of(WHITESPACE);
@@ -28,6 +27,15 @@ std::string rtrim(const std::string &s) {
 
 std::string trim(const std::string &s) {
     return rtrim(ltrim(s));
+}
+
+bool isLineEmpty(const std::string &s) {
+    for (int i = 0; i < s.length(); i++) {
+        if (!isspace(s[i])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool isNumber(const string &s) {
@@ -76,8 +84,9 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
 
 
     while (getline(inFile, line)) {
+        trim(line);
         lineNum++;
-        if (line[0] == '#') { continue; }
+        if (line[0] == '#' || line.empty()) { continue; }
         stringstream sline(line);
         vector<string> svec;
         string token;
@@ -109,7 +118,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
             errorMessage += "- missing or bad weight ";
             result |= (1 << 12);
         }
-        if (destination.empty() || !Container::isPortValid(destination) || destination==portName) {
+        if (destination.empty() || !Container::isPortValid(destination) || destination == portName) {
             errorMessage += "- missing or bad port dest ";
             result |= (1 << 13);
         }
@@ -124,8 +133,12 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
         }
         if (isNumber(weight) && Container::isLegalParamContainer(stoi(weight), destination, id)) {
             containerList.emplace_back(std::make_shared<Container>(stoi(weight), destination, id));
-        }
-        else {
+
+            if (destination == portName && toWrite) {
+                outFile << port << "containers at port: bad line (" << lineNum << ") format" << errorMessage
+                        << "\n";
+            }
+        } else {
             if (toWrite) {
                 outFile << port << "containers at port: bad line (" << lineNum << ") format" << errorMessage
                         << "\n";
@@ -159,15 +172,20 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
     string line;
     while (getline(inFile, line)) {
         lineNum++;
-        if (line[0] == '#') { continue; }
+        //skip line if it is whitespace or if its a note
+        if (line[0] == '#' || isLineEmpty(line)) { continue; }
+
+
         stringstream sline(line);
         vector<string> svec;
         string token;
 
+        //get route value
         while (getline(sline, token, '\n')) {
             svec.push_back(trim(token));
         }
 
+        //more or less than one symbol
         if (svec.size() != 1) {
             if (toWrite) {
                 outFile << "travel route: bad line (" << lineNum << ") " << "format (ignored)\n";
@@ -260,12 +278,13 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     int lineNum = 1;
 
     while (getline(inFile, line)) {
-        if (line[0] != '#') {
+        if (line[0] != '#' && !isLineEmpty(line)) {
             break;
         }
     }
     stringstream sline(line);
     while (getline(sline, token, ',')) {
+        trim(line);
         token = trim(token);
         if (!isNumber(token)) {
             if (toWrite) {
@@ -286,7 +305,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
 
     while (getline(inFile, line)) {
         lineNum++;
-        if (line[0] == '#') { continue; }
+        if (line[0] == '#' || isLineEmpty(line)) { continue; }
         stringstream sline(line);
         vector<string> svec;
         string token;
@@ -499,26 +518,38 @@ string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *
     return errorString;
 }
 
-void FileHandler::printAlgoRegistrationError(const string &fileName, const string &algoName,
-                                             int result) {
-    ofstream outfile;
-    outfile.open(fileName, std::ios::app);
-    if (!outfile) {
-        return;
+bool canWriteinPath(const string &path){
+    ofstream tryToWrite(path + "/test");
+
+    if(!tryToWrite){
+        return false;
     }
 
-    switch (result) {
-        case AlgorithmRegistrar::RegistrationError::NO_ALGORITHM_REGISTERED: {
-            outfile << "Algorithm: " << algoName << " was not registered successfully\n";
-            break;
-        }
-        case AlgorithmRegistrar::RegistrationError::FILE_CANNOT_BE_LOADED: {
-            outfile << "Algorithm: " << algoName << ".so file cannot be loaded\n";
-            break;
-        }
-        default:
-            break;
-    }
-
-    outfile.close();
+    tryToWrite.close();
+    fs::remove(path + "/test");
+    return true;
 }
+
+//void FileHandler::printAlgoRegistrationError(const string &fileName, const string &algoName,
+//                                             int result) {
+//    ofstream outfile;
+//    outfile.open(fileName, std::ios::app);
+//    if (!outfile) {
+//        return;
+//    }
+//
+//    switch (result) {
+//        case AlgorithmRegistrar::RegistrationError::NO_ALGORITHM_REGISTERED: {
+//            outfile << "Algorithm: " << algoName << " was not registered successfully\n";
+//            break;
+//        }
+//        case AlgorithmRegistrar::RegistrationError::FILE_CANNOT_BE_LOADED: {
+//            outfile << "Algorithm: " << algoName << ".so file cannot be loaded\n";
+//            break;
+//        }
+//        default:
+//            break;
+//    }
+//
+//    outfile.close();
+//}
