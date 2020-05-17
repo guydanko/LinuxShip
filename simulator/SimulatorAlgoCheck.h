@@ -1,3 +1,4 @@
+//Class to check that algorithm runs correctly
 #include "SimulatorError.h"
 #include "Travel.h"
 

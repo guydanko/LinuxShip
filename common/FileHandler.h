@@ -1,12 +1,12 @@
 /*class that handles input and output of different data objects to files and vice versa*/
 #include <string>
 #include <list>
-#include "../../ShipProjectWindows/common/CargoOperation.h"
-#include "../../ShipProjectWindows/common/Container.h"
-#include "../../ShipProjectWindows/simulator/SimulatorError.h"
+#include "../common/CargoOperation.h"
+#include "../common/Container.h"
+#include "../simulator/SimulatorError.h"
 #include <memory>
 #include <unordered_map>
-#include "../../ShipProjectWindows/simulator/AlgorithmRegistrar.h"
+#include "../simulator/AlgorithmRegistrar.h"
 
 using std::list;
 using std::string;

@@ -1,4 +1,4 @@
-#include "../../ShipProjectWindows/simulator/Simulator.h"
+#include "../simulator/Simulator.h"
 #include <filesystem>
 #include <iostream>
 #include <fstream>

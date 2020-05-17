@@ -1,7 +1,7 @@
 #include "../common/FileHandler.h"
 #include <fstream>
 #include <iostream>
-#include "../../ShipProjectWindows/simulator/SimulatorError.h"
+#include "../simulator/SimulatorError.h"
 #include <unordered_map>
 #include <filesystem>
 

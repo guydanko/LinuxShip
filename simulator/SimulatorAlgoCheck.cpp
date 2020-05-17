@@ -18,8 +18,8 @@ void deleteRejectDoubleID(list<shared_ptr<CargoOperation>> &cargoOps, int countE
     }
     countRemoveOp -= cargoOps.size();
     if (count > 0) {
-        listError.emplace_back("id- " + id + " rejected " + std::to_string(countRemoveOp) + " times but there are " +
-                               std::to_string(countErase) + " container with this id to reject by reason of double id",
+        listError.emplace_back("id - " + id + " rejected " + std::to_string(countRemoveOp) + " times but there are " +
+                               std::to_string(countErase) + " container/s with this id to reject due to of double id",
                                SimErrorType::GENERAL_PORT);
         correctAlgo = false;
     }
@@ -94,8 +94,8 @@ int findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<share
         if (itrFind == portNumberMap.end() || (*contItr)->getDestination() == route.front()) {
             result = 1 << 13;
             if ((*contItr)->getDestination() == route.front()) {
-                errorList.emplace_front("in cargo data file - id " + (*contItr)->getId() +
-                                        " has current port destination, it is illegal line.",
+                errorList.emplace_front("In cargo data file, container with id - " + (*contItr)->getId() +
+                                        " has current port destination, illegal to load container",
                                         SimErrorType::GENERAL_PORT);
             }
             bool notFound = true;
@@ -111,7 +111,7 @@ int findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<share
                 }
             }
             if (notFound) {
-                errorList.emplace_back("algorithm does not report REJECT to id- " + (*contItr)->getId() +
+                errorList.emplace_back("Algorithm does not report REJECT of container with id - " + (*contItr)->getId() +
                                        " although it has destination not in route or current destination",
                                        SimErrorType::GENERAL_PORT);
                 rejectedID.insert((*contItr)->getId());
@@ -145,7 +145,7 @@ void findRejectToIlligalContainer(list<shared_ptr<Container>> &loadList, list<sh
 
             }
             if (notFound) {
-                errorList.emplace_back("algorithm does not report REJECT to id- " + (*contItr)->getId() +
+                errorList.emplace_back("Algorithm does not report REJECT to container with id - " + (*contItr)->getId() +
                                        " although it has illegal parameters", SimErrorType::GENERAL_PORT);
                 rejectedID.insert((*contItr)->getId());
                 contItr = loadList.erase(contItr);
@@ -175,20 +175,20 @@ void makeSureAllCargoOpConnected(list<shared_ptr<Container>> &loadList, list<sha
             auto idRejectedItr = rejectedID.find((*opItr)->getContainer()->getId());
             if (idRejectedItr != rejectedID.end()) {
                 if ((*opItr)->getOp() == AbstractAlgorithm::Action::REJECT) {
-                    errorList.emplace_back("already gave REJECT operation, this operation is  unnecessary",
+                    errorList.emplace_back("already gave REJECT operation, this operation is unnecessary",
                                            SimErrorType::OPERATION_PORT, *(*opItr));
                     opItr = opList.erase(opItr);
                     correctAlgo = false;
                 } else {
                     errorList.emplace_back(
-                            "operation for container with id which has been REJECTED or should has been REJECTED - operation ignored",
+                            "operation for container with id that has been REJECTED or should have been REJECTED - operation ignored",
                             SimErrorType::OPERATION_PORT,
                             *(*opItr));
                     opItr = opList.erase(opItr);
                     correctAlgo = false;
                 }
             } else {
-                errorList.emplace_back("use unknown id- operation ignored", SimErrorType::OPERATION_PORT, *(*opItr));
+                errorList.emplace_back("used unknown id - operation ignored", SimErrorType::OPERATION_PORT, *(*opItr));
                 opItr = opList.erase(opItr);
                 correctAlgo = false;
             }
@@ -283,7 +283,7 @@ void SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(int algoGetInsError,
         }
     }
     if ((simulationInstError & (1 << 17)) == (1 << 17)) {
-        errorList.emplace_front("cargo data file is not empty although it is last port",
+        errorList.emplace_front("Cargo data file is not empty although it is last port",
                                 SimErrorType::GENERAL_PORT);
     }
 }
@@ -308,7 +308,7 @@ bool SimulatorAlgoCheck::compareErrorAlgoSimulationInit(int algoInitError, int s
         }
     }
     if (!errorList.empty()) {
-        errorList.emplace_front("errors reported by the algorithm while reading ship_plan and route:",
+        errorList.emplace_front("Errors reported by the algorithm while reading ship_plan and route:",
                                 SimErrorType::TRAVEL_INIT);
         errorList.emplace_back("************************************************************************",
                                SimErrorType::TRAVEL_INIT);
@@ -338,13 +338,13 @@ bool containerAbove(ShipMap *shipMap, MapIndex index) {
 bool indexAccessible(ShipMap *shipMap, CargoOperation &cargoOp, list<SimulatorError> &errorList,
                      bool &correctAlgo) {
     if (!indexInLimit(shipMap, cargoOp.getIndex())) {
-        errorList.emplace_back("illegal index, exceeds ship plan limits- operation ignored",
+        errorList.emplace_back("Illegal index, exceeds ship plan limits - operation ignored",
                                SimErrorType::OPERATION_PORT, cargoOp);
         correctAlgo = false;
         return false;
     }
     if (containerAbove(shipMap, cargoOp.getIndex())) {
-        errorList.emplace_back("cannot reach container in index, blocked above by containers- operation ignored",
+        errorList.emplace_back("Cannot reach container in index, blocked above by containers- operation ignored",
                                SimErrorType::OPERATION_PORT, cargoOp);
         correctAlgo = false;
         return false;
@@ -384,8 +384,8 @@ void checkIfAllUnloaded(ShipMap *shipMap, const string &port, list<SimulatorErro
                             if (cont->getId() == shipMap->getShipMapContainer()[i][j][k]->getId()) {
                                 if (portStillInRoute(route, cont->getDestination())) {
                                     errorList.emplace_back(
-                                            "when load container with id- " + cont->getId() +
-                                            " there was few container with same id. Algorithm rejects the first container and choose another container to load. It might cause earlier error such as weight..",
+                                            "When loaded container with id - " + cont->getId() +
+                                            " there were more containers with the same id. Algorithm rejects the first container and chose another container to load. It might cause earlier error such as weight..",
                                             SimErrorType::GENERAL_PORT);
                                     doubleIdProblem = true;
                                     correctAlgo = false;
@@ -396,8 +396,8 @@ void checkIfAllUnloaded(ShipMap *shipMap, const string &port, list<SimulatorErro
                         if (!doubleIdProblem) {
                             errorList.emplace_back("Container on the ship with id- " +
                                                    shipMap->getShipMapContainer()[i][j][k]->getId() +
-                                                   " has current destination -" + port +
-                                                   "- but container still on the ship when ship left the port",
+                                                   " has current destination - " + port +
+                                                   " - but container still on the ship when ship left the port",
                                                    SimErrorType::GENERAL_PORT);
                             correctAlgo = false;
                         }
@@ -421,7 +421,7 @@ void checkLoadOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<shared_p
     if (shipMap->getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] !=
         nullptr) {
         errorList.emplace_back(
-                "index is occupied by container or cannot be place due to ship plan- operation ignored",
+                "Index is occupied by container or cannot be place due to ship plan - operation ignored",
                 SimErrorType::OPERATION_PORT, cargoOp);
         cargoOp.getContainer()->setIsContainerLoaded(true);
         correctAlgo = false;
@@ -494,7 +494,7 @@ void checkUnloadOperation(ShipMap *shipMap, CargoOperation &cargoOp, const strin
         return;
     }
     if (containerOnTheShipInThisPlace->getId() != cargoOp.getContainer()->getId()) {
-        errorList.emplace_back("the container id does not match container id on the ship- operation ignored",
+        errorList.emplace_back("the container id does not match container id on the ship - operation ignored",
                                SimErrorType::OPERATION_PORT, cargoOp);
         correctAlgo = false;
         return;
@@ -565,8 +565,9 @@ void checkMoveOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<Simulato
     shipMap->getShipMapContainer()[cargoOp.getIndex().getHeight()][cargoOp.getIndex().getRow()][cargoOp.getIndex().getCol()] = nullptr;
 
 }
-int numberOfEmptyPlaces(ShipMap* shipMap) {
-    int num=0;
+
+int numberOfEmptyPlaces(ShipMap *shipMap) {
+    int num = 0;
     for (int i = 0; i < shipMap->getHeight(); i++) {
         for (int j = 0; j < shipMap->getRows(); j++) {
             for (int k = 0; k < shipMap->getCols(); k++) {
@@ -579,11 +580,12 @@ int numberOfEmptyPlaces(ShipMap* shipMap) {
     }
     return num;
 }
+
 int
 checkRejectOperations(ShipMap *shipMap, list<shared_ptr<CargoOperation>> &cargoOpsList, int maxNumberPortLoaded,
-                     list<SimulatorError> &errorList, bool &correctAlgo) {
+                      list<SimulatorError> &errorList, bool &correctAlgo) {
     int result = 0;
-    int numEmptyPlace=numberOfEmptyPlaces(shipMap);
+    int numEmptyPlace = numberOfEmptyPlaces(shipMap);
     cargoOpsList.sort([](const shared_ptr<CargoOperation> cargoOp1, const shared_ptr<CargoOperation> cargoOp2) -> bool {
         return cargoOp1->getContainer()->getPortIndex() < cargoOp2->getContainer()->getPortIndex();
     });
@@ -594,8 +596,7 @@ checkRejectOperations(ShipMap *shipMap, list<shared_ptr<CargoOperation>> &cargoO
                         "already gave Load operation to this container, this operation is unnecessary and wrong- operation ignored",
                         SimErrorType::OPERATION_PORT, *cargoOp);
                 correctAlgo = false;
-            }
-            else {
+            } else {
                 cargoOp->getContainer()->setIsContainerReject(true);
                 //destination in route
                 if (numEmptyPlace > 0) {
@@ -667,7 +668,7 @@ bool checkBalance(CargoOperation *cargoOp, list<SimulatorError> &errorList, Weig
                                     cargoOp->getIndex().getRow()) !=
             WeightBalanceCalculator::BalanceStatus::APPROVED) {
             //TODO: calculator denied operation
-            errorList.emplace_back("weight calculator does not approve this operation- operation ignored",
+            errorList.emplace_back("Weight calculator does not approve this operation - operation ignored",
                                    SimErrorType::OPERATION_PORT, *cargoOp);
             return false;
         } else {
@@ -684,7 +685,7 @@ bool checkBalance(CargoOperation *cargoOp, list<SimulatorError> &errorList, Weig
         WeightBalanceCalculator::BalanceStatus::APPROVED) {
 
         //TODO: calculator denied operation
-        errorList.emplace_back("weight calculator does not approve this operation- operation ignored",
+        errorList.emplace_back("Weight calculator does not approve this operation - operation ignored",
                                SimErrorType::OPERATION_PORT, *cargoOp);
         return false;
     } else {

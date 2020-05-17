@@ -1,3 +1,4 @@
+//Abstract common algorithm class
 #include "../interfaces/AbstractAlgorithm.h"
 #include "../common/MapIndex.h"
 #include "../common/CargoOperation.h"
