@@ -132,7 +132,7 @@ int Travel::getContainerList(const string &errorFile, list<shared_ptr<Container>
         if (result & (1 << 16)) {
             return 0;
         }
-        /*there were containers in last port file, or there was corrupt line*/
+            /*there were containers in last port file, or there was corrupt line*/
         else if (!checkList.empty() || result > 0) { return 1 << 17; }
         /*file exists but not lines in it*/
         return 0;
@@ -152,6 +152,7 @@ bool Travel::isTravelLegal() {
 }
 
 list<string> Travel::getMissingCargoFiles() const {
+    std::error_code er;
     list<string> missingCargoFiles = {};
     unordered_map copyMap = this->portCounter;
 
@@ -165,7 +166,7 @@ list<string> Travel::getMissingCargoFiles() const {
         }
         int visitNum = get<0>(copyMap.find(i->c_str())->second) += 1;
         string fileName = travelPath + "/" + i->c_str() + "_" + to_string(visitNum) + ".cargo_data";
-        if (!fs::exists(fileName)) {
+        if (!fs::exists(fileName, er)) {
             missingCargoFiles.emplace_back(std::string(i->c_str()) + "_" + std::to_string(visitNum) + ".cargo_data");
         }
     }
@@ -175,20 +176,18 @@ list<string> Travel::getMissingCargoFiles() const {
 
 list<string> Travel::getUnusedFiles() const {
     list<string> unusedFiles = {};
-
-    for (auto &path:fs::directory_iterator(travelPath)) {
+    std::error_code er;
+    for (auto &path:fs::directory_iterator(travelPath, er)) {
         const string extension = path.path().filename().extension().string();
-        if (extension.compare(".cargo_data") == 0) {
+        if (extension == ".cargo_data") {
             if (!isFileInTravelRoute(path.path().stem().string())) {
                 unusedFiles.emplace_back(path.path().filename().string());
             }
         } else {
-            if (extension.compare(".route") != 0 && extension.compare(".ship_plan") != 0) {
+            if (extension != ".route" && extension != ".ship_plan") {
                 unusedFiles.emplace_back(path.path().filename().string());
             }
         }
-
-
     }
     return unusedFiles;
 }

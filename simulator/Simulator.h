@@ -31,7 +31,7 @@ class Simulator {
 
     void createAlgoXTravel();
 
-    void cleanFiles(list<string>& algoNames);
+    void cleanFiles(list<string> &algoNames);
 
     void printResults(unordered_map<string, unordered_map<string, int>> simResults);
 
@@ -42,16 +42,13 @@ public:
                                                                                             algoPath(algoPath),
                                                                                             outputPath(outputPath) {};
 
-//    list<Travel> &getTravels() { return this->travelList; };
-
     void run();
-
-//    void runWindows();
 
     int runOneTravel(Travel &travel, AbstractAlgorithm *algo, const string &fileName,
                      const string &errorFileName);
 
-    int initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError>& errorList, bool& correctAlgo);
+    int initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError> &errorList,
+                                bool &correctAlgo);
 
 };
 

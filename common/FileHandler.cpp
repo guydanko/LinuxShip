@@ -262,7 +262,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     bool toWrite = needToWrite(errorFile);
 
     /*could not open file*/
-    if (!inFile || fs::is_empty(fileName)) {
+    if (!inFile) {
         if (toWrite) {
             outFile
                     << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
@@ -492,14 +492,15 @@ FileHandler::printSimulatorResults(const string &filePath, list<string> &algoNam
 }
 
 void FileHandler::setUpErrorFiles(const string &outPath) {
+    std::error_code er;
     string errorPath;
-    if (!fs::exists(outPath)) {
-        errorPath = fs::current_path().string() + "/errors";
+    if (!fs::exists(outPath,er)) {
+        errorPath = fs::current_path(er).string() + "/errors";
     } else {
         errorPath = outPath + "/errors";
     }
-    fs::remove_all(errorPath);
-    fs::create_directories(errorPath);
+    fs::remove_all(errorPath,er);
+    fs::create_directories(errorPath,er);
 }
 
 string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *argv[], int argc) {
@@ -531,13 +532,13 @@ string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *
 
 bool FileHandler::canWriteinPath(const string &path) {
     ofstream tryToWrite(path + "/test");
-
+    std::error_code er;
     if (!tryToWrite) {
         return false;
     }
 
     tryToWrite.close();
-    fs::remove(path + "/test");
+    fs::remove(path + "/test",er);
     return true;
 }
 
