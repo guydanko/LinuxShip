@@ -1,7 +1,7 @@
 /* forget container on the port
  * return incorrect error code from get instructionForCargo
- * keep the second container if there are more than container with the same id in load list
- * load container with destination not in port or not current port*/
+ * keep the second container if there are more than one container with the same id in load list
+ * load container with destination not in port or current destination*/
 
 
 #include "../interfaces/AbstractAlgorithm.h"
