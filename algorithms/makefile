@@ -1,4 +1,4 @@
-COMP = g++-8.3.0
+COMP = g++-9.3.0
 COMMONDIR = ../common/
 
 SHARED_OBJS = _316294636_a.so _316294636_b.so IncorrectAlgorithm.so
