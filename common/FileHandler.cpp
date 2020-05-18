@@ -29,21 +29,21 @@ std::string trim(const std::string &s) {
     return rtrim(ltrim(s));
 }
 
-bool isLineEmpty(const std::string &s) {
-    for (size_t i = 0; i < s.length(); i++) {
-        if (!isspace(s[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
 bool isNumber(const string &s) {
     if (s.empty()) {
         return false;
     }
     for (unsigned int i = 0; i < s.length(); i++) {
         if (!isdigit(s[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool isLineEmpty(const std::string &s) {
+    for (size_t i = 0; i < s.length(); i++) {
+        if (!isspace(s[i])) {
             return false;
         }
     }
@@ -275,14 +275,17 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     string line, token;
     vector<string> svec;
     int lineNum = 1;
+    bool isRealFirstLine = false;
 
     while (getline(inFile, line)) {
         if (line[0] != '#' && !isLineEmpty(line)) {
+            isRealFirstLine = true;
             break;
         }
+        lineNum++;
     }
 
-    if (line[0] == '#' || isLineEmpty(line)) {
+    if (!isRealFirstLine) {
         if (toWrite) {
             outFile
                     << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
