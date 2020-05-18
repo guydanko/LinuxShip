@@ -148,7 +148,6 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     }
     inFile.close();
     outFile.close();
-    std::cout << "file container result: " << result << "\n";
     return result;
 }
 
@@ -240,7 +239,6 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
     inFile.close();
     outFile.close();
 
-    std::cout << "route file result: " << result << "\n";
     return result;
 
 }
@@ -371,7 +369,6 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     }
     inFile.close();
     outFile.close();
-    std::cout << "file ship map result: " << result << "\n";
     return result;
 }
 
