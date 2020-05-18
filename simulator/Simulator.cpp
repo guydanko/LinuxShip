@@ -62,7 +62,7 @@ void Simulator::createAlgoList() {
 
 void Simulator::createAlgoXTravel() {
     for (auto &p: fs::directory_iterator(this->travelPath)) {
-        buildTravel(p);
+        if (fs::is_directory(p)) { buildTravel(p); }
     }
     travelErrorsToFile(this->outputPath + "/errors");
     createAlgoList();
@@ -143,7 +143,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 catch (...) {
                     throwException = true;
                 }
-                if(!throwException){
+                if (!throwException) {
                     list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo);
                     sumCargoOperation += cargoOps.size();
                     simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
@@ -162,8 +162,8 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                                                           travel.getCurrentPort(), travel.getCurrentVisitNumber());
                     travel.goToNextPort();
                 }
-           }
-            if(!throwException){
+            }
+            if (!throwException) {
                 errorList = {};
                 SimulatorAlgoCheck::checkIfShipEmpty(travel.getShipMap(), errorList, correctAlgo);
                 SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());

@@ -148,6 +148,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     }
     inFile.close();
     outFile.close();
+    std::cout << "file container result: " << result << "\n";
     return result;
 }
 
@@ -187,10 +188,10 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
 
         //more or less than one symbol
         if (svec.size() != 1) {
+            result |= (1 << 6);
             if (toWrite) {
                 outFile << "travel route: bad line (" << lineNum << ") " << "format (ignored)\n";
             }
-            result |= (1 << 6);
             continue;
         }
 
@@ -198,44 +199,48 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
         if (Container::isPortValid(port)) {
             strToUpper(port);
             if (route.size() > 0 && route.back() == port) {
+                result |= (1 << 5);
                 if (toWrite) {
                     outFile << "travel route: a port appears twice (line: " << lineNum
                             << ") or more consecutively (ignored)\n";
                 }
-                result |= (1 << 5);
+
             } else {
                 route.push_back(port);
             }
         } else {
+            result |= (1 << 6);
             if (toWrite) {
                 outFile << "travel route: bad port symbol (line: " << lineNum
                         << " - ignored)\n";
             }
-            result |= (1 << 6);
         }
 
     }
+
+
     if (route.empty()) {
+        result |= (1 << 7);
         if (toWrite) {
             outFile
                     << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel) - file: "
                     << fileName << "\n";
         }
-        result |= (1 << 7);
     }
 
     if (route.size() == 1) {
+        result |= (1 << 8);
         if (toWrite) {
             outFile
                     << "travel route: travel error - file with only a single valid port (cannot run this travel) - file: "
                     << fileName << "\n";
         }
-        result |= (1 << 8);
     }
 
     inFile.close();
     outFile.close();
 
+    std::cout << "route file result: " << result << "\n";
     return result;
 
 }
@@ -319,12 +324,14 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
         }
 
         if (svec.size() != 3) {
+            result |= (1 << 2);
             if (toWrite) {
                 outFile << "ship plan: bad line (" << lineNum << ") format after first line\n";
             }
-            result |= (1 << 2);
             continue;
         }
+
+
         int actualFloors = stoi(svec[2]), row = stoi(svec[0]), col = stoi(svec[1]);
         if (actualFloors >= height) {
             if (toWrite) {
@@ -364,6 +371,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     }
     inFile.close();
     outFile.close();
+    std::cout << "file ship map result: " << result << "\n";
     return result;
 }
 
