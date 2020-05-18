@@ -161,8 +161,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
     if (!inFile) {
         if (toWrite) {
             outFile
-                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel) file:"
-                    << fileName << "\n";
+                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel)\n";
             outFile.close();
         }
         return (1 << 7);
@@ -222,8 +221,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
         result |= (1 << 7);
         if (toWrite) {
             outFile
-                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel) - file: "
-                    << fileName << "\n";
+                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel) - file\n";
         }
     }
 
@@ -231,8 +229,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
         result |= (1 << 8);
         if (toWrite) {
             outFile
-                    << "travel route: travel error - file with only a single valid port (cannot run this travel) - file: "
-                    << fileName << "\n";
+                    << "travel route: travel error - file with only a single valid port (cannot run this travel) - file\n";
         }
     }
 
@@ -269,8 +266,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     if (!inFile || fs::is_empty(fileName)) {
         if (toWrite) {
             outFile
-                    << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel) file - "
-                    << fileName << "\n";
+                    << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
             outFile.close();
         }
         return result | (1 << 3);
@@ -285,6 +281,16 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
             break;
         }
     }
+
+    if (line[0] == '#' || isLineEmpty(line)) {
+        if (toWrite) {
+            outFile
+                    << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
+            outFile.close();
+        }
+        return (1 << 3);
+    }
+
     stringstream sline(line);
     while (getline(sline, token, ',')) {
         trim(line);
@@ -304,7 +310,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     int height = stoi(svec[0]), rows = stoi(svec[1]), cols = stoi(svec[2]);
     *shipPtr = std::make_shared<ShipMap>(height, rows, cols);
     vector<vector<int>>
-            indexVector(rows, vector<int>(cols, 0));
+            indexVector(rows, vector<int>(cols, -1));
 
     while (getline(inFile, line)) {
         lineNum++;
@@ -348,7 +354,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
             result |= (1 << 1);
             continue;
         }
-        if (indexVector[row][col] != 0) {
+        if (indexVector[row][col] != -1) {
             if (indexVector[row][col] == actualFloors) {
                 if (toWrite) {
                     outFile << "ship plan: bad line (" << lineNum
@@ -360,8 +366,6 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
                         << ") appearance with different data (cannot run this travel)\n";
                 result |= (1 << 4);
             }
-
-            //something with result error?
         } else {
             indexVector[row][col] = actualFloors;
             (*(*shipPtr)).initShipMapContainer(height - actualFloors, row, col);

@@ -36,7 +36,7 @@ SimulatorError::simulatorErrorsToFile(const std::list<SimulatorError> &simErrors
     }
 
     if (!simErrors.empty()) {
-        outFile << "*************************************************************************************\n";
+        outFile << "===========================================================================================\n";
     }
 
     errorFile.close();
