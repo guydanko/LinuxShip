@@ -1,4 +1,7 @@
-//#include <dlfcn.h>
+#include <dlfcn.h>
+#include <fstream>
+
+using std::ofstream;
 #include "AlgorithmRegistrar.h"
 
 void AlgorithmRegistrar::DlCloser::operator()(void *dlhandle) const noexcept {
@@ -41,4 +44,29 @@ int AlgorithmRegistrar::loadAlgorithm(const char *path, const std::string &so_fi
 
     getInstance().setNameForLastAlgorithm(so_file_name_without_so_suffix);
     return ALGORITHM_REGISTERED_SUCCESSFULY;
+}
+
+void AlgorithmRegistrar::printAlgoRegistrationError(const string &fileName, const string &algoName,
+                                             int result) {
+
+    ofstream outfile;
+    outfile.open(fileName, std::ios::app);
+    if (!outfile) {
+        return;
+    }
+
+    switch (result) {
+        case AlgorithmRegistrar::RegistrationError::NO_ALGORITHM_REGISTERED: {
+            outfile << "Algorithm: " << algoName << " was not registered successfully\n";
+            break;
+        }
+        case AlgorithmRegistrar::RegistrationError::FILE_CANNOT_BE_LOADED: {
+            outfile << "Algorithm: " << algoName << ".so file cannot be loaded\n";
+            break;
+        }
+        default:
+            break;
+    }
+
+    outfile.close();
 }

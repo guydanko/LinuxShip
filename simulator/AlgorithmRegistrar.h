@@ -60,6 +60,9 @@ public:
 
     static AlgorithmRegistrar &getInstance();
 
+    static void printAlgoRegistrationError(const string &fileName, const string &algoName,
+                                           int result);
+
 };
 
 

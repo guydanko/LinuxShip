@@ -3,10 +3,8 @@
 #include <list>
 #include "../common/CargoOperation.h"
 #include "../common/Container.h"
-#include "../simulator/SimulatorError.h"
 #include <memory>
 #include <unordered_map>
-#include "../simulator/AlgorithmRegistrar.h"
 
 using std::list;
 using std::string;
@@ -46,8 +44,6 @@ public:
 
     static string setCommandMap(unordered_map<string, string> &flagMap, char *argv[], int argc);
 
-    static void printAlgoRegistrationError(const string &fileName, const string &algoName,
-                                           int result);
 
     static bool canWriteinPath(const string &path);
 

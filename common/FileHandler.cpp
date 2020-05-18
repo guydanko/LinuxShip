@@ -1,7 +1,6 @@
 #include "../common/FileHandler.h"
 #include <fstream>
 #include <iostream>
-#include "../simulator/SimulatorError.h"
 #include <unordered_map>
 #include <filesystem>
 
@@ -542,26 +541,3 @@ bool FileHandler::canWriteinPath(const string &path) {
     return true;
 }
 
-void FileHandler::printAlgoRegistrationError(const string &fileName, const string &algoName,
-                                             int result) {
-    ofstream outfile;
-    outfile.open(fileName, std::ios::app);
-    if (!outfile) {
-        return;
-    }
-
-    switch (result) {
-        case AlgorithmRegistrar::RegistrationError::NO_ALGORITHM_REGISTERED: {
-            outfile << "Algorithm: " << algoName << " was not registered successfully\n";
-            break;
-        }
-        case AlgorithmRegistrar::RegistrationError::FILE_CANNOT_BE_LOADED: {
-            outfile << "Algorithm: " << algoName << ".so file cannot be loaded\n";
-            break;
-        }
-        default:
-            break;
-    }
-
-    outfile.close();
-}

@@ -53,7 +53,7 @@ void Simulator::createAlgoList() {
         if (p.path().extension().compare(".so") == 0) {
             int result = AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(),
                                                                          p.path().stem().string());
-            FileHandler::printAlgoRegistrationError(outputPath + "/errors/algoRegistration.errors",
+            AlgorithmRegistrar::printAlgoRegistrationError(outputPath + "/errors/algoRegistration.errors",
                                                     p.path().stem().string(), result);
         }
     }
