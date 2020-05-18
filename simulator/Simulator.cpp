@@ -104,9 +104,7 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo,
                 SimErrorType::TRAVEL_INIT);
         correctAlgo = false;
     }
-
-
-    return algoInitError;
+     return algoInitError;
 }
 
 /* returns amount of operations in a travel algo pair*/
