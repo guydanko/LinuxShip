@@ -4,7 +4,7 @@ COMMONDIR = ../common/
 SHARED_OBJS = _316294636_a.so _316294636_b.so IncorrectAlgorithm.so
 OBJSCOMMON = CargoOperation.o  Container.o  ShipMap.o  MapIndex.o FileHandler.o
 OBJS = _316294636_a.o _316294636_b.o AbstractCommonAlgorithm.o IncorrectAlgorithm.o
-CPP_COMP_FLAG = -std=c++2a -lstdc++fs -Wall -Wextra -Werror -pedantic-errors -DNDEBUG -fPIC -fvisibility=hidden
+CPP_COMP_FLAG = -std=c++2a -Wall -Wextra -Werror -pedantic-errors -DNDEBUG -fPIC -fvisibility=hidden
 CPP_LINK_FLAG = -lstdc++fs -shared
 
 
