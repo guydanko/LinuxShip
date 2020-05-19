@@ -9,13 +9,13 @@
 #include "../common/CargoOperation.h"
 #include <memory>
 #include "../interfaces/AlgorithmRegistration.h"
-#include "AbstractCommonAlgorithm.h"
+#include "../algorithm/AbstractCommonAlgorithm.h"
 
 #ifndef LINUXSHIP_INNCORRECTALGORITHM_H
 #define LINUXSHIP_INNCORRECTALGORITHM_H
 
 
-#include "AbstractCommonAlgorithm.h"
+#include "../algorithm/AbstractCommonAlgorithm.h"
 
 class IncorrectAlgorithm : public AbstractCommonAlgorithm {
 
