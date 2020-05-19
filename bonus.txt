@@ -21,3 +21,11 @@ reports that the second of multiple ID containers was loaded and not the first.
 
 - The algorithm loads container with a destination that is the same as the current port, in first visit at AAAAA
 - The algorithm does not return the correct error code for these situations (2^10, 2^13)
+
+**********************************************************************
+In addition our algorithms protect themselves from incorrect simulator.
+Algorithms make sure that all three steps which needed for init the algorithm (readShipPlan, readShipRoute, setWeightBalanceCalculator) finish successfully.
+If a simulator choose to run getInstructionForCargo although the algorithm report error code which prevent run the travel, the algorithm only create empty file crane_instruction.
+
+how to compile
+with which travel
