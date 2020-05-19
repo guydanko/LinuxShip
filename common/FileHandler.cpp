@@ -11,7 +11,6 @@ using std::stringstream;
 using std::ofstream;
 namespace fs = std::filesystem;
 
-
 const std::string WHITESPACE = " \n\r\t\f\v";
 
 std::string ltrim(const std::string &s) {
@@ -112,9 +111,10 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
 
 
     while (getline(inFile, line)) {
-        trim(line);
         lineNum++;
-        if (line[0] == '#' || line.empty()) { continue; }
+        if (line[0] == '#' || line.empty()) {
+            continue;
+        }
         stringstream sline(line);
         vector<string> svec;
         string token;
@@ -324,7 +324,6 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
 
     stringstream sline(line);
     while (getline(sline, token, ',')) {
-        trim(line);
         token = trim(token);
         if (!isNumber(token)) {
             if (toWrite) {
