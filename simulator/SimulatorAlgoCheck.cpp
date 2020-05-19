@@ -385,7 +385,7 @@ void checkIfAllUnloaded(ShipMap *shipMap, const string &port, list<SimulatorErro
                                 if (portStillInRoute(route, cont->getDestination())) {
                                     errorList.emplace_back(
                                             "When loaded container with id - " + cont->getId() +
-                                            " there were more containers with the same id. Algorithm rejects the first container and chose another container to load. It might cause earlier error such as weight..",
+                                            " there were more than one container with the same id. Algorithm rejects the first container and chose another container to load. It might cause earlier error such as weight balance..",
                                             SimErrorType::GENERAL_PORT);
                                     doubleIdProblem = true;
                                     correctAlgo = false;

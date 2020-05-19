@@ -1,12 +1,12 @@
-/*Simulator class to run a simulation of cartesian loop of algorithms and travels*/
+/*Simulator class to run a simulation of cartesian loop of algorithm and travels*/
 #include "../interfaces/AbstractAlgorithm.h"
 #include "SimulatorError.h"
 #include "Travel.h"
 #include <filesystem>
 #include <iostream>
 #include <memory>
-//#include "../algorithms/_316294636_b.h"
-//#include "../algorithms/_316294636_a.h"
+//#include "../algorithm/_316294636_b.h"
+//#include "../algorithm/_316294636_a.h"
 
 namespace fs = std::filesystem;
 using std::pair;

@@ -21,9 +21,9 @@ int IncorrectAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadList, li
                 itr++;
             } else {
                 opList.emplace_front(AbstractAlgorithm::Action::REJECT, *itr, MapIndex());
+                findSecond[(*itr)->getId()]++;
                 itr = loadList.erase(itr);
             }
-            findSecond[(*itr)->getId()] +=1;
         } else {
             itr++;
         }
@@ -44,7 +44,8 @@ IncorrectAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadLis
                                             const string& currentPort) {
     int result=0;
     IncorrectAlgorithm::rejectIllagalContainer(loadList, opList);
-    if(currentPort==""){
+    //needed for compilation use this parameter for something
+    if(currentPort.empty()){
         result=2;
     }
     else{

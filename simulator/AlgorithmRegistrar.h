@@ -1,4 +1,4 @@
-//Registrar class to manage dynamic load of shared algorithms
+//Registrar class to manage dynamic load of shared algorithm
 #ifndef LINUXSHIP_ALGORITHMREGISTRAR_H
 #define LINUXSHIP_ALGORITHMREGISTRAR_H
 
