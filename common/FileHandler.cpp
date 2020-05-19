@@ -62,31 +62,6 @@ bool areNumbers(const std::string &s1, const std::string &s2, const std::string 
     return isNumber(s1) && isNumber(s2) && isNumber(s3);
 }
 
-bool isValidYIndex(const std::string &s) {
-    string yNum = s.substr(0, s.length() - 1);
-    yNum = trim(yNum);
-    return isNumber(yNum) && s.back() == '[';
-}
-
-bool isValidMoveYIndex(const std::string &s) {
-    string yNum = s.substr(0, s.length() - 1);
-    yNum = trim(yNum);
-    return isNumber(yNum) && s.back() == ']';
-}
-
-int getYIndex(const std::string &s) {
-    string yNum = s.substr(0, s.length() - 1);
-    yNum = trim(yNum);
-    return stoi(yNum);
-}
-
-int getYMoveIndex(const std::string &s) {
-    string yNum = s.substr(0, s.length() - 1);
-    yNum = trim(yNum);
-    return stoi(yNum);
-}
-
-
 int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Container>> &containerList,
                                      const string &errorFile, const string &portName) {
     int result = 0;
@@ -109,10 +84,9 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
     vector<string> tokens;
     string line;
 
-
     while (getline(inFile, line)) {
         lineNum++;
-        if (line[0] == '#' || line.empty()) {
+        if (line[0] == '#' || isLineEmpty(line)) {
             continue;
         }
         stringstream sline(line);
@@ -201,7 +175,6 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
         lineNum++;
         //skip line if it is whitespace or if its a note
         if (line[0] == '#' || isLineEmpty(line)) { continue; }
-
 
         stringstream sline(line);
         vector<string> svec;
@@ -428,7 +401,7 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
 
     while (getline(inFile, line)) {
         lineNum++;
-        if (line[0] == '#') { continue; }
+        if (line[0] == '#' || isLineEmpty(line)) { continue; }
         stringstream sline(line);
         vector<string> svec;
         string token;
@@ -466,15 +439,13 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
             case 'M':
                 if (svec.size() == 8) {
                     const string floor = svec[2], x = svec[3], y = svec[4], floorMove = svec[5], xMove = svec[6], yMove = svec[7];
-                    if (areNumbers(floor, x, floorMove) && isNumber(xMove) &&
-                        isValidMoveYIndex(yMove) && isValidYIndex(y)) {
-                        int yIndex = getYIndex(y), yMoveIndex = getYMoveIndex(yMove);
+                    if (areNumbers(floor, x, y) && areNumbers(floorMove, xMove, yMove)) {
                         action = AbstractAlgorithm::Action::MOVE;
                         ops.emplace_back(
                                 std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(floor), stoi(x),
-                                                                                        yIndex),
+                                                                                        stoi(y)),
                                                                  MapIndex(stoi(floorMove), stoi(xMove),
-                                                                          yMoveIndex)));
+                                                                          stoi(yMove))));
                     } else {
                         result = false;
                         outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
@@ -497,8 +468,9 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
                 if (svec.size() == 5 && areNumbers(svec[2], svec[3], svec[4])) {
                     action = AbstractAlgorithm::Action::UNLOAD;
                     ops.emplace_back(
-                            std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
-                                                                                    stoi(svec[4]))));
+                            std::make_shared<CargoOperation>(action, cont,
+                                                             MapIndex(stoi(svec[2]), stoi(svec[3]),
+                                                                      stoi(svec[4]))));
                 } else {
                     result = false;
                     outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
