@@ -65,25 +65,25 @@ bool areNumbers(const std::string &s1, const std::string &s2, const std::string 
 
 bool isValidYIndex(const std::string &s) {
     string yNum = s.substr(0, s.length() - 1);
-    trim(yNum);
-    return isNumber(yNum) && s[s.length() - 1] == '[';
+    yNum = trim(yNum);
+    return isNumber(yNum) && s.back() == '[';
 }
 
 bool isValidMoveYIndex(const std::string &s) {
     string yNum = s.substr(0, s.length() - 1);
-    trim(yNum);
-    return isNumber(yNum) && s[s.length() - 1] == ']';
+    yNum = trim(yNum);
+    return isNumber(yNum) && s.back() == ']';
 }
 
 int getYIndex(const std::string &s) {
     string yNum = s.substr(0, s.length() - 1);
-    trim(yNum);
+    yNum = trim(yNum);
     return stoi(yNum);
 }
 
 int getYMoveIndex(const std::string &s) {
     string yNum = s.substr(0, s.length() - 1);
-    trim(yNum);
+    yNum = trim(yNum);
     return stoi(yNum);
 }
 
@@ -467,8 +467,8 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
             case 'M':
                 if (svec.size() == 8) {
                     const string floor = svec[2], x = svec[3], y = svec[4], floorMove = svec[5], xMove = svec[6], yMove = svec[7];
-                    if (areNumbers(floor, x, floorMove) && isNumber(xMove) && isValidYIndex(y) &&
-                        isValidMoveYIndex(yMove)) {
+                    if (areNumbers(floor, x, floorMove) && isNumber(xMove) &&
+                        isValidMoveYIndex(yMove) && isValidYIndex(y)) {
                         int yIndex = getYIndex(y), yMoveIndex = getYMoveIndex(yMove);
                         action = AbstractAlgorithm::Action::MOVE;
                         ops.emplace_back(
@@ -513,7 +513,9 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
     }
 
     inFile.close();
-    if(!result){outFile << "===========================================================================================\n";}
+    if (!result) {
+        outFile << "===========================================================================================\n";
+    }
     if (toWrite) { outFile.close(); }
     return result;
 }

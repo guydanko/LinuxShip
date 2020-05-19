@@ -23,7 +23,10 @@ int main(int argc, char *argv[]) {
                                                                : flagMap["-algorithm_path"];
 
     if (!fs::exists(outPath, er)) {
-        fs::create_directories(outPath, er);
+        if(!fs::create_directories(outPath, er)){
+            errorString += "Error: could not create output directory, using current directory for output\n";
+            outPath = fs::current_path(er).string();
+        }
     } else {
         if (!FileHandler::canWriteinPath(outPath)) {
             errorString += "Fatal Error: user has no write permission to output path\n";
