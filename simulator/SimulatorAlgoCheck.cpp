@@ -94,8 +94,8 @@ int findRejectToDestNotInRoute(list<shared_ptr<Container>> &loadList, list<share
         if (itrFind == portNumberMap.end() || (*contItr)->getDestination() == route.front()) {
             result = 1 << 13;
             if ((*contItr)->getDestination() == route.front()) {
-                errorList.emplace_front("In cargo data file, container with id - " + (*contItr)->getId() +
-                                        " has current port destination, illegal to load container",
+                errorList.emplace_front("container with id - " + (*contItr)->getId() +
+                                        " has same destination as the current port - illegal to load container",
                                         SimErrorType::GENERAL_PORT);
             }
             bool notFound = true;
