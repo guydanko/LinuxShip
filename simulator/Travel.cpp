@@ -89,16 +89,6 @@ Travel::Travel(const Travel &other) {
     this->travelError = other.travelError;
 }
 
-//bool does_file_exist(const string &fileName) {
-//    ifstream inFile(fileName);
-//    if (inFile) {
-//        inFile.close();
-//        return true;
-//    } else {
-//        return false;
-//    }
-//}
-
 tuple<int, int> Travel::getVisits(const string &port) {
     auto it = portCounter.find(port);
     return it->second;

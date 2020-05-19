@@ -39,6 +39,19 @@ bool isNumber(const string &s) {
     return true;
 }
 
+bool isPositiveNumber(const string &s) {
+    if (s.empty()) {
+        return false;
+    }
+    for (unsigned int i = 0; i < s.length(); i++) {
+        if (!isdigit(s[i])) {
+            return false;
+        }
+    }
+    if (stoi(s) <= 0) { return false; }
+    return true;
+}
+
 bool isLineEmpty(const std::string &s) {
     for (size_t i = 0; i < s.length(); i++) {
         if (!isspace(s[i])) {
@@ -116,7 +129,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
 
         string errorMessage = " ";
 
-        if (weight.empty() || !isNumber(weight)) {
+        if (weight.empty() || !isPositiveNumber(weight)) {
             errorMessage += "- missing or bad weight ";
             result |= (1 << 12);
         }
@@ -222,7 +235,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
         result |= (1 << 7);
         if (toWrite) {
             outFile
-                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel) - file\n";
+                    << "travel route: travel error - empty file or file cannot be read altogether (cannot run this travel)\n";
         }
     }
 
@@ -230,7 +243,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
         result |= (1 << 8);
         if (toWrite) {
             outFile
-                    << "travel route: travel error - file with only a single valid port (cannot run this travel) - file\n";
+                    << "travel route: travel error - file with only a single valid port (cannot run this travel)\n";
         }
     }
 

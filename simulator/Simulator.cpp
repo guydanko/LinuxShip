@@ -112,7 +112,7 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo,
     return algoInitError;
 }
 
-/* returns amount of operations in a travel algo pair*/
+/* returns amount of operations in a travel-algo pair*/
 int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
     int algoInitError = 0;
@@ -136,7 +136,6 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 errorList = {};
                 list<shared_ptr<Container>> loadList = {};
                 simulationInstError |= travel.getContainerList(errorFileName, loadList);
-                //path to read container list and write cargo op
                 const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
                 int algoGetInsError = 0;
@@ -148,7 +147,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 }
                 if (!throwException) {
                     list<shared_ptr<CargoOperation>> cargoOps = {};
-                    FileHandler::createCargoOpsFromFile(writeTo,cargoOps,errorFileName);
+                    FileHandler::createCargoOpsFromFile(writeTo, cargoOps, errorFileName);
                     sumCargoOperation += cargoOps.size();
                     simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                          cargoOps, errorList,
@@ -251,21 +250,4 @@ void Simulator::run() {
     printResults(algoOperationsMap);
     deleteEmptyFiles();
 }
-
-//void Simulator::runWindows() {
-//    createAlgoXTravel();
-//    unordered_map<string, unordered_map<string, int>> algoOperationsMap;
-//    for (auto i = this->algoList.begin(); i != this->algoList.end(); ++i) {
-//        for (Travel travel: travelList) {
-//            string fileName = this->outputPath + "/" + "algo" + "_" + travel.getTravelName();
-//            fs::create_directory(fileName);
-//            string errorFile = this->outputPath + "/errors/" + "algo" + "_" + travel.getTravelName() + ".errors";
-//            int opAmount = runOneTravel(travel, i->get(), fileName, errorFile);
-//            algoOperationsMap["algo"][travel.getTravelName()] = opAmount;
-//        }
-//    }
-//    printResults(algoOperationsMap);
-//    deleteEmptyFiles();
-//}
-
 

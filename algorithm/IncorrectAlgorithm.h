@@ -1,8 +1,8 @@
-/* forget container on the port
- * return incorrect error code from get instructionForCargo
- * keep the second container if there are more than one container with the same id in load list
- * load container with destination not in port or current destination*/
-
+//IncorrectAlgorithm - that consist of multiple errors:
+//1) Can unload containers in wrong destination port
+//2) Returns incorrect error code from get instructionForCargo
+//3) Loads the second container (and not the first!) if there are more than one container with the same id in load list
+//4) Loads containers with destination that does not appear in ship route, or that its ports destination is the current port
 
 #include "../interfaces/AbstractAlgorithm.h"
 #include "../common/MapIndex.h"

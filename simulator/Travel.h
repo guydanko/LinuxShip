@@ -29,7 +29,6 @@ public:
 
     list<string>& getRoute() { return this->route; }
 
-
     string getTravelName() const;
 
     int getContainerList(const string &errorFile, list<shared_ptr<Container>> &contList);
@@ -45,8 +44,6 @@ public:
     int getCurrentVisitNumber() { return get<0>(this->portCounter.find(this->route.front())->second); }
 
     void generalTravelErrorsToFile(const string &fileName) const;
-
-   // const string &getTravelPath()const { return this->travelPath; }
 
     const string getNextCargoFilePath();
 

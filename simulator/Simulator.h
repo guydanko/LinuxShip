@@ -5,8 +5,6 @@
 #include <filesystem>
 #include <iostream>
 #include <memory>
-//#include "../algorithm/_316294636_b.h"
-//#include "../algorithm/_316294636_a.h"
 
 namespace fs = std::filesystem;
 using std::pair;
@@ -41,7 +39,6 @@ public:
     Simulator(const string &travelPath, const string &algoPath, const string &outputPath) : travelPath(travelPath),
                                                                                             algoPath(algoPath),
                                                                                             outputPath(outputPath) {};
-
     void run();
 
     int runOneTravel(Travel &travel, AbstractAlgorithm *algo, const string &fileName,

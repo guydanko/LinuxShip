@@ -310,8 +310,6 @@ bool SimulatorAlgoCheck::compareErrorAlgoSimulationInit(int algoInitError, int s
     if (!errorList.empty()) {
         errorList.emplace_front("Errors reported by the algorithm while reading ship_plan and route:",
                                 SimErrorType::TRAVEL_INIT);
-        errorList.emplace_back("===========================================================================================",
-                               SimErrorType::TRAVEL_INIT);
     }
     return canRun;
 }

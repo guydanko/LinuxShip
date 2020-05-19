@@ -1,0 +1,23 @@
+- The simulation accumulates errors and does not stop after first error received
+- The simulation validates the correctness of the error code returned by the algorithm for every stage
+- The simulation prints the errors in the <algo Name>_<travel_Name>.errors file all errors that it found (all illegal algo operations)
+
+To show the simulation ability we provided:
+IncorrectAlgorithm - that consist of multiple errors:
+1) Can unload containers in wrong destination port
+2) Returns incorrect error code from get instructionForCargo
+3) Loads the second container (and not the first!) if there are more than one container with the same id in load list
+4) Loads containers with destination that does not appear in ship route, or that its ports destination is the current port
+
+The simulation validates all types of errors, and not only these specific errors that IncorrectAlgorithm performs
+We provided two different travels to demonstrate the simulators abilities:
+
+Travel1: The algorithm unloads container in port BBBBB when it is supposed to be unloaded in CCCCC
+
+Travel2:
+- In first port there are two containers with the same ID waiting with different destinations, the first with destination BBBBB
+and the second with destination CCCCC. The algorithm loads the second container, and unloads it correctly at CCCCC, and the simulation
+reports that the second of multiple ID containers was loaded and not the first.
+
+- The algorithm loads container with a destination that is the same as the current port, in first visit at AAAAA
+- The algorithm does not return the correct error code for these situations (2^10, 2^13)
