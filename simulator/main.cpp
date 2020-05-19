@@ -21,11 +21,17 @@ int main(int argc, char *argv[]) {
     string outPath = flagMap["-output"].empty() ? fs::current_path(er).string() : flagMap["-output"];
     const string algoPath = flagMap["-algorithm_path"].empty() ? fs::current_path(er).string()
                                                                : flagMap["-algorithm_path"];
-    if(!FileHandler::canWriteinPath(outPath)){
-        errorString += "Fatal Error: user has no write permission to output path\n";
-        toRunSimulator = false;
-        outPath = fs::current_path(er).string();
+
+    if (!fs::exists(outPath, er)) {
+        fs::create_directories(outPath, er);
+    } else {
+        if (!FileHandler::canWriteinPath(outPath)) {
+            errorString += "Fatal Error: user has no write permission to output path\n";
+            toRunSimulator = false;
+            outPath = fs::current_path(er).string();
+        }
     }
+
 
     FileHandler::setUpErrorFiles(outPath);
     const string errorFilePath = outPath + "/errors/command.errors";
@@ -37,15 +43,15 @@ int main(int argc, char *argv[]) {
     if (travelPath.empty()) {
         errorFile << "Fatal error: program must receive travel path\n";
         toRunSimulator = false;
-    } else if (!fs::exists(travelPath,er)) {
+    } else if (!fs::exists(travelPath, er)) {
         errorFile << "Fatal error: travelPath does not exist\n";
         toRunSimulator = false;
     }
-    if (!fs::exists(algoPath,er)) {
+    if (!fs::exists(algoPath, er)) {
         errorFile << "Fatal error: algorithm path does not exist\n";
         toRunSimulator = false;
     }
-    if (!fs::exists(outPath,er)) {
+    if (!fs::exists(outPath, er)) {
         errorFile << "Error: output path does not exist\n";
     }
 

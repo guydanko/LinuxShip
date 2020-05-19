@@ -13,7 +13,7 @@ string getShipPlanPath(const fs::path &path) {
     std::error_code er;
     int planFiles = 0;
     string fileName;
-    for (auto &p: fs::directory_iterator(path,er)) {
+    for (auto &p: fs::directory_iterator(path, er)) {
         if (p.path().filename().extension().string() == ".ship_plan") {
             fileName = p.path().string();
             planFiles++;
@@ -26,7 +26,7 @@ string getRouteFilePath(const fs::path &path) {
     int routeFiles = 0;
     std::error_code er;
     string fileName;
-    for (auto &p: fs::directory_iterator(path,er)) {
+    for (auto &p: fs::directory_iterator(path, er)) {
         if (p.path().filename().extension().string() == ".route") {
             fileName = p.path().string();
             routeFiles++;
@@ -45,20 +45,21 @@ void Simulator::cleanFiles(list<string> &algoNames) {
     std::error_code er;
     for (auto &algoName : algoNames) {
         for (Travel travel: travelList) {
-            fs::remove_all(this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions",er);
+            fs::remove_all(this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions",
+                           er);
         }
     }
-    fs::remove(this->outputPath + "/simulation.results",er);
+    fs::remove(this->outputPath + "/simulation.results", er);
 }
 
 void Simulator::createAlgoList() {
     std::error_code er;
-    for (auto &p: fs::directory_iterator(this->algoPath,er)) {
-        if (p.path().extension() == ".so") {
+    for (auto &p: fs::directory_iterator(this->algoPath, er)) {
+        if (p.path().extension().string() == ".so") {
             int result = AlgorithmRegistrar::getInstance().loadAlgorithm(p.path().string().c_str(),
                                                                          p.path().stem().string());
             AlgorithmRegistrar::printAlgoRegistrationError(outputPath + "/errors/algoRegistration.errors",
-                                                    p.path().stem().string(), result);
+                                                           p.path().stem().string(), result);
         }
     }
     this->algoList = AlgorithmRegistrar::getInstance().getAlgorithms();
@@ -66,8 +67,8 @@ void Simulator::createAlgoList() {
 
 void Simulator::createAlgoXTravel() {
     std::error_code er;
-    for (auto &p: fs::directory_iterator(this->travelPath,er)) {
-        if (fs::is_directory(p,er)) { buildTravel(p); }
+    for (auto &p: fs::directory_iterator(this->travelPath, er)) {
+        if (fs::is_directory(p, er)) { buildTravel(p); }
     }
     travelErrorsToFile(this->outputPath + "/errors");
     createAlgoList();
@@ -109,7 +110,7 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo,
                 SimErrorType::TRAVEL_INIT);
         correctAlgo = false;
     }
-     return algoInitError;
+    return algoInitError;
 }
 
 /* returns amount of operations in a travel algo pair*/
@@ -147,7 +148,8 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                     throwException = true;
                 }
                 if (!throwException) {
-                    list<shared_ptr<CargoOperation>> cargoOps = FileHandler::createCargoOpsFromFile(writeTo);
+                    list<shared_ptr<CargoOperation>> cargoOps = {};
+                    FileHandler::createCargoOpsFromFile(writeTo,cargoOps,errorFileName);
                     sumCargoOperation += cargoOps.size();
                     simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                          cargoOps, errorList,
@@ -184,18 +186,18 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
 
 void Simulator::deleteEmptyFiles() {
     std::error_code er;
-    for (auto &simFiles: fs::directory_iterator(this->outputPath + "/errors",er)) {
+    for (auto &simFiles: fs::directory_iterator(this->outputPath + "/errors", er)) {
         const string file = simFiles.path().string();
-        if (fs::file_size(simFiles,er) == 0) {
-            fs::remove(simFiles,er);
+        if (fs::file_size(simFiles, er) == 0) {
+            fs::remove(simFiles, er);
         }
     }
-    if (fs::is_empty(this->outputPath + "/errors",er)) {
-        fs::remove_all(this->outputPath + "/errors",er);
+    if (fs::is_empty(this->outputPath + "/errors", er)) {
+        fs::remove_all(this->outputPath + "/errors", er);
     }
-    if (fs::exists(this->outputPath + "/simulation.results",er) &&
-        fs::is_empty(this->outputPath + "/simulation.results",er)) {
-        fs::remove_all(this->outputPath + "/simulation.results",er);
+    if (fs::exists(this->outputPath + "/simulation.results", er) &&
+        fs::is_empty(this->outputPath + "/simulation.results", er)) {
+        fs::remove_all(this->outputPath + "/simulation.results", er);
     }
 }
 
@@ -241,7 +243,7 @@ void Simulator::run() {
         currentAlgoName++;
         for (Travel travel: travelList) {
             string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
-            fs::create_directory(fileName,er);
+            fs::create_directory(fileName, er);
             string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
             int opAmount = runOneTravel(travel, pAlgo.get(), fileName, errorFile);
             algoOperationsMap[algoName][travel.getTravelName()] = opAmount;

@@ -28,8 +28,8 @@ public:
     static int
     createShipMapFromFile(const string &fileName, shared_ptr<shared_ptr<ShipMap>> ship, const string &errorFile = "");
 
-    static list<shared_ptr<CargoOperation>>
-    createCargoOpsFromFile(const string &fileName);
+    static bool
+    createCargoOpsFromFile(const string &fileName, list<shared_ptr<CargoOperation>>& ops, const string& errorFile);
 
     static void operationsToFile(list<CargoOperation> &operations, const string &fileName);
 
@@ -43,7 +43,6 @@ public:
     static void setUpErrorFiles(const string &outputPath);
 
     static string setCommandMap(unordered_map<string, string> &flagMap, char *argv[], int argc);
-
 
     static bool canWriteinPath(const string &path);
 

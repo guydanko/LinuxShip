@@ -12,7 +12,7 @@ using std::ofstream;
 namespace fs = std::filesystem;
 
 
-const std::string WHITESPACE = " \n\r\t\f\v ";
+const std::string WHITESPACE = " \n\r\t\f\v";
 
 std::string ltrim(const std::string &s) {
     size_t start = s.find_first_not_of(WHITESPACE);
@@ -59,12 +59,41 @@ bool needToWrite(const string &fileName) {
     return !fileName.empty();
 }
 
+bool areNumbers(const std::string &s1, const std::string &s2, const std::string &s3) {
+    return isNumber(s1) && isNumber(s2) && isNumber(s3);
+}
+
+bool isValidYIndex(const std::string &s) {
+    string yNum = s.substr(0, s.length() - 1);
+    trim(yNum);
+    return isNumber(yNum) && s[s.length() - 1] == '[';
+}
+
+bool isValidMoveYIndex(const std::string &s) {
+    string yNum = s.substr(0, s.length() - 1);
+    trim(yNum);
+    return isNumber(yNum) && s[s.length() - 1] == ']';
+}
+
+int getYIndex(const std::string &s) {
+    string yNum = s.substr(0, s.length() - 1);
+    trim(yNum);
+    return stoi(yNum);
+}
+
+int getYMoveIndex(const std::string &s) {
+    string yNum = s.substr(0, s.length() - 1);
+    trim(yNum);
+    return stoi(yNum);
+}
+
+
 int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Container>> &containerList,
                                      const string &errorFile, const string &portName) {
     int result = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
-    bool toWrite = needToWrite(errorFile);
+    bool toWrite = needToWrite(errorFile) && outFile;
     string port = portName.empty() ? "" : portName + ": ";
 
     /*could not open file*/
@@ -146,7 +175,7 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
         }
     }
     inFile.close();
-    outFile.close();
+    if (toWrite) { outFile.close(); }
     return result;
 }
 
@@ -154,7 +183,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
     int result = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
-    bool toWrite = needToWrite(errorFile);
+    bool toWrite = needToWrite(errorFile) && outFile;
 
     /*could not open file*/
     if (!inFile) {
@@ -233,7 +262,7 @@ int FileHandler::fileToRouteList(const string &fileName, list<string> &route, co
     }
 
     inFile.close();
-    outFile.close();
+    if (toWrite) { outFile.close(); }
 
     return result;
 
@@ -259,7 +288,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     int result = 0;
     ifstream inFile(fileName);
     ofstream outFile(errorFile, std::ios::app);
-    bool toWrite = needToWrite(errorFile);
+    bool toWrite = needToWrite(errorFile) && outFile;
 
     /*could not open file*/
     if (!inFile) {
@@ -374,22 +403,32 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
         }
     }
     inFile.close();
-    outFile.close();
+    if (toWrite) { outFile.close(); }
     return result;
 }
 
-list<shared_ptr<CargoOperation>>
-FileHandler::createCargoOpsFromFile(const string &fileName) {
-    list<shared_ptr<CargoOperation>> ops = {};
+
+bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<CargoOperation>> &ops,
+                                         const string &errorFile) {
+    bool result = true;
     ifstream inFile(fileName);
+    ofstream outFile(errorFile, std::ios::app);
+    bool toWrite = needToWrite(errorFile) && outFile;
 
     /*could not open file*/
     if (!inFile) {
-        return ops;
+        if (toWrite) {
+            outFile << "Could not open operations file: " << fileName << "\n";
+            outFile.close();
+        }
+        return false;
     }
+
     string line;
+    int lineNum = 0;
 
     while (getline(inFile, line)) {
+        lineNum++;
         if (line[0] == '#') { continue; }
         stringstream sline(line);
         vector<string> svec;
@@ -399,40 +438,88 @@ FileHandler::createCargoOpsFromFile(const string &fileName) {
             token = trim(token);
             svec.push_back(token);
         }
+
+        if (svec.size() <= 1 || svec[0].size() != 1) {
+            if (toWrite) {
+                outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+            }
+            result = false;
+            continue;
+        }
+
         AbstractAlgorithm::Action action;
         shared_ptr<Container> cont =
                 svec.size() > 1 ? std::make_shared<Container>(0, "", svec[1]) : std::make_shared<Container>(0, "", "");
 
+
         switch (svec[0].c_str()[0]) {
             case 'L':
-                action = AbstractAlgorithm::Action::LOAD;
-                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
-                                                                                         stoi(svec[4]))));
+                if (svec.size() == 5 && areNumbers(svec[2], svec[3], svec[4])) {
+                    action = AbstractAlgorithm::Action::LOAD;
+                    ops.emplace_back(
+                            std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
+                                                                                    stoi(svec[4]))));
+                } else {
+                    result = false;
+                    outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+                }
                 break;
             case 'M':
-                action = AbstractAlgorithm::Action::MOVE;
-                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
-                                                                                         int(svec[4].c_str()[0]) - 48),
-                                                                  MapIndex(stoi(svec[5]), stoi(svec[6]),
-                                                                           int(svec[7].c_str()[0]) - 48)));
+                if (svec.size() == 8) {
+                    const string floor = svec[2], x = svec[3], y = svec[4], floorMove = svec[5], xMove = svec[6], yMove = svec[7];
+                    if (areNumbers(floor, x, floorMove) && isNumber(xMove) && isValidYIndex(y) &&
+                        isValidMoveYIndex(yMove)) {
+                        int yIndex = getYIndex(y), yMoveIndex = getYMoveIndex(yMove);
+                        action = AbstractAlgorithm::Action::MOVE;
+                        ops.emplace_back(
+                                std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(floor), stoi(x),
+                                                                                        yIndex),
+                                                                 MapIndex(stoi(floorMove), stoi(xMove),
+                                                                          yMoveIndex)));
+                    } else {
+                        result = false;
+                        outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+                    }
+                } else {
+                    result = false;
+                    outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+                }
                 break;
             case 'R':
-                action = AbstractAlgorithm::Action::REJECT;
-                ops.emplace_back(std::make_shared<CargoOperation>(action, cont));
+                if (svec.size() == 2) {
+                    action = AbstractAlgorithm::Action::REJECT;
+                    ops.emplace_back(std::make_shared<CargoOperation>(action, cont));
+                } else {
+                    result = false;
+                    outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+                }
                 break;
             case 'U':
-                action = AbstractAlgorithm::Action::UNLOAD;
-                ops.emplace_back(std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
-                                                                                         stoi(svec[4]))));
+                if (svec.size() == 5 && areNumbers(svec[2], svec[3], svec[4])) {
+                    action = AbstractAlgorithm::Action::UNLOAD;
+                    ops.emplace_back(
+                            std::make_shared<CargoOperation>(action, cont, MapIndex(stoi(svec[2]), stoi(svec[3]),
+                                                                                    stoi(svec[4]))));
+                } else {
+                    result = false;
+                    outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+                }
+                break;
+            default:
+                result = false;
+                outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
                 break;
         }
     }
 
     inFile.close();
-    return ops;
+    if(!result){outFile << "===========================================================================================\n";}
+    if (toWrite) { outFile.close(); }
+    return result;
 }
 
-void FileHandler::reportPlanRouteErrors(const string &shipPlanPath, const string &routePath, const string &errorFile) {
+void
+FileHandler::reportPlanRouteErrors(const string &shipPlanPath, const string &routePath, const string &errorFile) {
     ofstream outFile(errorFile);
     if (!outFile) {
         return;
@@ -494,13 +581,13 @@ FileHandler::printSimulatorResults(const string &filePath, list<string> &algoNam
 void FileHandler::setUpErrorFiles(const string &outPath) {
     std::error_code er;
     string errorPath;
-    if (!fs::exists(outPath,er)) {
+    if (!fs::exists(outPath, er)) {
         errorPath = fs::current_path(er).string() + "/errors";
     } else {
         errorPath = outPath + "/errors";
     }
-    fs::remove_all(errorPath,er);
-    fs::create_directories(errorPath,er);
+    fs::remove_all(errorPath, er);
+    fs::create_directories(errorPath, er);
 }
 
 string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *argv[], int argc) {
@@ -538,7 +625,7 @@ bool FileHandler::canWriteinPath(const string &path) {
     }
 
     tryToWrite.close();
-    fs::remove(path + "/test",er);
+    fs::remove(path + "/test", er);
     return true;
 }
 

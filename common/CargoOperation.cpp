@@ -16,7 +16,7 @@ ostream& operator<<(ostream& os, const CargoOperation& cargoOperation){
             type = "U";
             break;
     }
-    os << type << "," << cargoOperation.container->getId() << "," << cargoOperation.index.getHeight() << "," << cargoOperation.index.getRow() << "," << cargoOperation.index.getCol();
+    os << type << "," << cargoOperation.container->getId() << ","   << cargoOperation.index.getHeight() << "," << cargoOperation.index.getRow() << "," << cargoOperation.index.getCol();
     if(cargoOperation.operation == AbstractAlgorithm::Action::MOVE){
         os << " [," << cargoOperation.moveIndex.getHeight() << "," << cargoOperation.moveIndex.getRow() << "," << cargoOperation.moveIndex.getCol() << "]";
     }
