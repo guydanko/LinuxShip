@@ -1,7 +1,3 @@
-#include <dlfcn.h>
-#include <fstream>
-
-using std::ofstream;
 #include "AlgorithmRegistrar.h"
 
 void AlgorithmRegistrar::DlCloser::operator()(void *dlhandle) const noexcept {

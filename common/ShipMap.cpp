@@ -1,6 +1,5 @@
 #include "ShipMap.h"
 
-
 ShipMap::ShipMap(int height, int rows, int cols) : height(height), rows(rows), cols(cols) {
     imaginaryContainer = std::make_shared<Container>();
     shipMapContainer.resize(height);

@@ -22,10 +22,11 @@ reports that the second of multiple ID containers was loaded and not the first.
 - The algorithm loads container with a destination that is the same as the current port, in first visit at AAAAA
 - The algorithm does not return the correct error code for these situations (2^10, 2^13)
 
-**********************************************************************
-In addition our algorithms protect themselves from incorrect simulator.
-Algorithms make sure that all three steps which needed for init the algorithm (readShipPlan, readShipRoute, setWeightBalanceCalculator) finish successfully.
-If a simulator choose to run getInstructionForCargo although the algorithm report error code which prevent run the travel, the algorithm only create empty file crane_instruction.
+======================================================================================================================================
+In addition our algorithms protect themselves from an incorrect simulator.
+Algorithms make sure that all three steps needed to init the algorithm (readShipPlan, readShipRoute, setWeightBalanceCalculator) finish successfully.
+If a simulator chooses to run getInstructionForCargo although the algorithm reports error code that prevent the run of the travel, the algorithm only creates empty file crane_instructions.
 
-how to compile
-with which travel
+How to compile IncorrectAlgorithm:
+- In the zip of our project, we created a directory bonus-algorithm with another makefile. The make will create an extra IncorrectAlgorithm.so file
+- This algorithm can be run with any travel files, to see our examples please run our provided Travels directory.

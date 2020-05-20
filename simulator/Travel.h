@@ -2,15 +2,12 @@
 #ifndef SHIPGIT_TRAVEL_H
 #define SHIPGIT_TRAVEL_H
 
-#include <unordered_map>
-#include <iostream>
 #include "../common/Container.h"
 #include "../common/ShipMap.h"
+#include "../common/FileHandler.h"
 
 using std::tuple;
-using std::string;
-using std::unordered_map;
-using std::list;
+using std::make_tuple;
 using std::get;
 
 class Travel {

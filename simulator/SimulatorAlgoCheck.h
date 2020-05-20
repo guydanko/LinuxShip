@@ -1,11 +1,15 @@
 //Class to check that algorithm runs correctly
+#include "../interfaces/AbstractAlgorithm.h"
+#include "../interfaces/WeightBalanceCalculator.h"
 #include "SimulatorError.h"
 #include "Travel.h"
+#include <map>
+
+using std::map;
+using std::list;
 
 #ifndef LINUXSHIP_SIMULATORALGOCHECK_H
 #define LINUXSHIP_SIMULATORALGOCHECK_H
-
-using std::list;
 
 class SimulatorAlgoCheck{
 public:

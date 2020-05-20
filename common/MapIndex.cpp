@@ -1,4 +1,3 @@
-
 #include "MapIndex.h"
 
  MapIndex MapIndex::isPlaceToMove(MapIndex currentIndex, ShipMap* shipMap ){

@@ -1,5 +1,6 @@
 /*Data struct to represent a container*/
 #include <string>
+#include <cmath>
 using  std::string ;
 
 #ifndef SHIPGIT_CONTAINER_H

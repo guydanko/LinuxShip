@@ -1,6 +1,5 @@
 #include "_316294636_a.h"
 #include <map>
-#include "../common/FileHandler.h"
 
 using std::map;
 REGISTER_ALGORITHM (_316294636_a)

@@ -1,15 +1,20 @@
 /*class that handles input and output of different data objects to files and vice versa*/
-#include <string>
 #include <list>
 #include "../common/CargoOperation.h"
 #include "../common/Container.h"
 #include <memory>
 #include <unordered_map>
+#include <fstream>
+#include <iostream>
+#include <filesystem>
 
 using std::list;
-using std::string;
 using std::shared_ptr;
 using std::unordered_map;
+using std::ifstream;
+using std::stringstream;
+using std::ofstream;
+namespace fs = std::filesystem;
 
 #ifndef SHIPGIT_FILEHANDLER_H
 #define SHIPGIT_FILEHANDLER_H

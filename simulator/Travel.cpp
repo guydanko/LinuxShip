@@ -1,17 +1,4 @@
 #include "Travel.h"
-#include "../common/FileHandler.h"
-#include <fstream>
-#include <sstream>
-#include <filesystem>
-#include <string>
-
-namespace fs = std::filesystem;
-using std::cerr;
-using std::make_tuple;
-using std::ifstream;
-using std::__cxx11::to_string;
-using std::stringstream;
-using std::ofstream;
 
 bool Travel::isTravelErrorLegal(int errorCode) {
     return !(errorCode & (1 << 3) || errorCode & (1 << 4) || errorCode & (1 << 7) ||
@@ -115,7 +102,7 @@ int Travel::getContainerList(const string &errorFile, list<shared_ptr<Container>
     tuple<int, int> visits = getVisits(currentPort);
     int visitNum = get<0>(visits);
 
-    string fileName = travelPath + "/" + currentPort + "_" + to_string(visitNum) + ".cargo_data";
+    string fileName = travelPath + "/" + currentPort + "_" + std::to_string(visitNum) + ".cargo_data";
     if (this->route.size() == 1) {
         int result = FileHandler::fileToContainerList(fileName, checkList);
         /*no file for last port - OK*/
@@ -155,7 +142,7 @@ list<string> Travel::getMissingCargoFiles() const {
             continue;
         }
         int visitNum = get<0>(copyMap.find(i->c_str())->second) += 1;
-        string fileName = travelPath + "/" + i->c_str() + "_" + to_string(visitNum) + ".cargo_data";
+        string fileName = travelPath + "/" + i->c_str() + "_" + std::to_string(visitNum) + ".cargo_data";
         if (!fs::exists(fileName, er)) {
             missingCargoFiles.emplace_back(std::string(i->c_str()) + "_" + std::to_string(visitNum) + ".cargo_data");
         }
@@ -208,5 +195,5 @@ const string Travel::getNextCargoFilePath() {
     tuple<int, int> visits = getVisits(currentPort);
     int visitNum = get<0>(visits);
 
-    return travelPath + "/" + currentPort + "_" + to_string(visitNum) + ".cargo_data";
+    return travelPath + "/" + currentPort + "_" + std::to_string(visitNum) + ".cargo_data";
 }

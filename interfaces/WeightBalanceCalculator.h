@@ -3,7 +3,6 @@
 #ifndef SHIPGIT_WEIGHTBALANCECALCULATOR_H
 #define SHIPGIT_WEIGHTBALANCECALCULATOR_H
 
-
 // WeightBalanceCalculator.h
 
 #pragma once

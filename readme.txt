@@ -28,3 +28,4 @@ so for this travel algo a is the winner
 
 Travel2 - mainly provided to show the error handling mechanism that we wrote, more details given in the bonus.txt file
 
+Please note that we also provided a bonus-algorithm directory and a bonus.txt with more details.

@@ -1,10 +1,6 @@
 #include "_316294636_b.h"
-#include <map>
-#include "../common/FileHandler.h"
 
-using std::map;
 REGISTER_ALGORITHM (_316294636_b)
-
 
 void
 _316294636_b::moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>> &rememberLoadAgain,

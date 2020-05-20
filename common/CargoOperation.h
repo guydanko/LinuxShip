@@ -2,12 +2,12 @@
 #include <iostream>
 #include "Container.h"
 #include "MapIndex.h"
-#include "../interfaces/WeightBalanceCalculator.h"
 #include "../interfaces/AbstractAlgorithm.h"
 #include <memory>
 
 using std::ostream;
 using std::shared_ptr;
+
 #ifndef SHIPGIT_CARGOOPERATION_H
 #define SHIPGIT_CARGOOPERATION_H
 

@@ -1,22 +1,30 @@
 /*Simulator class to run a simulation of cartesian loop of algorithm and travels*/
 #include "../interfaces/AbstractAlgorithm.h"
+#include "../interfaces/WeightBalanceCalculator.h"
 #include "SimulatorError.h"
+#include "AlgorithmRegistrar.h"
 #include "Travel.h"
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include "../common/FileHandler.h"
+#include "SimulatorAlgoCheck.h"
+#include <map>
+#include <fstream>
 
 namespace fs = std::filesystem;
 using std::pair;
 using std::unique_ptr;
 using std::vector;
+using std::string;
+using std::multimap;
 
 #ifndef SHIPGIT_SIMULATOR_H
 #define SHIPGIT_SIMULATOR_H
 
 
 class Simulator {
-    list<unique_ptr<AbstractAlgorithm>> algoList;
+    list<std::function<std::unique_ptr<AbstractAlgorithm>()>> algoFactory;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
     const string travelPath, algoPath, outputPath;
@@ -33,7 +41,7 @@ class Simulator {
 
     void printResults(unordered_map<string, unordered_map<string, int>> simResults);
 
-    void createAlgoList();
+    void createAlgoFactory();
 
     void setUpFakeFile();
 

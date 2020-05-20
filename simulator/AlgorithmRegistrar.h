@@ -1,20 +1,21 @@
 //Registrar class to manage dynamic load of shared algorithm
-#ifndef LINUXSHIP_ALGORITHMREGISTRAR_H
-#define LINUXSHIP_ALGORITHMREGISTRAR_H
-
-#include <string>
-#include <functional>
 #include "../interfaces/AbstractAlgorithm.h"
+#include <functional>
 #include <dlfcn.h>
 #include <memory>
 #include <list>
 #include <iostream>
 #include <map>
+#include <fstream>
 
-
+using std::ofstream;
 using std::string;
 using std::unique_ptr;
 using std::list;
+
+#ifndef LINUXSHIP_ALGORITHMREGISTRAR_H
+#define LINUXSHIP_ALGORITHMREGISTRAR_H
+
 
 class AlgorithmRegistrar {
     friend class AlgorithmRegistration;
@@ -42,7 +43,7 @@ class AlgorithmRegistrar {
 
 public:
 
-    enum RegistrationError{
+    enum RegistrationError {
         ALGORITHM_REGISTERED_SUCCESSFULY = 0, FILE_CANNOT_BE_LOADED = -1, NO_ALGORITHM_REGISTERED = -2
     };
 
@@ -62,6 +63,8 @@ public:
 
     static void printAlgoRegistrationError(const string &fileName, const string &algoName,
                                            int result);
+
+    std::list<AlgorithmFactory> getAlgoFactories() { return this->factories; };
 
 };
 

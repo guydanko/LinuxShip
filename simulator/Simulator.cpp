@@ -1,13 +1,4 @@
-#include "../interfaces/AbstractAlgorithm.h"
 #include "Simulator.h"
-#include "../common/FileHandler.h"
-#include "SimulatorAlgoCheck.h"
-#include <map>
-#include <fstream>
-#include "AlgorithmRegistrar.h"
-
-using std::string;
-using std::multimap;
 
 string getShipPlanPath(const fs::path &path) {
     std::error_code er;
@@ -52,7 +43,7 @@ void Simulator::cleanFiles(list<string> &algoNames) {
     fs::remove(this->outputPath + "/simulation.results", er);
 }
 
-void Simulator::createAlgoList() {
+void Simulator::createAlgoFactory() {
     std::error_code er;
     for (auto &p: fs::directory_iterator(this->algoPath, er)) {
         if (p.path().extension().string() == ".so") {
@@ -62,7 +53,7 @@ void Simulator::createAlgoList() {
                                                            p.path().stem().string(), result);
         }
     }
-    this->algoList = AlgorithmRegistrar::getInstance().getAlgorithms();
+    this->algoFactory = AlgorithmRegistrar::getInstance().getAlgoFactories();
 }
 
 void Simulator::createAlgoXTravel() {
@@ -71,7 +62,7 @@ void Simulator::createAlgoXTravel() {
         if (fs::is_directory(p, er)) { buildTravel(p); }
     }
     travelErrorsToFile(this->outputPath + "/errors");
-    createAlgoList();
+    createAlgoFactory();
 }
 
 void Simulator::buildTravel(const fs::path &path) {
@@ -95,9 +86,9 @@ void Simulator::buildTravel(const fs::path &path) {
 
 }
 
-void Simulator::setUpFakeFile(){
+void Simulator::setUpFakeFile() {
     std::ofstream ofs(this->outputPath + "/errors/fakeFile_313246811_");
-    if(ofs){ofs.close();}
+    if (ofs) { ofs.close(); }
 }
 
 int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError> &errorList,
@@ -123,7 +114,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                             const string &errorFileName) {
     int algoInitError = 0;
     std::error_code er;
-    const string fakeFilePath = this-> outputPath + "/errors/fakeFile_313246811_";
+    const string fakeFilePath = this->outputPath + "/errors/fakeFile_313246811_";
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
@@ -148,7 +139,8 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
                 int algoGetInsError = 0;
                 try {
-                    const string nextLoadFile = fs::exists(travel.getNextCargoFilePath(),er)? travel.getNextCargoFilePath():fakeFilePath;
+                    const string nextLoadFile = fs::exists(travel.getNextCargoFilePath(), er)
+                                                ? travel.getNextCargoFilePath() : fakeFilePath;
                     algoGetInsError = pAlgo->getInstructionsForCargo(nextLoadFile, writeTo);
                 }
                 catch (...) {
@@ -246,14 +238,14 @@ void Simulator::run() {
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
     cleanFiles(algoNames);
     auto currentAlgoName = algoNames.begin();
-    for (auto &pAlgo : this->algoList) {
+    for (auto &algoFactory : this->algoFactory) {
         string algoName = *currentAlgoName;
         currentAlgoName++;
         for (Travel travel: travelList) {
             string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
             fs::create_directory(fileName, er);
             string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
-            int opAmount = runOneTravel(travel, pAlgo.get(), fileName, errorFile);
+            int opAmount = runOneTravel(travel, algoFactory().get(), fileName, errorFile);
             algoOperationsMap[algoName][travel.getTravelName()] = opAmount;
         }
     }

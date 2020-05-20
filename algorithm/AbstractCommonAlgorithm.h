@@ -1,13 +1,17 @@
 //Abstract common algorithm class
 #include "../interfaces/AbstractAlgorithm.h"
+#include "../interfaces/WeightBalanceCalculator.h"
 #include "../common/MapIndex.h"
 #include "../common/CargoOperation.h"
 #include <memory>
 #include "../interfaces/AlgorithmRegistration.h"
+#include "../common/FileHandler.h"
+#include <map>
 
 using std::shared_ptr;
 using std::string;
 using std::list;
+using std::map;
 
 #ifndef LINUXSHIP_ABSTRACTCOMMONALGORITHM_H
 #define LINUXSHIP_ABSTRACTCOMMONALGORITHM_H
@@ -44,7 +48,7 @@ public:
     virtual int
     rejectDoubleId(list<shared_ptr<Container>> &containerListToLoadInThisPort, list<CargoOperation> &opList);
 
-    static void rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList);
+    static void rejectIllegalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList);
 
     int rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
                              const string &currentPort);

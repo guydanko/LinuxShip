@@ -1,7 +1,4 @@
 #include "SimulatorError.h"
-#include <fstream>
-
-using std::ofstream;
 
 ostream &operator<<(ostream &os, const SimulatorError &simulatorError) {
     if (simulatorError.generalError != SimErrorType::OPERATION_PORT) {

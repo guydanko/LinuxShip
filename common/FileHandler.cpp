@@ -1,15 +1,4 @@
-#include "../common/FileHandler.h"
-#include <fstream>
-#include <iostream>
-#include <unordered_map>
-#include <filesystem>
-
-
-using std::ifstream;
-using std::cerr;
-using std::stringstream;
-using std::ofstream;
-namespace fs = std::filesystem;
+#include "FileHandler.h"
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 

@@ -1,12 +1,7 @@
-#include "_316294636_a.h"
-#include <map>
-#include "../common/FileHandler.h"
 #include "AbstractCommonAlgorithm.h"
 
-using std::map;
-
 void AbstractCommonAlgorithm::tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
-                             list<CargoOperation> &opList) {
+                                        list<CargoOperation> &opList) {
     MapIndex moveIndex = MapIndex::isPlaceToMove(MapIndex(i, index.getRow(), index.getCol()), this->shipMap.get());
     //can move on the ship
     if (moveIndex.validIndex()) {
@@ -50,7 +45,7 @@ void AbstractCommonAlgorithm::tryToMove(int i, MapIndex index, list<shared_ptr<C
 }
 
 void AbstractCommonAlgorithm::unloadContainerByPort(const string &portName, list<CargoOperation> &opList,
-                                         list<shared_ptr<Container>> &rememberLoadAgain) {
+                                                    list<shared_ptr<Container>> &rememberLoadAgain) {
 
     for (int i = 0; i < this->shipMap->getRows(); i++) {
         for (int j = 0; j < this->shipMap->getCols(); j++) {
@@ -67,8 +62,8 @@ void AbstractCommonAlgorithm::unloadContainerByPort(const string &portName, list
 }
 
 void AbstractCommonAlgorithm::loadAgain(list<shared_ptr<Container>> &rememberLoadAgain,
-                             list<CargoOperation> &opList) {
-    for (const auto& cont: rememberLoadAgain) {
+                                        list<CargoOperation> &opList) {
+    for (const auto &cont: rememberLoadAgain) {
         MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap.get());
         //should always be true because it load again container which have been on ship
         if (loadIndex.validIndex()) {
@@ -111,18 +106,19 @@ int AbstractCommonAlgorithm::loadOneContainer(shared_ptr<Container> cont, list<C
 }
 
 int AbstractCommonAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad,
-                                    list<CargoOperation> &opList) {
+                                               list<CargoOperation> &opList) {
     int result = 0;
-    for (const auto& cont : containerListToLoad) {
+    for (const auto &cont : containerListToLoad) {
         result |= loadOneContainer(cont, opList);
     }
     return result;
 }
 
-int AbstractCommonAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList, const string& currentPort) {
+int AbstractCommonAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
+                                                  const string &currentPort) {
     map<string, int> portNumberMap;
     int number = 1;
-    int result=0;
+    int result = 0;
     for (const string &port : this->route) {
         auto itr = portNumberMap.find(port);
         if (itr == portNumberMap.end()) {
@@ -133,10 +129,10 @@ int AbstractCommonAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &l
     for (auto itr = loadList.begin(); itr != loadList.end();) {
         auto itrFind = portNumberMap.find((*itr)->getDestination());
         // container destination is not in route or container destination is current port- REJECT
-        if (itrFind == portNumberMap.end()|| (*itr)->getDestination()==currentPort) {
+        if (itrFind == portNumberMap.end() || (*itr)->getDestination() == currentPort) {
             opList.emplace_back(AbstractAlgorithm::Action::REJECT, (*itr), MapIndex());
             itr = loadList.erase(itr);
-            result= 1<<13;
+            result = 1 << 13;
         } else {
             (*itr)->setPortIndex(portNumberMap[itrFind->first]);
             itr++;
@@ -146,7 +142,7 @@ int AbstractCommonAlgorithm::rejectDestNotInRoute(list<shared_ptr<Container>> &l
 }
 
 void
-AbstractCommonAlgorithm::rejectIllagalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
+AbstractCommonAlgorithm::rejectIllegalContainer(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) {
     for (auto itr = loadList.begin(); itr != loadList.end();) {
         if (!(*itr)->isContainerLegal()) {
             opList.emplace_back(Action::REJECT, (*itr));
@@ -196,10 +192,10 @@ int AbstractCommonAlgorithm::rejectDoubleId(list<shared_ptr<Container>> &loadLis
 
 int
 AbstractCommonAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
-                                      const string& currentPort) {
+                                                 const string &currentPort) {
     int result = 0;
-    this->rejectIllagalContainer(loadList, opList);
-    result |=this->rejectDestNotInRoute(loadList, opList, currentPort);
+    this->rejectIllegalContainer(loadList, opList);
+    result |= this->rejectDestNotInRoute(loadList, opList, currentPort);
     result |= this->rejectDoubleId(loadList, opList);
     return result;
 }
@@ -209,30 +205,30 @@ int AbstractCommonAlgorithm::readShipPlan(const std::string &full_path_and_file_
     int result = FileHandler::createShipMapFromFile(full_path_and_file_name, shipPtr);
     this->shipMap = *shipPtr;
     isReadShipPlanSucceed = !(result & (1 << 3) || result & (1 << 4));
-    errorCode|=result;
+    errorCode |= result;
     return result;
 }
 
 int AbstractCommonAlgorithm::readShipRoute(const std::string &full_path_and_file_name) {
-    int result= FileHandler::fileToRouteList(full_path_and_file_name, this->route);
+    int result = FileHandler::fileToRouteList(full_path_and_file_name, this->route);
     isReadShipRouteSucceed = !(result & (1 << 7) || result & (1 << 8));
-    errorCode|=result;
+    errorCode |= result;
     return result;
 }
 
 int AbstractCommonAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator &calculator) {
     this->calculator = calculator;
-    isSetCalculatorSucceed=true;
+    isSetCalculatorSucceed = true;
     return 0;
 }
 
 int AbstractCommonAlgorithm::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
-                                          const std::string &output_full_path_and_file_name) {
+                                                     const std::string &output_full_path_and_file_name) {
     int result = 0;
     list<CargoOperation> opList = {};
     list<shared_ptr<Container>> loadList = {};
     list<shared_ptr<Container>> rememberLoadAgain = {};
-    if(!isSetCalculatorSucceed || !isReadShipRouteSucceed || !isReadShipPlanSucceed){
+    if (!isSetCalculatorSucceed || !isReadShipRouteSucceed || !isReadShipPlanSucceed) {
         FileHandler::operationsToFile(opList, output_full_path_and_file_name);
         return errorCode;
     }
@@ -244,7 +240,7 @@ int AbstractCommonAlgorithm::getInstructionsForCargo(const std::string &input_fu
         if (this->route.empty()) {
             if (!loadList.empty() || (fileResult != (1 << 16) && fileResult != 0)) {
                 result = 1 << 17;
-                loadList={};
+                loadList = {};
             }
         } else {
             result |= fileResult;

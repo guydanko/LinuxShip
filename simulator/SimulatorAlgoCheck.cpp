@@ -1,7 +1,5 @@
 #include "SimulatorAlgoCheck.h"
-#include <map>
 
-using std::map;
 
 void deleteRejectDoubleID(list<shared_ptr<CargoOperation>> &cargoOps, int countErase, list<SimulatorError> &listError,
                           const string &id, bool &correctAlgo) {

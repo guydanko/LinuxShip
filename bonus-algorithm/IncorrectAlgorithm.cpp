@@ -43,7 +43,7 @@ int
 IncorrectAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
                                             const string& currentPort) {
     int result=0;
-    IncorrectAlgorithm::rejectIllagalContainer(loadList, opList);
+    IncorrectAlgorithm::rejectIllegalContainer(loadList, opList);
     //needed for compilation use this parameter for something
     if(currentPort.empty()){
         result=2;

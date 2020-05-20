@@ -1,7 +1,8 @@
 /*Data structure that represents an error found during simulation*/
 #include "../common/CargoOperation.h"
+#include <fstream>
 
-using std::string;
+using std::ofstream;
 
 #ifndef SHIPGIT_SIMULATORERROR_H
 #define SHIPGIT_SIMULATORERROR_H
