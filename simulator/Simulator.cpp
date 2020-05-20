@@ -3,6 +3,7 @@
 #include "../common/FileHandler.h"
 #include "SimulatorAlgoCheck.h"
 #include <map>
+#include <fstream>
 #include "AlgorithmRegistrar.h"
 
 using std::string;
@@ -94,6 +95,11 @@ void Simulator::buildTravel(const fs::path &path) {
 
 }
 
+void Simulator::setUpFakeFile(){
+    std::ofstream ofs(this->outputPath + "/errors/fakeFile_313246811_");
+    if(ofs){ofs.close();}
+}
+
 int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError> &errorList,
                                        bool &correctAlgo) {
     unsigned int algoInitError = 0;
@@ -116,6 +122,8 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo,
 int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
     int algoInitError = 0;
+    std::error_code er;
+    const string fakeFilePath = this-> outputPath + "/errors/fakeFile_313246811_";
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
@@ -140,7 +148,8 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
                 int algoGetInsError = 0;
                 try {
-                    algoGetInsError = pAlgo->getInstructionsForCargo(travel.getNextCargoFilePath(), writeTo);
+                    const string nextLoadFile = fs::exists(travel.getNextCargoFilePath(),er)? travel.getNextCargoFilePath():fakeFilePath;
+                    algoGetInsError = pAlgo->getInstructionsForCargo(nextLoadFile, writeTo);
                 }
                 catch (...) {
                     throwException = true;
@@ -231,6 +240,7 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
 
 void Simulator::run() {
     std::error_code er;
+    setUpFakeFile();
     createAlgoXTravel();
     unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();

@@ -19,7 +19,7 @@ class Simulator {
     list<unique_ptr<AbstractAlgorithm>> algoList;
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
-    string travelPath, algoPath, outputPath;
+    const string travelPath, algoPath, outputPath;
 
     void travelErrorsToFile(const string &fileName);
 
@@ -34,6 +34,8 @@ class Simulator {
     void printResults(unordered_map<string, unordered_map<string, int>> simResults);
 
     void createAlgoList();
+
+    void setUpFakeFile();
 
 public:
     Simulator(const string &travelPath, const string &algoPath, const string &outputPath) : travelPath(travelPath),
