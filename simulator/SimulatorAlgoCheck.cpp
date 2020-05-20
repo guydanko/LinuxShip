@@ -264,27 +264,31 @@ SimulatorAlgoCheck::checkIfShipEmpty(ShipMap *shipMap, list<SimulatorError> &err
 void SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(int algoGetInsError, int simulationInstError,
                                                             list<SimulatorError> &errorList, bool &correctAlgo) {
     for (int i = 18; i >= 10; i--) {
-        if ((algoGetInsError & (1 << i)) == (1 << i) && (simulationInstError & (1 << i)) == (1 << i)) {
-            errorList.emplace_front("algorithm reports error code 2^" + std::to_string(i),
-                                    SimErrorType::GENERAL_PORT);
-        } else {
-            if ((algoGetInsError & (1 << i)) != (1 << i) && (simulationInstError & (1 << i)) == (1 << i)) {
-                errorList.emplace_front("simulation reports error code 2^" + std::to_string(i) +
-                                        " but algorithm does not report this code too", SimErrorType::GENERAL_PORT);
-                correctAlgo = false;
+        if (i != 16) {
+            if ((algoGetInsError & (1 << i)) == (1 << i) && (simulationInstError & (1 << i)) == (1 << i)) {
+                errorList.emplace_front("algorithm reports error code 2^" + std::to_string(i),
+                                        SimErrorType::GENERAL_PORT);
             } else {
-                if ((algoGetInsError & (1 << i)) == (1 << i) && (simulationInstError & (1 << i)) != (1 << i)) {
-                    errorList.emplace_front("algorithm reports error code 2^" + std::to_string(i) +
-                                            " but simulation does not report this code too",
-                                            SimErrorType::GENERAL_PORT);
+                if ((algoGetInsError & (1 << i)) != (1 << i) && (simulationInstError & (1 << i)) == (1 << i)) {
+                    errorList.emplace_front("simulation reports error code 2^" + std::to_string(i) +
+                                            " but algorithm does not report this code too", SimErrorType::GENERAL_PORT);
                     correctAlgo = false;
+                } else {
+                    if ((algoGetInsError & (1 << i)) == (1 << i) && (simulationInstError & (1 << i)) != (1 << i)) {
+                        errorList.emplace_front("algorithm reports error code 2^" + std::to_string(i) +
+                                                " but simulation does not report this code too",
+                                                SimErrorType::GENERAL_PORT);
+                        correctAlgo = false;
+                    }
                 }
             }
         }
     }
     if ((simulationInstError & (1 << 17)) == (1 << 17)) {
-        errorList.emplace_front("Cargo data file is not empty although it is last port",
-                                SimErrorType::GENERAL_PORT);
+        errorList.emplace_front("Cargo data file is not empty although it is last port",SimErrorType::GENERAL_PORT);
+    }
+    if ((algoGetInsError & (1 <<16)) == (1 << 16) ) {
+        errorList.emplace_front("algorithm reports error code 2^16",SimErrorType::GENERAL_PORT);
     }
 }
 
