@@ -5,7 +5,7 @@ bool Travel::isTravelErrorLegal(int errorCode) {
              errorCode & (1 << 8));
 }
 
-bool isValidNumber(const string &s) {
+bool isValidPositiveNumber(const string &s) {
     if (s.empty()) {
         return false;
     }
@@ -14,6 +14,7 @@ bool isValidNumber(const string &s) {
             return false;
         }
     }
+    if (stoi(s) <= 0) { return false; }
     return true;
 }
 
@@ -26,12 +27,14 @@ bool Travel::isFileInTravelRoute(const string &fileName) const {
         tokens.push_back(token);
     }
 
+    //not in map or not in format
     if (tokens.size() != 2 || this->portCounter.find(tokens[0]) == this->portCounter.end()) {
         return false;
     }
 
-    if (!isValidNumber(tokens[1])) { return false; }
+    if (!isValidPositiveNumber(tokens[1])) { return false; }
 
+    //larger than max visit
     if (std::stoi(tokens[1]) > get<1>(this->portCounter.find(tokens[0])->second)) { return false; }
 
     return true;

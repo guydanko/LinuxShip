@@ -53,8 +53,6 @@ public:
 
     int loadAlgorithm(const char *path, const std::string &so_file_name_without_so_suffix);
 
-    std::list<std::unique_ptr<AbstractAlgorithm>> getAlgorithms() const;
-
     const std::list<std::string> &getAlgorithmNames() const { return algoNames; }
 
     size_t size() const { return factories.size(); }

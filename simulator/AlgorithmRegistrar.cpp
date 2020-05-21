@@ -14,13 +14,6 @@ AlgorithmRegistrar &AlgorithmRegistrar::getInstance() {
     return instance;
 }
 
-std::list<std::unique_ptr<AbstractAlgorithm>> AlgorithmRegistrar::getAlgorithms() const {
-    std::list<std::unique_ptr<AbstractAlgorithm>> algorithms;
-    for (const auto &factory:factories) {
-        algorithms.push_back(factory());
-    }
-    return algorithms;
-}
 
 int AlgorithmRegistrar::loadAlgorithm(const char *path, const std::string &so_file_name_without_so_suffix) {
 
