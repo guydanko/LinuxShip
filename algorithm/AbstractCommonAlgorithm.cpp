@@ -201,7 +201,6 @@ AbstractCommonAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &lo
 }
 
 int AbstractCommonAlgorithm::readShipPlan(const std::string &full_path_and_file_name) {
-    std::cout<<"start read ship plan in algorithm"<<std::endl;
     auto shipPtr = std::make_shared<shared_ptr<ShipMap>>(std::make_shared<ShipMap>());
     int result = FileHandler::createShipMapFromFile(full_path_and_file_name, shipPtr);
     this->shipMap = *shipPtr;

@@ -25,7 +25,6 @@ int main(int argc, char *argv[]) {
                                                                : flagMap["-algorithm_path"];
     int numThreads = flagMap["-num_threads"].empty() ? 1 : std::min(std::stoi(flagMap["-num_threads"]),
                                                                     int(std::thread::hardware_concurrency()));
-
     if (!fs::exists(outPath, er)) {
         if (!fs::create_directories(outPath, er)) {
             errorString += "Error: could not create output directory, using current directory for output\n";

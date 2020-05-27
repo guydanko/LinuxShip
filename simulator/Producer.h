@@ -24,10 +24,8 @@ class Producer {
 
 public:
     Producer(){}
-    Producer(int numTasks) : numTasks(numTasks) {}
     std::optional<Task> getTask();
     void buildTasks( list<std::function<std::unique_ptr<AbstractAlgorithm>()>>& algoFactory, list<Travel>& travelList,list<string>& algoNames,const string& outputPath);
-    int getNumTasks(){ return this->numTasks;}
 };
 
 

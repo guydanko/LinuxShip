@@ -1,5 +1,6 @@
 #include "Simulator.h"
 #include "Task.h"
+#include <memory>
 
 string getShipPlanPath(const fs::path &path) {
     std::error_code er;
@@ -92,15 +93,12 @@ void Simulator::setUpFakeFile() {
     if (ofs) { ofs.close(); }
 }
 
-int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError> &errorList,
+int Simulator::initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractAlgorithm>& pAlgo, list<SimulatorError> &errorList,
                                        bool &correctAlgo) {
     unsigned int algoInitError = 0;
     try {
-        std::cout<<"start read ship plan"<<std::endl;
-        std::cout<<travel.getShipPlanPath()<<std::endl;
-        std::cout<<pAlgo<<std::endl;
+
         algoInitError |= pAlgo->readShipPlan(travel.getShipPlanPath());
-        std::cout<<"finish read ship plan"<<std::endl;
         algoInitError |= pAlgo->readShipRoute(travel.getRoutePath());
         this->calculator.readShipPlan(travel.getShipPlanPath());
         pAlgo->setWeightBalanceCalculator(calculator);
@@ -115,26 +113,22 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo,
 }
 
 /* returns amount of operations in a travel-algo pair*/
-int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const string &travelAlgoDirectory,
-                            const string &errorFileName) {
+int Simulator::runOneTravel(Travel &travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &travelAlgoDirectory,
+                            const string &errorFileName){
     int algoInitError = 0;
     std::error_code er;
     const string fakeFilePath = this->outputPath + "/errors/fakeFile_313246811_";
     fs::create_directory(this->outputPath+ "/"+travelAlgoDirectory, er);
     bool correctAlgo = true;
     int sumCargoOperation = 0;
-    std::cout<<"start legal travel"<<std::endl;
     if (travel.isTravelLegal()) {
-        std::cout<<"start legal travel 1"<<std::endl;
         list<SimulatorError> errorList;
         algoInitError = initAlgoWithTravelParam(travel, pAlgo, errorList, correctAlgo);
-        std::cout<<"start legal travel 7"<<std::endl;
         if (correctAlgo) {
             correctAlgo = SimulatorAlgoCheck::compareErrorAlgoSimulationInit(algoInitError,
                                                                              travel.getTravelError(), errorList,
                                                                              correctAlgo);
         }
-        std::cout<<"start legal travel 2"<<std::endl;
         SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());
         list<shared_ptr<Container>> doubleIdList = {};
         if (correctAlgo) {
@@ -144,12 +138,10 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 int simulationInstError = 0;
                 errorList = {};
                 list<shared_ptr<Container>> loadList = {};
-                std::cout<<"start legal travel 3"<<std::endl;
                 simulationInstError |= travel.getContainerList(errorFileName, loadList);
                 const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
                 int algoGetInsError = 0;
-                std::cout<<"start legal travel 4"<<std::endl;
                 try {
                     const string nextLoadFile = fs::exists(travel.getNextCargoFilePath(), er)
                                                 ? travel.getNextCargoFilePath() : fakeFilePath;
@@ -158,7 +150,6 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                 catch (...) {
                     throwException = true;
                 }
-                std::cout<<"start legal travel 5"<<std::endl;
                 if (!throwException) {
                     list<shared_ptr<CargoOperation>> cargoOps = {};
                     FileHandler::createCargoOpsFromFile(writeTo, cargoOps, errorFileName);
@@ -172,7 +163,6 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
                                                                                 this->calculator, cargoOps, loadList,
                                                                                 travel.getCurrentPort(), errorList,
                                                                                 doubleIdList, correctAlgo);
-                    std::cout<<"start legal travel 6"<<std::endl;
                     SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(algoGetInsError, simulationInstError,
                                                                            errorList,
                                                                            correctAlgo);
@@ -246,23 +236,15 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
 void Simulator::workerFunction(){
     std::optional<Task> currentTask = producer.getTask();
     while(currentTask) {
-        std::cout<<"start runOneTravel"<<std::endl;
-        std::cout<<currentTask.value().getTravel().getTravelName()<<std::endl;
-        std::cout<<currentTask.value().getAlgo()<<std::endl;
-        std::cout<<currentTask.value().getFileName()<<std::endl;
        int numOp= runOneTravel(currentTask.value().getTravel(),currentTask.value().getAlgo(),currentTask.value().getFileName(),currentTask.value().getErrorFileName());
-        std::cout<<"finish runOneTravel"<<std::endl;
        resultMap[currentTask->getAlgoName()][currentTask->getTravel().getTravelName()] = numOp;
-        std::cout<<"put in result map"<<std::endl;
        currentTask = producer.getTask();
-        std::cout<<"get nee task succeed"<<std::endl;
     }
 }
 void  Simulator::initializeWorkers(){
-    for(int i=0; i<this->producer.getNumTasks() ; ++i) {
+    for(int i=0; i<this->numThreads ; ++i) {
         workers.push_back(std::thread([this]{ this->workerFunction();}));
     }
-    std::cout<<"workers size " <<workers.size()<<std::endl;
 }
 void Simulator::waitTillFinish() {
     for(auto& t : workers) {
@@ -270,18 +252,13 @@ void Simulator::waitTillFinish() {
     }
 }
 void Simulator::run() {
-    std::cout<<"start run"<<std::endl;
     setUpFakeFile();
     createAlgoXTravel();
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
     cleanFiles(algoNames);
-    std::cout<<"start buildTasks"<<std::endl;
     this->producer.buildTasks(this->algoFactory,this->travelList,algoNames, this->outputPath);
-    std::cout<<"finish buildTasks"<<std::endl;
     initializeWorkers();
-    std::cout<<"finish initializeWorkers"<<std::endl;
     waitTillFinish();
-    std::cout<<"finish waitTillFinish"<<std::endl;
     printResults(resultMap);
     deleteEmptyFiles();
 }

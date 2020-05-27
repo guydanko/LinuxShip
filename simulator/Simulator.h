@@ -33,6 +33,7 @@ class Simulator {
     Producer producer;
     std::vector<std::thread> workers;
     unordered_map<string, unordered_map<string, int>> resultMap;
+    int numThreads;
 
     void travelErrorsToFile(const string &fileName);
 
@@ -54,15 +55,15 @@ class Simulator {
     void waitTillFinish();
 
 public:
-    Simulator(const string &travelPath, const string &algoPath, const string &outputPath, int numTasks) : travelPath(travelPath),
+    Simulator(const string &travelPath, const string &algoPath, const string &outputPath, int numThreads) : travelPath(travelPath),
                                                                                             algoPath(algoPath),
-                                                                                            outputPath(outputPath), producer(numTasks) {};
+                                                                                            outputPath(outputPath), numThreads(numThreads) {};
     void run();
 
-    int runOneTravel(Travel &travel, AbstractAlgorithm *algo, const string &fileName,
+    int runOneTravel(Travel &travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &fileName,
                      const string &errorFileName);
 
-    int initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError> &errorList,
+    int initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractAlgorithm>& pAlgo, list<SimulatorError> &errorList,
                                 bool &correctAlgo);
     friend class Producer;
 
