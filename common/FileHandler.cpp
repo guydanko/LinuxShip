@@ -575,12 +575,13 @@ string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *
                 if (flagMap.find(argv[i + 1]) != flagMap.end() || argv[i + 1][0] == '-') {
                     errorString += "Error: provided flag " + std::string(argv[i]) + " without value\n";
                 } else {
-                    if(std::string(argv[i]) == "-num_threads"){
+                    if (std::string(argv[i]) == "-num_threads") {
                         //num threads is legal number
-                        if(isPositiveNumber(argv[i+1])){
+                        if (isPositiveNumber(argv[i + 1])) {
                             flagMap[argv[i]] = argv[i + 1];
-                        } else{
-                            errorString += "Error: provided illegal value (" + std::string(argv[i]) + ") for num_threads\n";
+                        } else {
+                            errorString +=
+                                    "Error: provided illegal value (" + std::string(argv[i+1]) + ") for num_threads\n";
                         }
                     } else {
                         flagMap[argv[i]] = argv[i + 1];
