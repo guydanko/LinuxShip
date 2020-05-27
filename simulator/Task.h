@@ -1,19 +1,19 @@
 #include "../interfaces/AbstractAlgorithm.h"
 #include "Travel.h"
-
+#include <functional>
 #ifndef LINUXSHIP_TASK_H
 #define LINUXSHIP_TASK_H
 
 
 class Task {
-    AbstractAlgorithm* algo;
+    std::function<std::unique_ptr<AbstractAlgorithm>()> algoFuctory;
     Travel travel;
     string fileName;
     string errorFileName;
     string algoName;
 public:
-    Task(AbstractAlgorithm* algo, Travel& travel,string& fileName,string& errorFileName,string& algoName): algo(algo),travel(travel), fileName(fileName), errorFileName(errorFileName), algoName(algoName){}
-    AbstractAlgorithm* getAlgo(){ return this->algo;}
+    Task(std::function<std::unique_ptr<AbstractAlgorithm>()>& algoFuctory, Travel& travel,string& fileName,string& errorFileName,string& algoName): algoFuctory(algoFuctory),travel(travel), fileName(fileName), errorFileName(errorFileName), algoName(algoName){}
+    AbstractAlgorithm* getAlgo(){ return this->algoFuctory().get();}
     Travel& getTravel(){ return this->travel;}
     const string& getFileName(){return this->fileName;}
     const string& getErrorFileName(){return this->errorFileName;}

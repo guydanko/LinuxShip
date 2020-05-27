@@ -200,3 +200,18 @@ const string Travel::getNextCargoFilePath() {
 
     return travelPath + "/" + currentPort + "_" + std::to_string(visitNum) + ".cargo_data";
 }
+
+void Travel::operator=(Travel &&other) {
+
+    if(this != &other){
+        this->shipMap = std::move(other.shipMap);
+        this->travelPath = other.travelPath;
+        this->portCounter = other.portCounter;
+        this->travelName = other.travelName;
+        this->route = other.route;
+        this->travelError = other.travelError;
+        this->shipPath = other.shipPath;
+        this->routePath = other.routePath;
+        this->travelError = other.travelError;
+    }
+}

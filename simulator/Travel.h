@@ -22,6 +22,7 @@ public:
 
     Travel(const Travel &other);
 
+    void  operator=(Travel&& other);
     ShipMap* getShipMap() { return this->shipMap.get(); }
 
     list<string>& getRoute() { return this->route; }
