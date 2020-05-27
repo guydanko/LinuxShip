@@ -575,7 +575,7 @@ string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *
                 if (flagMap.find(argv[i + 1]) != flagMap.end() || argv[i + 1][0] == '-') {
                     errorString += "Error: provided flag " + std::string(argv[i]) + " without value\n";
                 } else {
-                    if(argv[i] == "-num_threads"){
+                    if(std::string(argv[i]) == "-num_threads"){
                         //num threads is legal number
                         if(isPositiveNumber(argv[i+1])){
                             flagMap[argv[i]] = argv[i + 1];
