@@ -13,7 +13,9 @@ int main(int argc, char *argv[]) {
     bool toRunSimulator = true;
     unordered_map<string, string> flagMap = {{"-travel_path",    ""},
                                              {"-output",         ""},
-                                             {"-algorithm_path", ""}};
+                                             {"-algorithm_path", ""},
+                                             {"-num_threads",    ""}
+    };
 
     string errorString = FileHandler::setCommandMap(flagMap, argv, argc);
 
@@ -21,9 +23,11 @@ int main(int argc, char *argv[]) {
     string outPath = flagMap["-output"].empty() ? fs::current_path(er).string() : flagMap["-output"];
     const string algoPath = flagMap["-algorithm_path"].empty() ? fs::current_path(er).string()
                                                                : flagMap["-algorithm_path"];
+    int numThreads = flagMap["-num_threads"].empty() ? 1 : std::min(std::stoi(flagMap["-num_threads"]),
+                                                                    int(std::thread::hardware_concurrency()));
 
     if (!fs::exists(outPath, er)) {
-        if(!fs::create_directories(outPath, er)){
+        if (!fs::create_directories(outPath, er)) {
             errorString += "Error: could not create output directory, using current directory for output\n";
             outPath = fs::current_path(er).string();
         }
@@ -64,7 +68,7 @@ int main(int argc, char *argv[]) {
     }
 
     errorFile.close();
-    Simulator simulator(travelPath, algoPath, outPath);
+    Simulator simulator(travelPath, algoPath, outPath, numThreads);
     simulator.run();
     return EXIT_SUCCESS;
 
