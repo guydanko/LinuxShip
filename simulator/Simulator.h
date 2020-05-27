@@ -9,8 +9,10 @@
 #include <memory>
 #include "../common/FileHandler.h"
 #include "SimulatorAlgoCheck.h"
+#include "Producer.h"
 #include <map>
 #include <fstream>
+#include <thread>
 
 namespace fs = std::filesystem;
 using std::pair;
@@ -28,6 +30,9 @@ class Simulator {
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
     const string travelPath, algoPath, outputPath;
+    Producer producer;
+    std::vector<std::thread> workers;
+    unordered_map<string, unordered_map<string, int>> resultMap;
 
     void travelErrorsToFile(const string &fileName);
 
@@ -44,11 +49,14 @@ class Simulator {
     void createAlgoFactory();
 
     void setUpFakeFile();
+    void  initializeWorkers();
+    void workerFunction();
+    void waitTillFinish();
 
 public:
-    Simulator(const string &travelPath, const string &algoPath, const string &outputPath) : travelPath(travelPath),
+    Simulator(const string &travelPath, const string &algoPath, const string &outputPath, int numTasks) : travelPath(travelPath),
                                                                                             algoPath(algoPath),
-                                                                                            outputPath(outputPath) {};
+                                                                                            outputPath(outputPath), producer(numTasks) {};
     void run();
 
     int runOneTravel(Travel &travel, AbstractAlgorithm *algo, const string &fileName,
@@ -56,6 +64,7 @@ public:
 
     int initAlgoWithTravelParam(Travel &travel, AbstractAlgorithm *pAlgo, list<SimulatorError> &errorList,
                                 bool &correctAlgo);
+    friend class Producer;
 
 };
 

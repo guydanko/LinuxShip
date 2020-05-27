@@ -1,4 +1,5 @@
 #include "Simulator.h"
+#include "Task.h"
 
 string getShipPlanPath(const fs::path &path) {
     std::error_code er;
@@ -115,6 +116,7 @@ int Simulator::runOneTravel(Travel &travel, AbstractAlgorithm *pAlgo, const stri
     int algoInitError = 0;
     std::error_code er;
     const string fakeFilePath = this->outputPath + "/errors/fakeFile_313246811_";
+    fs::create_directory(this->outputPath+ "/"+travelAlgoDirectory, er);
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
@@ -229,27 +231,35 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
     FileHandler::printSimulatorResults(this->outputPath + "/simulation.results", algosInOrder, travelNameOrder,
                                        simResults);
 }
-
+void Simulator::workerFunction(){
+    std::optional<Task> currentTask = producer.getTask();
+    while(currentTask) {
+       int numOp= runOneTravel(currentTask.value().getTravel(),currentTask.value().getAlgo(),currentTask.value().getFileName(),currentTask.value().getErrorFileName());
+       resultMap[currentTask->getAlgoName()][currentTask->getTravel().getTravelName()] = numOp;
+       currentTask = producer.getTask();
+    }
+}
+void  Simulator::initializeWorkers(){
+    for(int i=0; i<this->producer.getNumTasks() ; ++i) {
+        workers.push_back(std::thread([this]{
+            workerFunction();
+        }));
+    }
+}
+void Simulator::waitTillFinish() {
+    for(auto& t : workers) {
+        t.join();
+    }
+}
 void Simulator::run() {
-    std::error_code er;
     setUpFakeFile();
     createAlgoXTravel();
-    unordered_map<string, unordered_map<string, int>> algoOperationsMap;
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
     cleanFiles(algoNames);
-    auto currentAlgoName = algoNames.begin();
-    for (auto &algoFactory : this->algoFactory) {
-        string algoName = *currentAlgoName;
-        currentAlgoName++;
-        for (Travel travel: travelList) {
-            string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
-            fs::create_directory(fileName, er);
-            string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
-            int opAmount = runOneTravel(travel, algoFactory().get(), fileName, errorFile);
-            algoOperationsMap[algoName][travel.getTravelName()] = opAmount;
-        }
-    }
-    printResults(algoOperationsMap);
+    this->producer.buildTasks(this->algoFactory,this->travelList,algoNames);
+    initializeWorkers();
+    waitTillFinish();
+    printResults(resultMap);
     deleteEmptyFiles();
 }
 
