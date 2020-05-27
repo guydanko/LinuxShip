@@ -111,7 +111,18 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractA
     }
     return algoInitError;
 }
-
+int countOperation(list<shared_ptr<CargoOperation>>& cargoOps){
+    int sum=0;
+    for( auto cargoOp :cargoOps){
+        if(cargoOp->getOp()==AbstractAlgorithm::Action::UNLOAD || cargoOp->getOp()==AbstractAlgorithm::Action::LOAD){
+            sum+=5;
+        }
+        if(cargoOp->getOp()==AbstractAlgorithm::Action::MOVE){
+            sum+=3;
+        }
+    }
+    return sum;
+}
 /* returns amount of operations in a travel-algo pair*/
 int Simulator::runOneTravel(Travel &travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName){
@@ -153,7 +164,7 @@ int Simulator::runOneTravel(Travel &travel, std::unique_ptr<AbstractAlgorithm> p
                 if (!throwException) {
                     list<shared_ptr<CargoOperation>> cargoOps = {};
                     FileHandler::createCargoOpsFromFile(writeTo, cargoOps, errorFileName);
-                    sumCargoOperation += cargoOps.size();
+                    sumCargoOperation += countOperation(cargoOps);
                     simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                          cargoOps, errorList,
                                                                                          doubleIdList,
