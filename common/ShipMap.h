@@ -42,6 +42,7 @@ public:
     ShipMap &operator=(const ShipMap &other); // copy only the structure not the containers
 
     set<string> &getContainerIDOnShip() { return containerIDOnShip; }
+    int numberOfEmptyPlaces();
 
 };
 

@@ -27,11 +27,9 @@ protected:
     bool isSetCalculatorSucceed = false;
     int errorCode = 0;
 public:
-    AbstractCommonAlgorithm() : AbstractAlgorithm() {}
+    AbstractCommonAlgorithm() : AbstractAlgorithm() {};
 
-    virtual void loadAgain(list<shared_ptr<Container>> &rememberLoadAgain, list<CargoOperation> &opList);
-
-    int loadNewContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList);
+    int loadContainers(list<shared_ptr<Container>> &containerListToLoad, list<CargoOperation> &opList);
 
     void unloadContainerByPort(const string &portName, list<CargoOperation> &opList,
                                list<shared_ptr<Container>> &rememberLoadAgain);
@@ -43,7 +41,7 @@ public:
     int loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList);
 
     void tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
-                   list<CargoOperation> &opList);
+                   list<CargoOperation> &opList, const string &portName);
 
     virtual int
     rejectDoubleId(list<shared_ptr<Container>> &containerListToLoadInThisPort, list<CargoOperation> &opList);
@@ -55,6 +53,11 @@ public:
 
     virtual int rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
                                         const string &basicString);
+
+    int rejectByShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
+                         list<shared_ptr<Container>> &rememberLoadAgain);
+
+    void mergeAndSortListByPort(list<shared_ptr<Container>> &loadList, list<shared_ptr<Container>> &rememberLoadAgain);
 
     //interface function
     int readShipPlan(const std::string &full_path_and_file_name) override;

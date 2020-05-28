@@ -13,7 +13,7 @@ public:
     int getHeight()const{return this->height;}
     int getRow()const{return this->row;}
     int getCol()const {return this->col;}
-    static MapIndex isPlaceToMove(MapIndex currentIndex, ShipMap* shipMap ); //find empty legal place on the "first" side of the ship in regard to currentIndex
+    static MapIndex isPlaceToMove( ShipMap* shipMap, const string&  currentPort );
     static MapIndex firstLegalIndexPlace(ShipMap* shipMap);
 };
 

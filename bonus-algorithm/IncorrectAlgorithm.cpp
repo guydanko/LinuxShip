@@ -51,7 +51,6 @@ IncorrectAlgorithm::rejectAllBesideShipFull(list<shared_ptr<Container>> &loadLis
     else{
         result=0;
     }
-//    result |=this->rejectDestNotInRoute(loadList, opList, currentPort);
     this->rejectDoubleId(loadList, opList);
     return result;
 }
@@ -73,12 +72,5 @@ IncorrectAlgorithm::moveTower(MapIndex index, const string &portName, list<share
                                 MapIndex(i, index.getRow(), index.getCol()));
             this->shipMap->getShipMapContainer()[i][index.getRow()][index.getCol()] = nullptr;
         }
-    }
-}
-void IncorrectAlgorithm::loadAgain(list<shared_ptr<Container>>& rememberLoadAgain, list<CargoOperation> &opList) {
-    if(rememberLoadAgain.size()>2){
-        opList.front();
-    } else{
-        opList.back();
     }
 }

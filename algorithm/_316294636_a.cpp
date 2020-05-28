@@ -27,7 +27,7 @@ void _316294636_a::moveTower(MapIndex index, const string &portName,
                     //TODO: calculator denied operation
                 }
             } else {
-                tryToMove(i, index, rememberLoadAgain, opList);
+                tryToMove(i, index, rememberLoadAgain, opList, portName);
             }
         }
     }

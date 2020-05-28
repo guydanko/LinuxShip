@@ -566,26 +566,11 @@ void checkMoveOperation(ShipMap *shipMap, CargoOperation &cargoOp, list<Simulato
 
 }
 
-int numberOfEmptyPlaces(ShipMap *shipMap) {
-    int num = 0;
-    for (int i = 0; i < shipMap->getHeight(); i++) {
-        for (int j = 0; j < shipMap->getRows(); j++) {
-            for (int k = 0; k < shipMap->getCols(); k++) {
-                if (shipMap->getShipMapContainer()[i][j][k] == nullptr) {
-                    num++;
-
-                }
-            }
-        }
-    }
-    return num;
-}
-
 int
 checkRejectOperations(ShipMap *shipMap, list<shared_ptr<CargoOperation>> &cargoOpsList, int maxNumberPortLoaded,
                       list<SimulatorError> &errorList, bool &correctAlgo) {
     int result = 0;
-    int numEmptyPlace = numberOfEmptyPlaces(shipMap);
+    int numEmptyPlace = shipMap->numberOfEmptyPlaces();
     cargoOpsList.sort([](const shared_ptr<CargoOperation> cargoOp1, const shared_ptr<CargoOperation> cargoOp2) -> bool {
         return cargoOp1->getContainer()->getPortIndex() < cargoOp2->getContainer()->getPortIndex();
     });

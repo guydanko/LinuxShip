@@ -46,3 +46,17 @@ void ShipMap::initShipMapContainer(int height, int row, int col) {
         shipMapContainer[i][row][col] = imaginaryContainer;
     }
 }
+int ShipMap::numberOfEmptyPlaces() {
+    int num = 0;
+    for (int i = 0; i < this->getHeight(); i++) {
+        for (int j = 0; j < this->getRows(); j++) {
+            for (int k = 0; k < this->getCols(); k++) {
+                if (this->getShipMapContainer()[i][j][k] == nullptr) {
+                    num++;
+
+                }
+            }
+        }
+    }
+    return num;
+}

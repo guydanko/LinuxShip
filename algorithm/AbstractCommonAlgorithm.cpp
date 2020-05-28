@@ -1,8 +1,8 @@
 #include "AbstractCommonAlgorithm.h"
 
 void AbstractCommonAlgorithm::tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
-                                        list<CargoOperation> &opList) {
-    MapIndex moveIndex = MapIndex::isPlaceToMove(MapIndex(i, index.getRow(), index.getCol()), this->shipMap.get());
+                                        list<CargoOperation> &opList, const string &portName) {
+    MapIndex moveIndex = MapIndex::isPlaceToMove(this->shipMap.get(), portName);
     //can move on the ship
     if (moveIndex.validIndex()) {
         CargoOperation opUnload(AbstractAlgorithm::Action::UNLOAD,
@@ -61,52 +61,23 @@ void AbstractCommonAlgorithm::unloadContainerByPort(const string &portName, list
     }
 }
 
-void AbstractCommonAlgorithm::loadAgain(list<shared_ptr<Container>> &rememberLoadAgain,
-                                        list<CargoOperation> &opList) {
-    for (const auto &cont: rememberLoadAgain) {
-        MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap.get());
-        //should always be true because it load again container which have been on ship
-        if (loadIndex.validIndex()) {
-            CargoOperation cargoOp(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
-            if (this->calculator.tryOperation('L', cargoOp.getContainer()->getWeight(),
-                                              cargoOp.getIndex().getCol(),
-                                              cargoOp.getIndex().getRow()) ==
-                WeightBalanceCalculator::BalanceStatus::APPROVED) {
-                this->shipMap->getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
-                opList.push_back(cargoOp);
-            } else {
-                //TODO: calculator denied operation
-            }
-        }
-    }
-}
-
-
 int AbstractCommonAlgorithm::loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) {
     int result = 0;
     MapIndex loadIndex = MapIndex::firstLegalIndexPlace(this->shipMap.get());
-    if (loadIndex.validIndex()) {
-        CargoOperation op(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
-        if (this->calculator.tryOperation('L', op.getContainer()->getWeight(), op.getIndex().getCol(),
-                                          op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
-            opList.push_back(op);
-            this->shipMap->getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
-            this->shipMap->getContainerIDOnShip().insert(cont->getId());
-        } else {
-            //TODO: calculator denied operation
-        }
+    CargoOperation op(AbstractAlgorithm::Action::LOAD, cont, loadIndex);
+    if (this->calculator.tryOperation('L', op.getContainer()->getWeight(), op.getIndex().getCol(),
+                                      op.getIndex().getRow()) == WeightBalanceCalculator::BalanceStatus::APPROVED) {
+        opList.push_back(op);
+        this->shipMap->getShipMapContainer()[loadIndex.getHeight()][loadIndex.getRow()][loadIndex.getCol()] = cont;
+        this->shipMap->getContainerIDOnShip().insert(cont->getId());
+    } else {
+        //TODO: calculator denied operation
     }
-        //no place on ship
-    else {
-        result |= 1 << 18;
-        opList.emplace_back(AbstractAlgorithm::Action::REJECT, cont, MapIndex());
-    }
-
     return result;
 }
 
-int AbstractCommonAlgorithm::loadNewContainers(list<shared_ptr<Container>> &containerListToLoad,
-                                               list<CargoOperation> &opList) {
+int AbstractCommonAlgorithm::loadContainers(list<shared_ptr<Container>> &containerListToLoad,
+                                            list<CargoOperation> &opList) {
     int result = 0;
     for (const auto &cont : containerListToLoad) {
         result |= loadOneContainer(cont, opList);
@@ -223,6 +194,46 @@ int AbstractCommonAlgorithm::setWeightBalanceCalculator(WeightBalanceCalculator 
     return 0;
 }
 
+int AbstractCommonAlgorithm::rejectByShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
+                                              list<shared_ptr<Container>> &rememberLoadAgain) {
+    int result = 0;
+    int numOfEmpyPlaceOnShip = this->shipMap->numberOfEmptyPlaces();
+    int numberOfContainerToLoad = loadList.size() + rememberLoadAgain.size();
+    loadList.sort([](const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) -> bool {
+        return cont1->getPortIndex() > cont2->getPortIndex();
+    });
+    auto itr = loadList.begin();
+    for (int i = 0; i < numberOfContainerToLoad - numOfEmpyPlaceOnShip; i++) {
+        opList.emplace_back(AbstractAlgorithm::Action::REJECT, (*itr), MapIndex());
+        itr = loadList.erase(itr);
+        result |= 1 << 18;
+    }
+    return result;
+}
+
+void AbstractCommonAlgorithm::mergeAndSortListByPort(list<shared_ptr<Container>> &loadList,
+                                                     list<shared_ptr<Container>> &rememberLoadAgain) {
+    map<string, int> portNumberMap;
+    int number = 1;
+    for (const string &port : this->route) {
+        auto itr = portNumberMap.find(port);
+        if (itr == portNumberMap.end()) {
+            portNumberMap[port] = number;
+            number++;
+        }
+    }
+    for (auto cont : rememberLoadAgain) {
+        auto itrFind = portNumberMap.find(cont->getDestination());
+        cont->setPortIndex(portNumberMap[itrFind->first]);
+    }
+    rememberLoadAgain.sort([](const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) -> bool {
+        return cont1->getPortIndex() > cont2->getPortIndex();
+    });
+    loadList.merge(rememberLoadAgain, [](const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) -> bool {
+        return cont1->getPortIndex() > cont2->getPortIndex();
+    });
+}
+
 int AbstractCommonAlgorithm::getInstructionsForCargo(const std::string &input_full_path_and_file_name,
                                                      const std::string &output_full_path_and_file_name) {
     int result = 0;
@@ -247,12 +258,10 @@ int AbstractCommonAlgorithm::getInstructionsForCargo(const std::string &input_fu
             result |= fileResult;
         }
         result |= rejectAllBesideShipFull(loadList, opList, currentPort);
-        loadList.sort([](const shared_ptr<Container> cont1, const shared_ptr<Container> cont2) -> bool {
-            return cont1->getPortIndex() < cont2->getPortIndex();
-        });
         this->unloadContainerByPort(currentPort, opList, rememberLoadAgain);
-        this->loadAgain(rememberLoadAgain, opList);
-        result |= this->loadNewContainers(loadList, opList);
+        result |= rejectByShipFull(loadList, opList, rememberLoadAgain);
+        this->mergeAndSortListByPort(loadList, rememberLoadAgain);
+        result |= this->loadContainers(loadList, opList);
         FileHandler::operationsToFile(opList, output_full_path_and_file_name);
         return result;
     }

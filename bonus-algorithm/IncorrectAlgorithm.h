@@ -28,7 +28,7 @@ public:
     void
     moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>>& rememberLoadAgain,
               list<CargoOperation> &opList) override ;
-    void loadAgain(list<shared_ptr<Container>>& rememberLoadAgain, list<CargoOperation> &opList) override ;
+
 };
 
 
