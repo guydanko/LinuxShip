@@ -53,6 +53,7 @@ class Simulator {
     void  initializeWorkers();
     void workerFunction();
     void waitTillFinish();
+    void runOnlyMain();
 
 public:
     Simulator(const string &travelPath, const string &algoPath, const string &outputPath, int numThreads) : travelPath(travelPath),

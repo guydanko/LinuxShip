@@ -11,21 +11,15 @@
 class Producer {
     int numTasks = -1;
     std::atomic_int taskCounter = 0;
-    std::vector<Task> tasksParm;
+    std::vector<Task> taskList;
 
-    std::optional<int> nextTaskIndex() {
-        for(int curr_counter = taskCounter.load(); curr_counter < numTasks; ) {
-            if(taskCounter.compare_exchange_strong(curr_counter, curr_counter + 1)) {
-                return {curr_counter};
-            }
-        }
-        return {};
-    }
+    std::optional<int> nextTaskIndex() ;
 
 public:
     Producer(){}
     std::optional<Task> getTask();
     void buildTasks( list<std::function<std::unique_ptr<AbstractAlgorithm>()>>& algoFactory, list<Travel>& travelList,list<string>& algoNames,const string& outputPath);
+    std::vector<Task>& getTaskList(){ return this->taskList;}
 };
 
 

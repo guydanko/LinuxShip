@@ -262,14 +262,26 @@ void Simulator::waitTillFinish() {
         t.join();
     }
 }
+void Simulator::runOnlyMain(){
+    for(auto currentTask : producer.getTaskList()) {
+        int numOp= runOneTravel(currentTask.getTravel(),currentTask.getAlgo(),currentTask.getFileName(),currentTask.getErrorFileName());
+        resultMap[currentTask.getAlgoName()][currentTask.getTravel().getTravelName()] = numOp;
+    }
+}
 void Simulator::run() {
     setUpFakeFile();
     createAlgoXTravel();
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
     cleanFiles(algoNames);
     this->producer.buildTasks(this->algoFactory,this->travelList,algoNames, this->outputPath);
-    initializeWorkers();
-    waitTillFinish();
+
+    if(numThreads>1){
+        initializeWorkers();
+        waitTillFinish();
+    }
+    else{
+        runOnlyMain();
+    }
     printResults(resultMap);
     deleteEmptyFiles();
 }
