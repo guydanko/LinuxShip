@@ -1,6 +1,6 @@
 #include "MapIndex.h"
 
-MapIndex MapIndex::isPlaceToMove( ShipMap *shipMap, const string &currentPort) {
+MapIndex MapIndex::isPlaceToMove( ShipMap *shipMap, const string &currentPort,MapIndex currentPlace) {
     bool moveToNextPlace;
     for (int i = 0; i < shipMap->getHeight(); i++) {
         for (int j = 0; j < shipMap->getCols(); j++) {
@@ -16,13 +16,17 @@ MapIndex MapIndex::isPlaceToMove( ShipMap *shipMap, const string &currentPort) {
             }
         }
     }
-//    for(int j = 0; j < currentIndex.col; j++) {
-//        for (int k = 0; k < shipMap->getHeight(); k++) {
-//            if (shipMap->getShipMapContainer()[k][currentIndex.row][j] == nullptr) {
-//                return MapIndex(k, currentIndex.row, j);
-//            }
-//        }
-//    }
+    for (int i = 0; i < shipMap->getHeight(); i++) {
+        for (int j = 0; j < shipMap->getCols(); j++) {
+            for (int k = 0; k < shipMap->getRows() ; k++) {
+                if(currentPlace.getRow()!=k || currentPlace.getCol()!=j){
+                    if (shipMap->getShipMapContainer()[i][k][j] == nullptr) {
+                        return MapIndex(i, k, j);
+                    }
+                }
+            }
+        }
+    }
     return MapIndex();
 }
 

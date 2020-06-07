@@ -2,7 +2,7 @@
 
 void AbstractCommonAlgorithm::tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
                                         list<CargoOperation> &opList, const string &portName) {
-    MapIndex moveIndex = MapIndex::isPlaceToMove(this->shipMap.get(), portName);
+    MapIndex moveIndex = MapIndex::isPlaceToMove(this->shipMap.get(), portName,index);
     //can move on the ship
     if (moveIndex.validIndex()) {
         CargoOperation opUnload(AbstractAlgorithm::Action::UNLOAD,

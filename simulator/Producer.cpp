@@ -7,7 +7,7 @@ Producer::buildTasks(list<std::function<std::unique_ptr<AbstractAlgorithm>()>> &
                      list<string> &algoNames, const string &outputPath) {
     taskList.reserve(algoFactory.size() * travelList.size());
     auto currentAlgoName = algoNames.begin();
-    for (auto algoF : algoFactory) {
+    for (auto& algoF : algoFactory) {
         string algoName = *currentAlgoName;
         currentAlgoName++;
         for (Travel travel: travelList) {

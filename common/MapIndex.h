@@ -13,7 +13,7 @@ public:
     int getHeight()const{return this->height;}
     int getRow()const{return this->row;}
     int getCol()const {return this->col;}
-    static MapIndex isPlaceToMove( ShipMap* shipMap, const string&  currentPort );
+    static MapIndex isPlaceToMove( ShipMap* shipMap, const string&  currentPort,MapIndex currentPlace );
     static MapIndex firstLegalIndexPlace(ShipMap* shipMap);
 };
 
