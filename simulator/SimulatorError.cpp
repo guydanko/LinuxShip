@@ -10,32 +10,25 @@ ostream &operator<<(ostream &os, const SimulatorError &simulatorError) {
 }
 
 void
-SimulatorError::simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, const string &path,
+SimulatorError::simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, ofstream & outStream,
                                       const string &travelName,
-                                      const string &portName, int visitNumber,
-                                      const string &errorFileName) {
-    ofstream outFile;
-    outFile.open(path, std::ios::app);
-    ofstream errorFile(errorFileName, std::ios::app);
-    if (!outFile) {
-        errorFile << "Could not write error file: " << path + "/" + travelName + "AlgoErrors" << "\n";
-        errorFile.close();
+                                      const string &portName, int visitNumber) {
+
+    if (!outStream) {
         return;
     }
 
     if (!simErrors.empty() && simErrors.front().getErrorType() != SimErrorType::TRAVEL_END &&
         simErrors.front().getErrorType() != SimErrorType::TRAVEL_INIT) {
-        outFile << "Simulation Errors in port: " << portName << " ,visit no: " << visitNumber << "\n";
+        outStream << "Simulation Errors in port: " << portName << " ,visit no: " << visitNumber << "\n";
     }
 
     for (const SimulatorError &simError:simErrors) {
-        outFile << simError << "\n";
+        outStream << simError << "\n";
     }
 
     if (!simErrors.empty()) {
-        outFile << "===========================================================================================\n";
+        outStream << "===========================================================================================\n";
     }
 
-    errorFile.close();
-    outFile.close();
 }

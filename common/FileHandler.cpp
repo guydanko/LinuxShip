@@ -300,7 +300,7 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
     stringstream sline(line);
     while (getline(sline, token, ',')) {
         token = trim(token);
-        if (!isNumber(token)) {
+        if (!isPositiveNumber(token)) {
             if (toWrite) {
                 outFile
                         << "ship plan: travel error - bad first line or file cannot be read altogether (cannot run this travel)\n";
@@ -581,7 +581,8 @@ string FileHandler::setCommandMap(unordered_map<string, string> &flagMap, char *
                             flagMap[argv[i]] = argv[i + 1];
                         } else {
                             errorString +=
-                                    "Error: provided illegal value (" + std::string(argv[i+1]) + ") for num_threads\n";
+                                    "Error: provided illegal value (" + std::string(argv[i + 1]) +
+                                    ") for num_threads\n";
                         }
                     } else {
                         flagMap[argv[i]] = argv[i + 1];

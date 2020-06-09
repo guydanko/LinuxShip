@@ -29,9 +29,8 @@ public:
     SimErrorType getErrorType() const { return this->generalError; };
 
     static void
-    simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, const string &fileName, const string &travelName,
-                          const string &portName = "", int visitNumber = 0,
-                          const string &errorFile = "");
+    simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, ofstream & outStream, const string &travelName,
+                          const string &portName = "", int visitNumber = 0);
 
     friend ostream &operator<<(ostream &os, const SimulatorError &simulatorError);
 };

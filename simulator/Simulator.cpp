@@ -125,14 +125,15 @@ int countOperation(list<shared_ptr<CargoOperation>>& cargoOps){
 }
 /* returns amount of operations in a travel-algo pair*/
 int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &travelAlgoDirectory,
-                            const string &errorFileName){
+                            const string &errorFileName) {
     int algoInitError = 0;
     std::error_code er;
     const string fakeFilePath = this->outputPath + "/errors/fakeFile_313246811_";
-    fs::create_directory(this->outputPath+ "/"+travelAlgoDirectory, er);
+    fs::create_directory(this->outputPath + "/" + travelAlgoDirectory, er);
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
+        ofstream outStream(errorFileName, std::ios::app);
         list<SimulatorError> errorList;
         algoInitError = initAlgoWithTravelParam(travel, pAlgo, errorList, correctAlgo);
         if (correctAlgo) {
@@ -140,7 +141,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                                                                              travel.getTravelError(), errorList,
                                                                              correctAlgo);
         }
-        SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());
+        SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getTravelName());
         list<shared_ptr<Container>> doubleIdList = {};
         if (correctAlgo) {
             bool throwException = false;
@@ -177,7 +178,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                     SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(algoGetInsError, simulationInstError,
                                                                            errorList,
                                                                            correctAlgo);
-                    SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName(),
+                    SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getTravelName(),
                                                           travel.getCurrentPort(), travel.getCurrentVisitNumber());
                     travel.goToNextPort();
                 }
@@ -185,7 +186,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
             if (!throwException) {
                 errorList = {};
                 SimulatorAlgoCheck::checkIfShipEmpty(travel.getShipMap(), errorList, correctAlgo);
-                SimulatorError::simulatorErrorsToFile(errorList, errorFileName, travel.getTravelName());
+                SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getTravelName());
             }
         }
     }
