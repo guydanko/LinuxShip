@@ -133,7 +133,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
-        ofstream outStream(errorFileName, std::ios::app);
+        ofstream outStream(errorFileName);
         list<SimulatorError> errorList;
         algoInitError = initAlgoWithTravelParam(travel, pAlgo, errorList, correctAlgo);
         if (correctAlgo) {
