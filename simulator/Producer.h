@@ -11,15 +11,19 @@
 class Producer {
     int numTasks = -1;
     std::atomic_int taskCounter = 0;
-    std::vector<Task> taskList;
+    list<string> &algoNames;
+    const string &outputPath;
+    list<std::function<std::unique_ptr<AbstractAlgorithm>()>>& algoFactory;
+    list<Travel>& travelList;
 
     std::optional<int> nextTaskIndex() ;
 
 public:
-    Producer(){}
+    Producer(list<std::function<std::unique_ptr<AbstractAlgorithm>()>> &algoFactory, list<Travel> &travelList,
+              list<string> &algoNames, const string &outputPath): algoFactory(algoFactory), travelList(travelList), algoNames(algoNames), outputPath(outputPath) {}
     std::optional<Task> getTask();
     void buildTasks( list<std::function<std::unique_ptr<AbstractAlgorithm>()>>& algoFactory, list<Travel>& travelList,list<string>& algoNames,const string& outputPath);
-    std::vector<Task>& getTaskList(){ return this->taskList;}
+    void setNumTasks(int num){this->numTasks=num;}
 };
 
 

@@ -244,7 +244,7 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
     FileHandler::printSimulatorResults(this->outputPath + "/simulation.results", algosInOrder, travelNameOrder,
                                        simResults);
 }
-void Simulator::workerFunction(){
+void Simulator::workerFunction(Producer& producer){
     std::optional<Task> currentTask = producer.getTask();
     while(currentTask) {
        int numOp= runOneTravel(currentTask.value().getTravel(),currentTask.value().getAlgo(),currentTask.value().getFileName(),currentTask.value().getErrorFileName());
@@ -252,9 +252,9 @@ void Simulator::workerFunction(){
        currentTask = producer.getTask();
     }
 }
-void  Simulator::initializeWorkers(){
+void  Simulator::initializeWorkers(Producer& producer){
     for(int i=0; i<this->numThreads ; ++i) {
-        workers.push_back(std::thread([this]{ this->workerFunction();}));
+        workers.push_back(std::thread([this, &producer]{ this->workerFunction(producer);}));
     }
 }
 void Simulator::waitTillFinish() {
@@ -262,10 +262,18 @@ void Simulator::waitTillFinish() {
         t.join();
     }
 }
-void Simulator::runOnlyMain(){
-    for(auto currentTask : producer.getTaskList()) {
-        int numOp= runOneTravel(currentTask.getTravel(),currentTask.getAlgo(),currentTask.getFileName(),currentTask.getErrorFileName());
-        resultMap[currentTask.getAlgoName()][currentTask.getTravel().getTravelName()] = numOp;
+void Simulator::runOnlyMain(list<string>& algoNamesList){
+    auto currentAlgoName = algoNamesList.begin();
+    for (auto& algoF : algoFactory) {
+        string algoName = *currentAlgoName;
+        currentAlgoName++;
+        for (Travel& travel: travelList) {
+            string fileName = outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
+
+            string errorFile = outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
+            int numOp=runOneTravel(travel,algoF(),fileName,errorFile);
+            resultMap[algoName][travel.getTravelName()] = numOp;
+        }
     }
 }
 void Simulator::run() {
@@ -273,14 +281,16 @@ void Simulator::run() {
     createAlgoXTravel();
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
     cleanFiles(algoNames);
-    this->producer.buildTasks(this->algoFactory,this->travelList,algoNames, this->outputPath);
+    Producer producer(algoFactory,travelList,algoNames,outputPath);
+    producer.setNumTasks( this->algoFactory.size()*this->travelList.size());
+   // producer.buildTasks(this->algoFactory,this->travelList,algoNames, this->outputPath);
 
     if(numThreads>1){
-        initializeWorkers();
+        initializeWorkers(producer);
         waitTillFinish();
     }
     else{
-        runOnlyMain();
+        runOnlyMain(algoNames);
     }
     printResults(resultMap);
     deleteEmptyFiles();

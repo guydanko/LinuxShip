@@ -30,7 +30,6 @@ class Simulator {
     list<Travel> travelList;
     WeightBalanceCalculator calculator;
     const string travelPath, algoPath, outputPath;
-    Producer producer;
     std::vector<std::thread> workers;
     unordered_map<string, unordered_map<string, int>> resultMap;
     int numThreads;
@@ -51,13 +50,13 @@ class Simulator {
 
     void setUpFakeFile();
 
-    void initializeWorkers();
+    void initializeWorkers(Producer& producer);
 
-    void workerFunction();
+    void workerFunction(Producer& producer);
 
     void waitTillFinish();
 
-    void runOnlyMain();
+    void runOnlyMain(list<string>& algoNames);
 
 public:
     Simulator(const string &travelPath, const string &algoPath, const string &outputPath, int numThreads) : travelPath(
