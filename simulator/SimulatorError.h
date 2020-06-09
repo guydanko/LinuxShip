@@ -29,7 +29,7 @@ public:
     SimErrorType getErrorType() const { return this->generalError; };
 
     static void
-    simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, ofstream & outStream, const string &travelName,
+    simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, ofstream & outStream,
                           const string &portName = "", int visitNumber = 0);
 
     friend ostream &operator<<(ostream &os, const SimulatorError &simulatorError);

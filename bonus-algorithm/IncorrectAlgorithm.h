@@ -25,10 +25,7 @@ public:
     int rejectAllBesideShipFull(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList,
                                 const string &currentPort) override;
     int rejectDoubleId(list<shared_ptr<Container>> &loadList, list<CargoOperation> &opList) override ;
-    void
-    moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>>& rememberLoadAgain,
-              list<CargoOperation> &opList) override ;
-
+    int loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) override ;
 };
 
 

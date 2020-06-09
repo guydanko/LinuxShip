@@ -141,7 +141,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                                                                              travel.getTravelError(), errorList,
                                                                              correctAlgo);
         }
-        SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getTravelName());
+        SimulatorError::simulatorErrorsToFile(errorList, outStream);
         list<shared_ptr<Container>> doubleIdList = {};
         if (correctAlgo) {
             bool throwException = false;
@@ -178,17 +178,17 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                     SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(algoGetInsError, simulationInstError,
                                                                            errorList,
                                                                            correctAlgo);
-                    SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getTravelName(),
-                                                          travel.getCurrentPort(), travel.getCurrentVisitNumber());
+                    SimulatorError::simulatorErrorsToFile(errorList, outStream,travel.getCurrentPort(), travel.getCurrentVisitNumber());
                     travel.goToNextPort();
                 }
             }
             if (!throwException) {
                 errorList = {};
                 SimulatorAlgoCheck::checkIfShipEmpty(travel.getShipMap(), errorList, correctAlgo);
-                SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getTravelName());
+                SimulatorError::simulatorErrorsToFile(errorList, outStream);
             }
         }
+        outStream.close();
     }
     if (correctAlgo) {
         return sumCargoOperation;
@@ -284,7 +284,6 @@ void Simulator::run() {
     cleanFiles(algoNames);
     Producer producer(algoFactory,travelList,algoNames,outputPath);
     producer.setNumTasks( this->algoFactory.size()*this->travelList.size());
-   // producer.buildTasks(this->algoFactory,this->travelList,algoNames, this->outputPath);
 
     if(numThreads>1){
         initializeWorkers(producer);

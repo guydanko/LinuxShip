@@ -11,7 +11,6 @@ ostream &operator<<(ostream &os, const SimulatorError &simulatorError) {
 
 void
 SimulatorError::simulatorErrorsToFile(const std::list<SimulatorError> &simErrors, ofstream & outStream,
-                                      const string &travelName,
                                       const string &portName, int visitNumber) {
 
     if (!outStream) {
