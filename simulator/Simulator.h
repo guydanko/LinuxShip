@@ -50,22 +50,34 @@ class Simulator {
     void createAlgoFactory();
 
     void setUpFakeFile();
-    void  initializeWorkers();
+
+    void initializeWorkers();
+
     void workerFunction();
+
     void waitTillFinish();
+
     void runOnlyMain();
 
 public:
-    Simulator(const string &travelPath, const string &algoPath, const string &outputPath, int numThreads) : travelPath(travelPath),
-                                                                                            algoPath(algoPath),
-                                                                                            outputPath(outputPath), numThreads(numThreads) {};
+    Simulator(const string &travelPath, const string &algoPath, const string &outputPath, int numThreads) : travelPath(
+            travelPath),
+                                                                                                            algoPath(
+                                                                                                                    algoPath),
+                                                                                                            outputPath(
+                                                                                                                    outputPath),
+                                                                                                            numThreads(
+                                                                                                                    numThreads) {};
+
     void run();
 
-    int runOneTravel(Travel &travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &fileName,
+    int runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &fileName,
                      const string &errorFileName);
 
-    int initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractAlgorithm>& pAlgo, list<SimulatorError> &errorList,
-                                bool &correctAlgo);
+    int
+    initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractAlgorithm> &pAlgo, list<SimulatorError> &errorList,
+                            bool &correctAlgo);
+
     friend class Producer;
 
 };

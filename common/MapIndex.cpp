@@ -30,12 +30,24 @@ MapIndex MapIndex::isPlaceToMove( ShipMap *shipMap, const string &currentPort,Ma
     return MapIndex();
 }
 
-MapIndex MapIndex::firstLegalIndexPlace(ShipMap *shipMap) {
+MapIndex MapIndex::firstLegalIndexPlaceHorizontal(ShipMap *shipMap) {
     for (int i = 0; i < shipMap->getHeight(); i++) {
         for (int j = 0; j < shipMap->getCols(); j++) {
             for (int k = 0; k < shipMap->getRows(); k++) {
                 if (shipMap->getShipMapContainer()[i][k][j] == nullptr) {
                     return MapIndex(i, k, j);
+                }
+            }
+        }
+    }
+    return MapIndex();
+}
+MapIndex MapIndex::firstLegalIndexPlaceVertical(ShipMap *shipMap) {
+    for (int i = 0; i < shipMap->getRows(); i++) {
+        for (int j = 0; j < shipMap->getCols(); j++) {
+            for (int k = 0; k < shipMap->getHeight(); k++) {
+                if (shipMap->getShipMapContainer()[k][i][j] == nullptr) {
+                    return MapIndex(k, i, j);
                 }
             }
         }

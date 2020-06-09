@@ -124,7 +124,7 @@ int countOperation(list<shared_ptr<CargoOperation>>& cargoOps){
     return sum;
 }
 /* returns amount of operations in a travel-algo pair*/
-int Simulator::runOneTravel(Travel &travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &travelAlgoDirectory,
+int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName){
     int algoInitError = 0;
     std::error_code er;

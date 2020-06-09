@@ -34,11 +34,11 @@ public:
     void unloadContainerByPort(const string &portName, list<CargoOperation> &opList,
                                list<shared_ptr<Container>> &rememberLoadAgain);
 
-    virtual void
+    void
     moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>> &rememberLoadAgain,
-              list<CargoOperation> &opList) = 0;
+              list<CargoOperation> &opList);
 
-    int loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList);
+    virtual int loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList)=0;
 
     void tryToMove(int i, MapIndex index, list<shared_ptr<Container>> &rememberLoadAgain,
                    list<CargoOperation> &opList, const string &portName);

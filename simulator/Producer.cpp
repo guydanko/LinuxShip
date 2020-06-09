@@ -10,7 +10,7 @@ Producer::buildTasks(list<std::function<std::unique_ptr<AbstractAlgorithm>()>> &
     for (auto& algoF : algoFactory) {
         string algoName = *currentAlgoName;
         currentAlgoName++;
-        for (Travel travel: travelList) {
+        for (Travel& travel: travelList) {
             string fileName = outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
 
             string errorFile = outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";

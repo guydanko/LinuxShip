@@ -8,10 +8,7 @@ class _316294636_b : public AbstractCommonAlgorithm {
 
 public:
     _316294636_b() : AbstractCommonAlgorithm() {}
-
-    virtual void
-    moveTower(MapIndex index, const string &portName, list<shared_ptr<Container>> &rememberLoadAgain,
-              list<CargoOperation> &opList) override;
+    int loadOneContainer(shared_ptr<Container> cont, list<CargoOperation> &opList) override ;
 
 };
 
