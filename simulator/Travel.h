@@ -29,7 +29,7 @@ public:
 
     string getTravelName() const;
 
-    int getContainerList(const string &errorFile, list<shared_ptr<Container>> &contList);
+    int getContainerList(ostream & outFile, list<shared_ptr<Container>> &contList);
 
     void goToNextPort();
 

@@ -150,7 +150,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                 int simulationInstError = 0;
                 errorList = {};
                 list<shared_ptr<Container>> loadList = {};
-                simulationInstError |= travel.getContainerList(errorFileName, loadList);
+                simulationInstError |= travel.getContainerList(outStream, loadList);
                 const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
                                        std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
                 int algoGetInsError = 0;

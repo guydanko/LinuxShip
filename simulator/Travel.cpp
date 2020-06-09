@@ -98,7 +98,7 @@ void Travel::goToNextPort() {
     }
 }
 
-int Travel::getContainerList(const string &errorFile, list<shared_ptr<Container>> &contList) {
+int Travel::getContainerList(ostream & outFile, list<shared_ptr<Container>> &contList) {
     list<shared_ptr<Container>> checkList = {};
     string currentPort = this->route.front();
 
@@ -118,7 +118,7 @@ int Travel::getContainerList(const string &errorFile, list<shared_ptr<Container>
         return 0;
 
     }
-    return FileHandler::fileToContainerList(fileName, contList, errorFile,
+    return FileHandler::fileToContainerList(fileName, contList, outFile,
                                             this->route.front() + "_" + std::to_string(visitNum));
 }
 
@@ -203,7 +203,7 @@ const string Travel::getNextCargoFilePath() {
 
 void Travel::operator=(Travel &&other) {
 
-    if(this != &other){
+    if (this != &other) {
         this->shipMap = std::move(other.shipMap);
         this->travelPath = other.travelPath;
         this->portCounter = other.portCounter;

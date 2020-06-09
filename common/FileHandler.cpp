@@ -65,20 +65,14 @@ bool areNumbers(const std::string &s1, const std::string &s2, const std::string 
 }
 
 int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Container>> &containerList,
-                                     const string &errorFile, const string &portName) {
+                                     ostream &outFile, const string &portName) {
     int result = 0;
     ifstream inFile(fileName);
-    ofstream outFile(errorFile, std::ios::app);
-    bool toWrite = needToWrite(errorFile) && outFile;
+    bool toWrite = (outFile.rdbuf() == std::cout.rdbuf()) ? false : true;
     string port = portName.empty() ? "" : portName + ": ";
 
     /*could not open file*/
     if (!inFile) {
-        if (toWrite) {
-            outFile << port <<
-                    "containers at port: file cannot be read altogether (assuming no cargo to be loaded at this port)\n";
-            outFile.close();
-        }
         return (1 << 16);
     }
 
@@ -151,7 +145,6 @@ int FileHandler::fileToContainerList(const string &fileName, list<shared_ptr<Con
         }
     }
     inFile.close();
-    if (toWrite) { outFile.close(); }
     return result;
 }
 
