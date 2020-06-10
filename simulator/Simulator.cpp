@@ -164,7 +164,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                 }
                 if (!throwException) {
                     list<shared_ptr<CargoOperation>> cargoOps = {};
-                    FileHandler::createCargoOpsFromFile(writeTo, cargoOps, errorFileName);
+                    correctAlgo =FileHandler::createCargoOpsFromFile(writeTo, cargoOps, errorFileName) || correctAlgo;
                     sumCargoOperation += countOperation(cargoOps);
                     simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                          cargoOps, errorList,
@@ -195,8 +195,6 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
     } else {
         return -1;
     }
-
-
 }
 
 void Simulator::deleteEmptyFiles() {
