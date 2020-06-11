@@ -13,6 +13,7 @@
 #include <map>
 #include <fstream>
 #include <thread>
+#include <mutex>
 
 namespace fs = std::filesystem;
 using std::pair;
@@ -50,9 +51,9 @@ class Simulator {
 
     void setUpFakeFile();
 
-    void initializeWorkers(Producer& producer);
+    void initializeWorkers(Producer& producer, std::mutex& resultMapMutex);
 
-    void workerFunction(Producer& producer);
+    void workerFunction(Producer& producer, std::mutex& resultMapMutex);
 
     void waitTillFinish();
 
