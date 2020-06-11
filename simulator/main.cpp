@@ -29,12 +29,13 @@ int main(int argc, char *argv[]) {
         numThreads = 1;
     } else {
         if (std::stoi(flagMap["-num_threads"]) > int(std::thread::hardware_concurrency())) {
-            errorString += "Error: num_threads value (" + flagMap["-num_threads"] + "larger than max thread value\n";
+            errorString += "Error: num_threads value (" + flagMap["-num_threads"] + ") larger than max thread value\n";
+            numThreads= int(std::thread::hardware_concurrency());
         } else {
             numThreads = std::stoi(flagMap["-num_threads"]);
         }
     }
-
+    std::cout<<"num threads" << numThreads<<std::endl;
     if (!fs::exists(outPath, er)) {
         if (!fs::create_directories(outPath, er)) {
             errorString += "Error: could not create output directory, using current directory for output\n";
