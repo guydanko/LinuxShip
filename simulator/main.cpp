@@ -1,7 +1,6 @@
 #include "../simulator/Simulator.h"
 #include <filesystem>
 #include <iostream>
-#include <fstream>
 #include "../common/FileHandler.h"
 #include <unordered_map>
 
@@ -35,7 +34,7 @@ int main(int argc, char *argv[]) {
             numThreads = std::stoi(flagMap["-num_threads"]);
         }
     }
-    std::cout<<"num threads" << numThreads<<std::endl;
+
     if (!fs::exists(outPath, er)) {
         if (!fs::create_directories(outPath, er)) {
             errorString += "Error: could not create output directory, using current directory for output\n";

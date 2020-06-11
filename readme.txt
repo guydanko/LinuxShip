@@ -21,11 +21,8 @@ In the output file there will be a directory named errors which will consist of 
 
 
 Run Examples:
-Travel1 - an example of a travel to show the different operations performed by the two different algorithms provided
-algo a has the capability of performing move operations, and is usually more successful because of it
-algo b has no move capabilities
-so for this travel algo a is the winner
+We included two different Travels:
+1) Travel1
+2) Travel2
 
-Travel2 - mainly provided to show the error handling mechanism that we wrote, more details given in the bonus.txt file
-
-Please note that we also provided a bonus-algorithm directory and a bonus.txt with more details.
+In these travels our algorithms run differently and create a different amount of operations
