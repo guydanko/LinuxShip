@@ -376,17 +376,15 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
 
 
 bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<CargoOperation>> &ops,
-                                         const string &errorFile) {
+                                         ostream &outFile) {
     bool result = true;
     ifstream inFile(fileName);
-    ofstream outFile(errorFile, std::ios::app);
-    bool toWrite = needToWrite(errorFile) && outFile;
+    bool toWrite = outFile ? true : false;
 
     /*could not open file*/
     if (!inFile) {
         if (toWrite) {
             outFile << "Could not open operations file: " << fileName << "\n";
-            outFile.close();
         }
         return false;
     }
@@ -482,7 +480,6 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
     if (!result) {
         outFile << "===========================================================================================\n";
     }
-    if (toWrite) { outFile.close(); }
     return result;
 }
 
