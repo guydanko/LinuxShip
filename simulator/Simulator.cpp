@@ -2,6 +2,7 @@
 #include "Task.h"
 #include <memory>
 
+
 string getShipPlanPath(const fs::path &path) {
     std::error_code er;
     int planFiles = 0;
@@ -168,8 +169,10 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                 }
                 if (!throwException) {
                     list<shared_ptr<CargoOperation>> cargoOps = {};
-                    correctAlgo = FileHandler::createCargoOpsFromFile(writeTo, cargoOps, outStream, portVisit)
-                                  || correctAlgo;
+                    bool opFormat=FileHandler::createCargoOpsFromFile(writeTo, cargoOps, outStream, portVisit) ;
+                    if(correctAlgo){
+                        correctAlgo =  opFormat;
+                    }
                     sumCargoOperation += countOperation(cargoOps);
                     simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                          cargoOps, errorList,
@@ -185,6 +188,7 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                                                                            correctAlgo);
                     SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getCurrentPort(),
                                                           travel.getCurrentVisitNumber());
+                    SimulatorError::simulatorErrorsToFile(errorList, outStream,travel.getCurrentPort(), travel.getCurrentVisitNumber());
                     travel.goToNextPort();
                 }
             }
@@ -250,19 +254,22 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
                                        simResults);
 }
 
-void Simulator::workerFunction(Producer &producer) {
+void Simulator::workerFunction(Producer &producer, std::mutex& resultMapMutex) {
     std::optional<Task> currentTask = producer.getTask();
     while (currentTask) {
         int numOp = runOneTravel(currentTask.value().getTravel(), currentTask.value().getAlgo(),
                                  currentTask.value().getFileName(), currentTask.value().getErrorFileName());
-        resultMap[currentTask->getAlgoName()][currentTask->getTravel().getTravelName()] = numOp;
+        {
+            std::lock_guard<std::mutex> guard(resultMapMutex);
+            resultMap[currentTask->getAlgoName()][currentTask->getTravel().getTravelName()] = numOp;
+        }
         currentTask = producer.getTask();
     }
 }
 
-void Simulator::initializeWorkers(Producer &producer) {
+void Simulator::initializeWorkers(Producer &producer, std::mutex& resultMapMutex) {
     for (int i = 0; i < this->numThreads; ++i) {
-        workers.push_back(std::thread([this, &producer] { this->workerFunction(producer); }));
+        workers.push_back(std::thread([this, &producer, &resultMapMutex] { this->workerFunction(producer,resultMapMutex); }));
     }
 }
 
@@ -288,6 +295,7 @@ void Simulator::runOnlyMain(list<string> &algoNamesList) {
 }
 
 void Simulator::run() {
+    std::mutex resultMapMutex;
     setUpFakeFile();
     createAlgoXTravel();
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
@@ -296,7 +304,7 @@ void Simulator::run() {
     producer.setNumTasks(this->algoFactory.size() * this->travelList.size());
 
     if (numThreads > 1) {
-        initializeWorkers(producer);
+        initializeWorkers(producer, resultMapMutex);
         waitTillFinish();
     } else {
         runOnlyMain(algoNames);

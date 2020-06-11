@@ -13,7 +13,7 @@ class Task {
     string errorFileName;
     string algoName;
 public:
-    Task(std::function<std::unique_ptr<AbstractAlgorithm>()>& algoFuctory, Travel& travel,string& fileName,string& errorFileName,string& algoName): algoFactory(algoFactory),travel(travel), fileName(fileName), errorFileName(errorFileName), algoName(algoName){}
+    Task(std::function<std::unique_ptr<AbstractAlgorithm>()>& algoFactory, Travel& travel,string& fileName,string& errorFileName,string& algoName): algoFactory(algoFactory),travel(travel), fileName(fileName), errorFileName(errorFileName), algoName(algoName){}
     std::unique_ptr<AbstractAlgorithm> getAlgo(){ return this->algoFactory();}
     Travel& getTravel(){ return this->travel;}
     const string& getFileName(){return this->fileName;}

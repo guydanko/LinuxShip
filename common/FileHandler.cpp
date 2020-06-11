@@ -376,13 +376,16 @@ int FileHandler::createShipMapFromFile(const string &fileName, shared_ptr<shared
 
 
 bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr<CargoOperation>> &ops,
-                                         ostream &outFile, const string &portVisit) {
+                                         ostream &outFile, const string& portVisit) {
     bool result = true;
     ifstream inFile(fileName);
     bool toWrite = outFile ? true : false;
 
     /*could not open file*/
     if (!inFile) {
+        if (toWrite) {
+            outFile << "Could not open operations file: " << fileName << "\n";
+        }
         return false;
     }
 
@@ -423,8 +426,7 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
                                                                                     stoi(svec[4]))));
                 } else {
                     result = false;
-                    outFile << portVisit << "Cargo Operation read error, line (" << lineNum
-                            << ") is in invalid format\n";
+                    outFile <<  portVisit << ": Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
                 }
                 break;
             case 'M':
@@ -439,12 +441,11 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
                                                                           stoi(yMove))));
                     } else {
                         result = false;
-                        outFile << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+                        outFile << ": Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
                     }
                 } else {
                     result = false;
-                    outFile << portVisit << "Cargo Operation read error, line (" << lineNum
-                            << ") is in invalid format\n";
+                    outFile <<  portVisit <<": Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
                 }
                 break;
             case 'R':
@@ -453,8 +454,7 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
                     ops.emplace_back(std::make_shared<CargoOperation>(action, cont));
                 } else {
                     result = false;
-                    outFile << portVisit << "Cargo Operation read error, line (" << lineNum
-                            << ") is in invalid format\n";
+                    outFile <<  portVisit <<": Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
                 }
                 break;
             case 'U':
@@ -466,13 +466,12 @@ bool FileHandler::createCargoOpsFromFile(const string &fileName, list<shared_ptr
                                                                       stoi(svec[4]))));
                 } else {
                     result = false;
-                    outFile << portVisit << "Cargo Operation read error, line (" << lineNum
-                            << ") is in invalid format\n";
+                    outFile <<  portVisit <<": Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
                 }
                 break;
             default:
                 result = false;
-                outFile << portVisit << "Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
+                outFile <<  portVisit <<": Cargo Operation read error, line (" << lineNum << ") is in invalid format\n";
                 break;
         }
     }
