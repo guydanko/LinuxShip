@@ -23,8 +23,18 @@ int main(int argc, char *argv[]) {
     string outPath = flagMap["-output"].empty() ? fs::current_path(er).string() : flagMap["-output"];
     const string algoPath = flagMap["-algorithm_path"].empty() ? fs::current_path(er).string()
                                                                : flagMap["-algorithm_path"];
-    int numThreads = flagMap["-num_threads"].empty() ? 1 : std::min(std::stoi(flagMap["-num_threads"]),
-                                                                    int(std::thread::hardware_concurrency()));
+
+    int numThreads;
+    if (flagMap["-num_threads"].empty()) {
+        numThreads = 1;
+    } else {
+        if (std::stoi(flagMap["-num_threads"]) > int(std::thread::hardware_concurrency())) {
+            errorString += "Error: num_threads value (" + flagMap["-num_threads"] + "larger than max thread value\n";
+        } else {
+            numThreads = std::stoi(flagMap["-num_threads"]);
+        }
+    }
+
     if (!fs::exists(outPath, er)) {
         if (!fs::create_directories(outPath, er)) {
             errorString += "Error: could not create output directory, using current directory for output\n";

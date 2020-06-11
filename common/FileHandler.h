@@ -34,7 +34,8 @@ public:
     createShipMapFromFile(const string &fileName, shared_ptr<shared_ptr<ShipMap>> ship, const string &errorFile = "");
 
     static bool
-    createCargoOpsFromFile(const string &fileName, list<shared_ptr<CargoOperation>> &ops,  ostream &outFile, const string& portVisit);
+    createCargoOpsFromFile(const string &fileName, list<shared_ptr<CargoOperation>> &ops, ostream &outFile,
+                           const string &portVisit);
 
     static void operationsToFile(list<CargoOperation> &operations, const string &fileName);
 
