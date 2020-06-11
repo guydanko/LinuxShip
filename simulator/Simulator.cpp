@@ -93,7 +93,8 @@ void Simulator::setUpFakeFile() {
     if (ofs) { ofs.close(); }
 }
 
-int Simulator::initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractAlgorithm>& pAlgo, list<SimulatorError> &errorList,
+int Simulator::initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractAlgorithm> &pAlgo,
+                                       list<SimulatorError> &errorList,
                                        bool &correctAlgo) {
     unsigned int algoInitError = 0;
     try {
@@ -111,18 +112,21 @@ int Simulator::initAlgoWithTravelParam(Travel &travel, std::unique_ptr<AbstractA
     }
     return algoInitError;
 }
-int countOperation(list<shared_ptr<CargoOperation>>& cargoOps){
-    int sum=0;
-    for( auto cargoOp :cargoOps){
-        if(cargoOp->getOp()==AbstractAlgorithm::Action::UNLOAD || cargoOp->getOp()==AbstractAlgorithm::Action::LOAD){
-            sum+=5;
+
+int countOperation(list<shared_ptr<CargoOperation>> &cargoOps) {
+    int sum = 0;
+    for (auto cargoOp :cargoOps) {
+        if (cargoOp->getOp() == AbstractAlgorithm::Action::UNLOAD ||
+            cargoOp->getOp() == AbstractAlgorithm::Action::LOAD) {
+            sum += 5;
         }
-        if(cargoOp->getOp()==AbstractAlgorithm::Action::MOVE){
-            sum+=3;
+        if (cargoOp->getOp() == AbstractAlgorithm::Action::MOVE) {
+            sum += 3;
         }
     }
     return sum;
 }
+
 /* returns amount of operations in a travel-algo pair*/
 int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pAlgo, const string &travelAlgoDirectory,
                             const string &errorFileName) {
@@ -151,8 +155,8 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                 errorList = {};
                 list<shared_ptr<Container>> loadList = {};
                 simulationInstError |= travel.getContainerList(outStream, loadList);
-                const string writeTo = travelAlgoDirectory + "/" + travel.getCurrentPort() + "_" +
-                                       std::to_string(travel.getCurrentVisitNumber()) + ".crane_instructions";
+                const string portVisit = travel.getCurrentPort() + "_" + std::to_string(travel.getCurrentVisitNumber());
+                const string writeTo = travelAlgoDirectory + "/" + portVisit + ".crane_instructions";
                 int algoGetInsError = 0;
                 try {
                     const string nextLoadFile = fs::exists(travel.getNextCargoFilePath(), er)
@@ -164,7 +168,8 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                 }
                 if (!throwException) {
                     list<shared_ptr<CargoOperation>> cargoOps = {};
-                    correctAlgo =FileHandler::createCargoOpsFromFile(writeTo, cargoOps, outStream) || correctAlgo;
+                    correctAlgo = FileHandler::createCargoOpsFromFile(writeTo, cargoOps, outStream, portVisit)
+                                  || correctAlgo;
                     sumCargoOperation += countOperation(cargoOps);
                     simulationInstError |= SimulatorAlgoCheck::connectContainerToCargoOp(loadList, travel.getShipMap(),
                                                                                          cargoOps, errorList,
@@ -178,7 +183,8 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
                     SimulatorAlgoCheck::algoErrorInstVsSimulationErrorInst(algoGetInsError, simulationInstError,
                                                                            errorList,
                                                                            correctAlgo);
-                    SimulatorError::simulatorErrorsToFile(errorList, outStream,travel.getCurrentPort(), travel.getCurrentVisitNumber());
+                    SimulatorError::simulatorErrorsToFile(errorList, outStream, travel.getCurrentPort(),
+                                                          travel.getCurrentVisitNumber());
                     travel.goToNextPort();
                 }
             }
@@ -243,51 +249,56 @@ void Simulator::printResults(unordered_map<string, unordered_map<string, int>> s
     FileHandler::printSimulatorResults(this->outputPath + "/simulation.results", algosInOrder, travelNameOrder,
                                        simResults);
 }
-void Simulator::workerFunction(Producer& producer){
+
+void Simulator::workerFunction(Producer &producer) {
     std::optional<Task> currentTask = producer.getTask();
-    while(currentTask) {
-       int numOp= runOneTravel(currentTask.value().getTravel(),currentTask.value().getAlgo(),currentTask.value().getFileName(),currentTask.value().getErrorFileName());
-       resultMap[currentTask->getAlgoName()][currentTask->getTravel().getTravelName()] = numOp;
-       currentTask = producer.getTask();
+    while (currentTask) {
+        int numOp = runOneTravel(currentTask.value().getTravel(), currentTask.value().getAlgo(),
+                                 currentTask.value().getFileName(), currentTask.value().getErrorFileName());
+        resultMap[currentTask->getAlgoName()][currentTask->getTravel().getTravelName()] = numOp;
+        currentTask = producer.getTask();
     }
 }
-void  Simulator::initializeWorkers(Producer& producer){
-    for(int i=0; i<this->numThreads ; ++i) {
-        workers.push_back(std::thread([this, &producer]{ this->workerFunction(producer);}));
+
+void Simulator::initializeWorkers(Producer &producer) {
+    for (int i = 0; i < this->numThreads; ++i) {
+        workers.push_back(std::thread([this, &producer] { this->workerFunction(producer); }));
     }
 }
+
 void Simulator::waitTillFinish() {
-    for(auto& t : workers) {
+    for (auto &t : workers) {
         t.join();
     }
 }
-void Simulator::runOnlyMain(list<string>& algoNamesList){
+
+void Simulator::runOnlyMain(list<string> &algoNamesList) {
     auto currentAlgoName = algoNamesList.begin();
-    for (auto& algoF : algoFactory) {
+    for (auto &algoF : algoFactory) {
         string algoName = *currentAlgoName;
         currentAlgoName++;
-        for (Travel& travel: travelList) {
+        for (Travel &travel: travelList) {
             string fileName = outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
 
             string errorFile = outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
-            int numOp=runOneTravel(travel,algoF(),fileName,errorFile);
+            int numOp = runOneTravel(travel, algoF(), fileName, errorFile);
             resultMap[algoName][travel.getTravelName()] = numOp;
         }
     }
 }
+
 void Simulator::run() {
     setUpFakeFile();
     createAlgoXTravel();
     list<string> algoNames = AlgorithmRegistrar::getInstance().getAlgorithmNames();
     cleanFiles(algoNames);
-    Producer producer(algoFactory,travelList,algoNames,outputPath);
-    producer.setNumTasks( this->algoFactory.size()*this->travelList.size());
+    Producer producer(algoFactory, travelList, algoNames, outputPath);
+    producer.setNumTasks(this->algoFactory.size() * this->travelList.size());
 
-    if(numThreads>1){
+    if (numThreads > 1) {
         initializeWorkers(producer);
         waitTillFinish();
-    }
-    else{
+    } else {
         runOnlyMain(algoNames);
     }
     printResults(resultMap);
