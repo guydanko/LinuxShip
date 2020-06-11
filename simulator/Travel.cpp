@@ -98,7 +98,7 @@ void Travel::goToNextPort() {
     }
 }
 
-int Travel::getContainerList(ostream & outFile, list<shared_ptr<Container>> &contList) {
+int Travel::getContainerList(ostream &outFile, list<shared_ptr<Container>> &contList) {
     list<shared_ptr<Container>> checkList = {};
     string currentPort = this->route.front();
 
@@ -161,10 +161,6 @@ list<string> Travel::getUnusedFiles() const {
         const string extension = path.path().filename().extension().string();
         if (extension == ".cargo_data") {
             if (!isFileInTravelRoute(path.path().stem().string())) {
-                unusedFiles.emplace_back(path.path().filename().string());
-            }
-        } else {
-            if (extension != ".route" && extension != ".ship_plan") {
                 unusedFiles.emplace_back(path.path().filename().string());
             }
         }
