@@ -1,7 +1,6 @@
 #include "Simulator.h"
 #include "Producer.h"
 
-
 std::optional<Task> Producer::getTask() {
 
     std::optional<int> taskIndex = nextTaskIndex();

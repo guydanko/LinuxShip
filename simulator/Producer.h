@@ -1,4 +1,4 @@
-
+/*Producer class which is in charge of handing tasks to multiple thread workers*/
 #include <atomic>
 #include <optional>
 #include <functional>
