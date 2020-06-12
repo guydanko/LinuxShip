@@ -134,7 +134,8 @@ int Simulator::runOneTravel(Travel travel, std::unique_ptr<AbstractAlgorithm> pA
     int algoInitError = 0;
     std::error_code er;
     const string fakeFilePath = this->outputPath + "/errors/fakeFile_313246811_";
-    fs::create_directory(this->outputPath + "/" + travelAlgoDirectory, er);
+    fs::create_directory(travelAlgoDirectory, er);
+
     bool correctAlgo = true;
     int sumCargoOperation = 0;
     if (travel.isTravelLegal()) {
@@ -285,9 +286,9 @@ void Simulator::runOnlyMain(list<string> &algoNamesList) {
         string algoName = *currentAlgoName;
         currentAlgoName++;
         for (Travel &travel: travelList) {
-            string fileName = outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
+            string fileName = this->outputPath + "/" + algoName + "_" + travel.getTravelName() + "_crane_instructions";
 
-            string errorFile = outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
+            string errorFile = this->outputPath + "/errors/" + algoName + "_" + travel.getTravelName() + ".errors";
             int numOp = runOneTravel(travel, algoF(), fileName, errorFile);
             resultMap[algoName][travel.getTravelName()] = numOp;
         }

@@ -39,6 +39,10 @@ int main(int argc, char *argv[]) {
         if (!fs::create_directories(outPath, er)) {
             errorString += "Error: could not create output directory, using current directory for output\n";
             outPath = fs::current_path(er).string();
+            if(!FileHandler::canWriteinPath(outPath)) {
+                errorString += "Fatal Error: user has no write permission to output path\n";
+                toRunSimulator = false;
+            }
         }
     } else {
         if (!FileHandler::canWriteinPath(outPath)) {
@@ -51,7 +55,6 @@ int main(int argc, char *argv[]) {
 
     FileHandler::setUpErrorFiles(outPath);
     const string errorFilePath = outPath + "/errors/command.errors";
-
     std::ofstream errorFile(errorFilePath);
 
     errorFile << errorString;
